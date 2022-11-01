@@ -8,5 +8,9 @@ before_script:
   - python3 -m pip install black
 
 test:linting:
-    script:
-        - black ./
+  script:
+    - black ./
+
+test:app_run:
+  script:
+    - python3 app.py
