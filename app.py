@@ -7,3 +7,14 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+def data_upload(filename: str):
+    import pandas as pd
+    try:
+        with open(filename) as data:
+            data_in = pd.read_csv(data)
+            st.write(data_in)
+            st.write('Data uploaded successfully')
+    except FileNotFoundError:
+        st.error('File not found.')
