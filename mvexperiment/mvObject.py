@@ -2,7 +2,7 @@ import os
 import pickle
 import uuid
 
-
+# Abstract class to set an interface for a tree implementation
 class MvAbstract(object):
     def __init__(self):
         self._children = []
@@ -50,7 +50,8 @@ class MvAbstract(object):
             child.parent = self
         self._children.append(child)
 
-
+# Nodes in the tree abstract
+# Each node has a stack associated to it, a category list, and variables pointing to the parent and children
 class MvObject(MvAbstract):
     def __init__(self, parent=None):
         super().__init__()

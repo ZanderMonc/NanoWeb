@@ -5,11 +5,10 @@ import zipfile
 from . import mvObject
 from .pathto import Path as ppath
 
-# from .zippo import Path as zpath
-
+#from .zippo import Path as zpath
 
 class MvNode(mvObject.MvObject):
-    _leaf_ext = [".png"]
+    _leaf_ext = ['.png'] # rename to leaf_extension or file_extension
 
     def __init__(self, filename=None, parent=None):
         super().__init__(parent)
@@ -17,13 +16,13 @@ class MvNode(mvObject.MvObject):
         # try:
         if filename is not None:
             if str(filename) == filename:
-                if ".zip" in filename:
-                    if os.path.exists("./tmp") is False:
-                        os.mkdir("./tmp")
-                    name = "{}-{}-{}-{}-{}".format(*time.gmtime()[:5])
+                if '.zip' in filename:
+                    if os.path.exists('./tmp') is False:
+                        os.mkdir('./tmp')
+                    name = '{}-{}-{}-{}-{}'.format(*time.gmtime()[:5])
                     zp = zipfile.ZipFile(filename)
-                    zp.extractall(path="./tmp/" + name)
-                    self._filehandler = ppath("./tmp/" + name)
+                    zp.extractall(path='./tmp/'+name)
+                    self._filehandler = ppath('./tmp/'+name)
                 else:
                     self._filehandler = ppath(filename)
             else:
@@ -31,6 +30,8 @@ class MvNode(mvObject.MvObject):
         # except:
         #    raise FileNotFoundError("Location set to a wrong value {}".format(filename))
 
+    # basename = super
+    # name = called on _filehandler specifically
     @property
     def filename(self):
         return self._filehandler
@@ -63,11 +64,13 @@ class MvNode(mvObject.MvObject):
                     self._empty = False
             elif ddir.is_file() is True:
                 if self._leaf_ext is not None:
-                    if str(self._leaf_ext) == self._leaf_ext:
+                    # Makes sure ._leaf_ext is iterable
+                    if str(self._leaf_ext) == self._leaf_ext: #isInstance of string?
                         self._leaf_ext = [self._leaf_ext]
                     for ex in self._leaf_ext:
-                        if ddir.name[-len(ex) :] == ex:
-                            newleaf = self.__class__(parent=self, filename=ddir)
+                        if ddir.name[-len(ex):] == ex:
+                            newleaf = self.__class__(
+                                parent=self, filename=ddir)
                             if newleaf.check() is not False:
                                 self.append(newleaf)
                                 self._empty = False

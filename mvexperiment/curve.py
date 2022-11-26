@@ -1,9 +1,11 @@
+# Add to dependencies
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
 from scipy.signal import medfilt
 from scipy.signal import savgol_filter as savgol
 
+# Status of sample arm (?)
 MODE_DIRECTION_BACKWARD = 1
 MODE_DIRECTION_FORWARD = 2
 MODE_DIRECTIONS_PAUSE = 3
@@ -14,6 +16,9 @@ MODE_TRIGGER_FORCE = 2
 MODE_TRIGGER_POSITION = 3
 
 
+# Mathematical formulas to represent calculations that are performed on the data
+# Portable
+# Dependencies : numpy
 def Gauss(x, x0, a0, s0):
     return a0 * np.exp(-(((x - x0) / s0) ** 2))
 
@@ -26,10 +31,13 @@ def GGauss(x, x1, x2, a1, a2, s1, s2):
     return a1 * np.exp(-(((x - x1) / s1) ** 2)) + a2 * np.exp(-(((x - x2) / s2) ** 2))
 
 
+# Represents a certain segment in the data and its properties.
+# Dependencies : matplotlib, numpy
+
 class Segment(object):
     def __init__(self, parent=None, z=None, f=None):
-        self.z = z
-        self.f = f
+        self.z = z  # displacement
+        self.f = f  # force
         self.active = True
         self.iContact = 0  # index of the contact point
         self.outContact = 0  # index of the last out-of-contact point
@@ -153,6 +161,8 @@ class Segment(object):
                 plt.ylabel("Young's modulus [Pa]")
                 plt.legend()
 
+    # Possibly refactor method name: get_n_odd
+    # Multiples displacement by a fraction to get N. If N is even, makes N odd (for some reason)
     def getNodd(self, fraction, total=None):
         if total is None:
             total = len(self.z)
@@ -161,6 +171,9 @@ class Segment(object):
             N += 1
         return N
 
+    # Smoothing of the data
+    # Could be re-written with better standards ?
+    # Dependies : scipy: savgol, medfilt
     def smooth(self, method="sg"):
         N = self.getNodd(self._filterLength)
         if method == "sg":
@@ -172,6 +185,9 @@ class Segment(object):
         if method == "basic":
             self.f = medfilt(self.f, N)
 
+    # Spots the segments where sample arm is not touching the sample
+    # We were told this works as it is (partially) and that it is rather complicated (we don't have to fix this)
+    # Dependencies : numpy, scipy (curve_fit)
     def findOutOfContactRegion(self, weight=20.0, refine=False):
         yy, xx = np.histogram(self.f, bins="auto")
         xx = (xx[1:] + xx[:-1]) / 2.0
@@ -203,6 +219,9 @@ class Segment(object):
         xcontact = np.max(self.z[self.f < xx[jend]])
         self.outContact = np.argmin((self.z - xcontact) ** 2)
 
+    # Spot the segment where the sample arm is in contact with the sample.
+    # Same as findOutOfContactRegion, part of the more complicated processes
+    # Dependencies = numpy
     def findContactPoint(self):
         if self.outContact == 0:
             return
@@ -217,30 +236,37 @@ class Segment(object):
                     break
         return True
 
+    # Simulates the effect of an indentation of the sample, sets variables accordingly
+    # Dependencies : numpy
     def createIndentation(self):
         if self.iContact == 0:
             return
         offsetY = np.average(self.f[: self.iContact])
         offsetX = self.z[self.iContact]
-        Yf = self.f[self.iContact :] - offsetY
-        Xf = self.z[self.iContact :] - offsetX
+        Yf = self.f[self.iContact:] - offsetY
+        Xf = self.z[self.iContact:] - offsetX
         self.indentation = Xf - Yf / self.parent.cantilever_k
         self.touch = Yf
 
+    # Math - physics formula code
+    # Port as it is
     def hertz(
-        self, x, E=None
+            self, x, E=None
     ):  # NB E should be in nN/nm^2 = 10^9 N/m^2 -> internal units for E is GPa
         if E is None:
             E = self.young
         x = np.abs(x)
         # Eeff = E*1.0e9 #to convert E in GPa to keep consistency with the units nm and nN
         y = (
-            (4.0 / 3.0)
-            * (E / (1 - self.poisson**2))
-            * np.sqrt(self.parent.tip_radius * x**3)
+                (4.0 / 3.0)
+                * (E / (1 - self.poisson ** 2))
+                * np.sqrt(self.parent.tip_radius * x ** 3)
         )
         return y  # y will be in nN
 
+    # Again, math code.
+    # Port as it is
+    # Dependencies = numpy, scipy (curve_fit)
     def fitHertz(self, seed=1000.0 / 1e9, threshold=None, thresholdType="indentation"):
         self.young = None
         if self.indentation is None:
