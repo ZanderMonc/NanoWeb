@@ -74,10 +74,16 @@ def main() -> None:
     st.set_page_config(layout="wide")
     top_bar = st.container()
     file_select_col, file_upload_col = top_bar.columns(2)
+
     graph_bar = st.container()
     left_graph_col, right_graph_col = graph_bar.columns(2)
+    left_graph_col.write("Raw Curve")
+    right_graph_col.write("Additional Curve")
+
     config_bar = st.container()
     left_config_col, right_config_col = config_bar.columns(2)
+    left_config_col.write("Global Config")
+    right_config_col.write("Additional Config")
 
     quale = file_select_col.selectbox(
         "File type",
