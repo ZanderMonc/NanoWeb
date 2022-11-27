@@ -15,29 +15,32 @@ def get_selection(title: str, options: tuple | list) -> str:
     )
 
 
-def process(dir_name: str, quale: str):
-    if "Optics11" in quale:
-        if "2019" in quale:
-            exp = experiment.Chiaro2019(dir_name)
-        elif "OLD" in quale:
-            exp = experiment.ChiaroGenova(dir_name)
-        else:
-            exp = experiment.Chiaro(dir_name)
-    elif "Nanosurf" in quale:
+def get_experiment(dir_name: str, file_type: str):
+    if file_type == "Optics11":
+        exp = experiment.Chiaro(dir_name)
+    elif file_type == "Optics11_2019":
+        exp = experiment.Chiaro2019(dir_name)
+    elif file_type == "Optics11_OLD":
+        exp = experiment.ChiaroGenova(dir_name)
+    elif file_type == "Nanosurf":
         exp = experiment.NanoSurf(dir_name)
-    elif "TSV" in quale:
+    elif file_type == "TSV":
         exp = experiment.Easytsv(dir_name)
-    elif "jpk-force" in quale:
+    elif file_type == "jpk-force":
         exp = experiment.Jpk(dir_name)
-    elif "jpk-fmap" in quale:
+    elif file_type == "jpk-fmap":
         exp = experiment.JpkForceMap(dir_name)
+    else:
+        exp = None
 
-    exp.browse()
+    if exp is not None:
+        exp.browse()
 
-    if not len(exp):
-        print("Error")
-
-    return exp
+        if not len(exp):
+            raise FileNotFoundError("No files found")
+        return exp
+    else:
+        raise KeyError("Invalid experiment type")
 
 
 def save_uploaded_file(uploaded_file: UploadedFile, path: str) -> None:
@@ -46,7 +49,6 @@ def save_uploaded_file(uploaded_file: UploadedFile, path: str) -> None:
         with open(os.path.join(path, file_name), "wb") as f:
             f.write(uploaded_file.getbuffer())
         print(f"Saved File:{file_name} to {path}")
-
     except Exception as e:
         print(e)
 
@@ -96,7 +98,7 @@ def main() -> None:
         extract_zip(fname, "data")
         dir_name = "data/D-mode"
 
-        experiment = process(dir_name, quale)
+        experiment = get_experiment(dir_name, quale)
 
         for c in experiment.haystack:
             c.open()
