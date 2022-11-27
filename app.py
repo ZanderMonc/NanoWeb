@@ -58,7 +58,24 @@ def main() -> None:
             zip_ref.extractall("data")
         dir_name = "data/D-mode"
 
-        exp = process(dir_name, quale)
+        experiment = process(dir_name, quale)
+
+        for c in experiment.haystack:
+            c.open()
+
+        ref = experiment.haystack[0]
+        # deflection, force, indentation, time, z
+        # Create streamlit graph from ref data of force
+        st.header("Force")
+        st.line_chart(ref.data["force"])
+        st.header("Deflection")
+        st.line_chart(ref.data["deflection"])
+        st.header("Indentation")
+        st.line_chart(ref.data["indentation"])
+        st.header("Time")
+        st.line_chart(ref.data["time"])
+        st.header("Z")
+        st.line_chart(ref.data["z"])
 
 
 if __name__ == "__main__":
