@@ -40,15 +40,15 @@ def process(dir_name: str, quale: str):
     return exp
 
 
-def save_uploaded_file(uploaded_file: UploadedFile):
+def save_uploaded_file(uploaded_file: UploadedFile, path: str) -> None:
     try:
         file_name: str = uploaded_file.name
-        with open(os.path.join("data", file_name), "wb") as f:
+        with open(os.path.join(path, file_name), "wb") as f:
             f.write(uploaded_file.getbuffer())
-        st.success(f"Saved File:{file_name} to data", icon="✅")
+        print(f"Saved File:{file_name} to {path}")
 
     except Exception as e:
-        st.error(e, icon="❌")
+        print(e)
 
 
 def extract_zip(file_name: str, dir_name: str) -> None:
@@ -60,7 +60,10 @@ def extract_zip(file_name: str, dir_name: str) -> None:
 
 
 def main() -> None:
-    quale = st.selectbox(
+    top_bar = st.container()
+    file_select_col, file_upload_col = top_bar.columns(2)
+
+    quale = file_select_col.selectbox(
         "File type",
         (
             "Optics11",
@@ -72,9 +75,9 @@ def main() -> None:
             "jpk-fmap",
         ),
     )
-    file = st.file_uploader("Choose a zip file")
+    file = file_upload_col.file_uploader("Choose a zip file")
     if file is not None:
-        save_uploaded_file(file)
+        save_uploaded_file(file, "data")
         fname = "data/" + file.name
         extract_zip(fname, "data")
         dir_name = "data/D-mode"
