@@ -1,10 +1,18 @@
 import streamlit as st
+from streamlit.runtime.uploaded_file_manager import UploadedFile
 import os
 import sys
 import mvexperiment.experiment as experiment
 import numpy as np
 import zipfile
 import matplotlib.pyplot as plt
+
+
+def get_selection(title: str, options: tuple | list) -> str:
+    return st.selectbox(
+        title,
+        options,
+    )
 
 
 def process(dir_name: str, quale: str):
@@ -32,10 +40,15 @@ def process(dir_name: str, quale: str):
     return exp
 
 
-def save_uploaded_file(uploadedfile):
-    with open(os.path.join("data", uploadedfile.name), "wb") as f:
-        f.write(uploadedfile.getbuffer())
-    return st.success("Saved File:{} to data".format(uploadedfile.name))
+def save_uploaded_file(uploaded_file: UploadedFile):
+    try:
+        file_name: str = uploaded_file.name
+        with open(os.path.join("data", file_name), "wb") as f:
+            f.write(uploaded_file.getbuffer())
+        st.success(f"Saved File:{file_name} to data", icon="✅")
+
+    except Exception as e:
+        st.error(e, icon="❌")
 
 
 def main() -> None:
@@ -53,7 +66,6 @@ def main() -> None:
     )
     file = st.file_uploader("Choose a zip file")
     if file is not None:
-
         save_uploaded_file(file)
         fname = "data/" + file.name
         with zipfile.ZipFile(fname, "r") as zip_ref:
