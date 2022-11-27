@@ -4,6 +4,7 @@ import sys
 import mvexperiment.experiment as experiment
 import numpy as np
 import zipfile
+import matplotlib.pyplot as plt
 
 
 def process(dir_name: str, quale: str):
@@ -52,6 +53,7 @@ def main() -> None:
     )
     file = st.file_uploader("Choose a zip file")
     if file is not None:
+
         save_uploadedfile(file)
         fname = "data/" + file.name
         with zipfile.ZipFile(fname, "r") as zip_ref:
@@ -64,18 +66,28 @@ def main() -> None:
             c.open()
 
         ref = experiment.haystack[0]
+
+        segment = st.selectbox(
+            "Segment",
+            (seg for seg in range(len(ref))),
+        )
         # deflection, force, indentation, time, z
-        # Create streamlit graph from ref data of force
-        st.header("Force")
-        st.line_chart(ref.data["force"])
-        st.header("Deflection")
-        st.line_chart(ref.data["deflection"])
-        st.header("Indentation")
-        st.line_chart(ref.data["indentation"])
-        st.header("Time")
-        st.line_chart(ref.data["time"])
-        st.header("Z")
-        st.line_chart(ref.data["z"])
+        # st.header("Force")
+        # st.line_chart(ref.data["force"])
+        # st.header("Deflection")
+        # st.line_chart(ref.data["deflection"])
+        # st.header("Indentation")
+        # st.line_chart(ref.data["indentation"])
+        # st.header("Time")
+        # st.line_chart(ref.data["time"])
+        # st.header("Z")
+        # st.line_chart(ref.data["z"])
+
+        fig, ax = plt.subplots()
+        ax.plot(ref[segment].z, ref[segment].f)
+        ax.set(xlabel="z (nm)", ylabel="Force (nN)", title="Force vs Z")
+        ax.grid()
+        st.pyplot(fig)
 
 
 if __name__ == "__main__":
