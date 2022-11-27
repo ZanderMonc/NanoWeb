@@ -7,20 +7,20 @@ import zipfile
 
 
 def process(dir_name: str, quale: str):
-    if 'Optics11' in quale:
-        if '2019' in quale:
+    if "Optics11" in quale:
+        if "2019" in quale:
             exp = experiment.Chiaro2019(dir_name)
-        elif 'OLD' in quale:
+        elif "OLD" in quale:
             exp = experiment.ChiaroGenova(dir_name)
         else:
             exp = experiment.Chiaro(dir_name)
-    elif 'Nanosurf' in quale:
+    elif "Nanosurf" in quale:
         exp = experiment.NanoSurf(dir_name)
-    elif 'TSV' in quale:
+    elif "TSV" in quale:
         exp = experiment.Easytsv(dir_name)
-    elif 'jpk-force' in quale:
+    elif "jpk-force" in quale:
         exp = experiment.Jpk(dir_name)
-    elif 'jpk-fmap' in quale:
+    elif "jpk-fmap" in quale:
         exp = experiment.JpkForceMap(dir_name)
 
     exp.browse()
@@ -39,13 +39,22 @@ def save_uploadedfile(uploadedfile):
 
 def main() -> None:
     quale = st.selectbox(
-        'File type',
-        ('Optics11', 'Optics11_2019', 'Optics11_OLD', 'Nanosurf', 'TSV', 'jpk-force', 'jpk-fmap'))
+        "File type",
+        (
+            "Optics11",
+            "Optics11_2019",
+            "Optics11_OLD",
+            "Nanosurf",
+            "TSV",
+            "jpk-force",
+            "jpk-fmap",
+        ),
+    )
     file = st.file_uploader("Choose a zip file")
     if file is not None:
         save_uploadedfile(file)
-        fname = ("data/" + file.name)
-        with zipfile.ZipFile(fname, 'r') as zip_ref:
+        fname = "data/" + file.name
+        with zipfile.ZipFile(fname, "r") as zip_ref:
             zip_ref.extractall("data")
         dir_name = "data/D-mode"
 
