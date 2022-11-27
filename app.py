@@ -60,8 +60,13 @@ def extract_zip(file_name: str, dir_name: str) -> None:
 
 
 def main() -> None:
+    st.set_page_config(layout="wide")
     top_bar = st.container()
     file_select_col, file_upload_col = top_bar.columns(2)
+    graph_bar = st.container()
+    left_graph_col, right_graph_col = graph_bar.columns(2)
+    config_bar = st.container()
+    left_config_col, right_config_col = config_bar.columns(2)
 
     quale = file_select_col.selectbox(
         "File type",
@@ -89,10 +94,16 @@ def main() -> None:
 
         ref = experiment.haystack[0]
 
-        segment = st.selectbox(
+        segment = left_config_col.selectbox(
             "Segment",
             (seg for seg in range(len(ref))),
         )
+
+        data_type = right_config_col.selectbox(
+            "Data type",
+            ("deflection", "force", "indentation", "time", "z"),
+        )
+
         # deflection, force, indentation, time, z
         # st.header("Force")
         # st.line_chart(ref.data["force"])
@@ -109,7 +120,8 @@ def main() -> None:
         ax.plot(ref[segment].z, ref[segment].f)
         ax.set(xlabel="z (nm)", ylabel="Force (nN)", title="Force vs Z")
         ax.grid()
-        st.pyplot(fig)
+        left_graph_col.pyplot(fig)
+        right_graph_col.line_chart(ref.data[data_type])
 
 
 if __name__ == "__main__":
