@@ -51,6 +51,14 @@ def save_uploaded_file(uploaded_file: UploadedFile):
         st.error(e, icon="❌")
 
 
+def extract_zip(file_name: str, dir_name: str) -> None:
+    try:
+        with zipfile.ZipFile(file_name, "r") as zip_ref:
+            zip_ref.extractall(dir_name)
+    except Exception as e:
+        print(e)
+
+
 def main() -> None:
     quale = st.selectbox(
         "File type",
@@ -68,8 +76,7 @@ def main() -> None:
     if file is not None:
         save_uploaded_file(file)
         fname = "data/" + file.name
-        with zipfile.ZipFile(fname, "r") as zip_ref:
-            zip_ref.extractall("data")
+        extract_zip(fname, "data")
         dir_name = "data/D-mode"
 
         experiment = process(dir_name, quale)
