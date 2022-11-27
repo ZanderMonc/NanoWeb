@@ -59,6 +59,15 @@ def extract_zip(file_name: str, dir_name: str) -> None:
         print(e)
 
 
+def generate_raw_curve(stack, segment: int):
+    fig, ax = plt.subplots()
+    ax.plot(stack[segment].z, stack[segment].f)
+    ax.set(xlabel="z (nm)", ylabel="Force (nN)", title="Force vs Z")
+    ax.grid()
+    fig.set_size_inches(8, 5)
+    return fig
+
+
 def main() -> None:
     st.set_page_config(layout="wide")
     top_bar = st.container()
@@ -116,12 +125,9 @@ def main() -> None:
         # st.header("Z")
         # st.line_chart(ref.data["z"])
 
-        fig, ax = plt.subplots()
-        ax.plot(ref[segment].z, ref[segment].f)
-        ax.set(xlabel="z (nm)", ylabel="Force (nN)", title="Force vs Z")
-        ax.grid()
-        left_graph_col.pyplot(fig)
-        right_graph_col.line_chart(ref.data[data_type])
+        raw_curve = generate_raw_curve(ref, segment)
+        left_graph_col.pyplot(raw_curve)
+        right_graph_col.line_chart(ref.data[data_type], height=500)
 
 
 if __name__ == "__main__":
