@@ -7,6 +7,7 @@ import numpy as np
 import zipfile
 import matplotlib.pyplot as plt
 import pandas as pd
+import json
 
 
 def get_selection(title: str, options: tuple | list) -> str:
@@ -78,10 +79,48 @@ def generate_raw_curve(stack, segment: int):
     return test_curve
 
 
+def generate_empty_curve():
+    curve = {
+        "filename": "noname",
+        "date": "2021-12-02",
+        "device_manufacturer": "Optics11",
+        "tip": {"geometry": "sphere", "radius": 0.0},
+        "spring_constant": 0.0,
+        "segment": "approach",
+        "speed": 0.0,
+        "data": {"F": [], "Z": []},
+    }
+    return curve
+
+
+def save_to_json(ref):
+    curves = []
+    fname = "data/test.json"
+    print(len(ref))
+
+    geometry = ref.tip_shape
+    radius = ref.tip_radius
+    spring = ref.cantilever_k
+
+    for segment in ref:
+        cv = generate_empty_curve()
+        # cv["filename"] = segment.basename
+        cv["tip"]["radius"] = radius * 1e-9
+        cv["tip"]["geometry"] = geometry
+        cv["spring_constant"] = spring
+        # cv["position"] = (segment.xpos, segment.ypos)
+        cv["data"]["Z"] = list(segment.z * 1e-9)
+        cv["data"]["F"] = list(segment.f * 1e-9)
+        curves.append(cv)
+    exp = {"Description": "Optics11 data"}
+    pro = {}
+    json.dump({"experiment": exp, "protocol": pro, "curves": curves}, open(fname, "w"))
+
+
 def main() -> None:
     st.set_page_config(layout="wide")
     top_bar = st.container()
-    file_select_col, file_upload_col = top_bar.columns(2)
+    file_select_col, file_upload_col, save_json_col = top_bar.columns(3)
 
     graph_bar = st.container()
     left_graph_col, right_graph_col = graph_bar.columns(2)
@@ -115,6 +154,9 @@ def main() -> None:
             c.open()
 
         ref = experiment.haystack[0]
+
+        if save_json_col.button("Save to JSON"):
+            save_to_json(ref)
 
         left_config_col.write("Global Config")
         segment = left_config_col.selectbox(
