@@ -77,13 +77,9 @@ def main() -> None:
 
     graph_bar = st.container()
     left_graph_col, right_graph_col = graph_bar.columns(2)
-    left_graph_col.write("Raw Curve")
-    right_graph_col.write("Additional Curve")
 
     config_bar = st.container()
     left_config_col, right_config_col = config_bar.columns(2)
-    left_config_col.write("Global Config")
-    right_config_col.write("Additional Config")
 
     quale = file_select_col.selectbox(
         "File type",
@@ -102,7 +98,8 @@ def main() -> None:
         save_uploaded_file(file, "data")
         fname = "data/" + file.name
         extract_zip(fname, "data")
-        dir_name = "data/D-mode"
+        # get extracted dir name
+        dir_name = fname.replace(".zip", "")
 
         experiment = get_experiment(dir_name, quale)
 
@@ -111,30 +108,22 @@ def main() -> None:
 
         ref = experiment.haystack[0]
 
+        left_config_col.write("Global Config")
         segment = left_config_col.selectbox(
             "Segment",
             (seg for seg in range(len(ref))),
         )
 
+        right_config_col.write("Additional Config")
         data_type = right_config_col.selectbox(
             "Data type",
             ("deflection", "force", "indentation", "time", "z"),
         )
-
-        # deflection, force, indentation, time, z
-        # st.header("Force")
-        # st.line_chart(ref.data["force"])
-        # st.header("Deflection")
-        # st.line_chart(ref.data["deflection"])
-        # st.header("Indentation")
-        # st.line_chart(ref.data["indentation"])
-        # st.header("Time")
-        # st.line_chart(ref.data["time"])
-        # st.header("Z")
-        # st.line_chart(ref.data["z"])
-
         raw_curve = generate_raw_curve(ref, segment)
+
+        left_graph_col.write("Raw Curve")
         left_graph_col.pyplot(raw_curve)
+        right_graph_col.write("Additional Curve")
         right_graph_col.line_chart(ref.data[data_type], height=500)
 
 
