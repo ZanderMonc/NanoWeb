@@ -118,7 +118,9 @@ def save_to_json(ref):
 
 
 def main() -> None:
-    st.set_page_config(layout="wide", page_title="Nanoindentation")
+    st.set_page_config(
+        layout="wide", page_title="Nanoindentation", page_icon="images/cellmech.png"
+    )
     top_bar = st.container()
     file_select_col, file_upload_col, save_json_col = top_bar.columns(3)
 
