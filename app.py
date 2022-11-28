@@ -122,13 +122,19 @@ def main() -> None:
         layout="wide", page_title="Nanoindentation", page_icon="images/cellmech.png"
     )
     top_bar = st.container()
-    file_select_col, file_upload_col, save_json_col = top_bar.columns(3)
+    file_select_col, file_upload_col = top_bar.columns(2)
 
     graph_bar = st.container()
     left_graph_col, right_graph_col = graph_bar.columns(2)
+    left_graph_title = left_graph_col.empty()
+    right_graph_title = right_graph_col.empty()
+    left_graph = left_graph_col.empty()
+    right_graph = right_graph_col.empty()
 
     config_bar = st.container()
     left_config_col, right_config_col = config_bar.columns(2)
+    left_config_title = left_config_col.empty()
+    left_config_segment = left_config_col.empty()
 
     quale = file_select_col.selectbox(
         "File type",
@@ -142,7 +148,27 @@ def main() -> None:
             "jpk-fmap",
         ),
     )
+    save_json_button = file_select_col.button("Save to JSON")
     file = file_upload_col.file_uploader("Choose a zip file")
+
+    left_graph.line_chart()
+    left_graph_title.write("Raw Curve")
+
+    right_graph.line_chart()
+    right_graph_title.write("Additional Curve")
+
+    left_config_title.write("Global Config")
+    left_config_segment.selectbox(
+        "Segment",
+        ("NA",),
+    )
+
+    right_config_col.write("Additional Config")
+    data_type = right_config_col.selectbox(
+        "Data type",
+        ("deflection", "force", "indentation", "time", "z"),
+    )
+
     if file is not None:
         save_uploaded_file(file, "data")
         fname = "data/" + file.name
@@ -157,26 +183,15 @@ def main() -> None:
 
         ref = experiment.haystack[0]
 
-        if save_json_col.button("Save to JSON"):
+        segment = left_config_segment.selectbox("Segment", (i for i in range(len(ref))))
+
+        if save_json_button:
             save_to_json(ref)
 
-        left_config_col.write("Global Config")
-        segment = left_config_col.selectbox(
-            "Segment",
-            (seg for seg in range(len(ref))),
-        )
-
-        right_config_col.write("Additional Config")
-        data_type = right_config_col.selectbox(
-            "Data type",
-            ("deflection", "force", "indentation", "time", "z"),
-        )
         raw_curve = generate_raw_curve(ref, segment)
 
-        left_graph_col.write("Raw Curve")
-        left_graph_col.line_chart(raw_curve)
-        right_graph_col.write("Additional Curve")
-        right_graph_col.line_chart(ref.data[data_type])
+        left_graph.line_chart(raw_curve)
+        right_graph.line_chart(ref.data[data_type])
 
 
 if __name__ == "__main__":
