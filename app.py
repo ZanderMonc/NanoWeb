@@ -6,6 +6,7 @@ import mvexperiment.experiment as experiment
 import numpy as np
 import zipfile
 import matplotlib.pyplot as plt
+import pandas as pd
 
 
 def get_selection(title: str, options: tuple | list) -> str:
@@ -61,13 +62,20 @@ def extract_zip(file_name: str, dir_name: str) -> None:
         print(e)
 
 
-def generate_raw_curve(stack, segment: int):
+def generate_raw_curve_plt(stack, segment: int):
     fig, ax = plt.subplots()
     ax.plot(stack[segment].z, stack[segment].f)
     ax.set(xlabel="z (nm)", ylabel="Force (nN)", title="Force vs Z")
     ax.grid()
     fig.set_size_inches(8, 5)
     return fig
+
+
+def generate_raw_curve(stack, segment: int):
+    test_curve = pd.DataFrame({"z": stack[segment].z, "f": stack[segment].f})
+    test_curve = test_curve.set_index("z")
+
+    return test_curve
 
 
 def main() -> None:
@@ -122,9 +130,9 @@ def main() -> None:
         raw_curve = generate_raw_curve(ref, segment)
 
         left_graph_col.write("Raw Curve")
-        left_graph_col.pyplot(raw_curve)
+        left_graph_col.line_chart(raw_curve)
         right_graph_col.write("Additional Curve")
-        right_graph_col.line_chart(ref.data[data_type], height=500)
+        right_graph_col.line_chart(ref.data[data_type])
 
 
 if __name__ == "__main__":
