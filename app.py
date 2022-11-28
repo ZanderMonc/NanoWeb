@@ -45,6 +45,7 @@ def get_experiment(dir_name: str, file_type: str):
         raise KeyError("Invalid experiment type")
 
 
+@st.cache
 def save_uploaded_file(uploaded_file: UploadedFile, path: str) -> None:
     try:
         file_name: str = uploaded_file.name
