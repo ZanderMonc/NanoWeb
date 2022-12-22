@@ -1,3 +1,5 @@
+import tempfile
+
 import streamlit as st
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 import os
@@ -8,6 +10,7 @@ import zipfile
 import matplotlib.pyplot as plt
 import pandas as pd
 import json
+import shutil
 
 
 def get_selection(title: str, options: tuple | list) -> str:
@@ -173,11 +176,20 @@ def main() -> None:
     if file is not None:
         save_uploaded_file(file, "data")
         fname = "data/" + file.name
-        extract_zip(fname, "data")
-        # get extracted dir name
-        dir_name = fname.replace(".zip", "")
+        if fname.endswith(".zip"):
+            extract_zip(fname, "data")
+            dir_name = fname.replace(".zip", "")
+            experiment = get_experiment(dir_name, quale)
+        else:
+            dir_name = tempfile.mkdtemp()#create a temp folder to pass to experiment
+            save_uploaded_file(file, dir_name)#save the file to the temp folder
+            experiment = get_experiment(dir_name, quale)
 
-        experiment = get_experiment(dir_name, quale)
+
+        # get extracted dir name
+
+
+
 
         for c in experiment.haystack:
             c.open()
