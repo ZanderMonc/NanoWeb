@@ -178,6 +178,7 @@ def main() -> None:
         "Data type",
         ("deflection", "force", "indentation", "time", "z"),
     )
+
     if file is not None:
         save_uploaded_file(file, "data")
         fname = "data/" + file.name
@@ -224,12 +225,11 @@ def main() -> None:
 
                 for c in experiment2.haystack:
                     c.open()
-                ref = experiment2.haystack[0]
-                segment = left_config_segment.selectbox("Segment file 2", (i for i in range(len(ref))))
-                curve = add_to_curve(raw_curve, ref, segment)
+                ref2 = experiment2.haystack[0]
+                segment2 = left_config_segment.selectbox("Segment file 2", (i for i in range(len(ref2))))
+                curve = add_to_curve(raw_curve, ref2, segment2)
                 left_graph.line_chart(curve)
-                right_graph.line_chart(ref.data[data_type])
-                file = None
+                right_graph.line_chart(ref2.data[data_type])
 
 
 if __name__ == "__main__":
