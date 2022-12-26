@@ -83,6 +83,12 @@ def generate_raw_curve(stack, segment: int):
     return test_curve
 
 
+def add_to_curve(curve, stack, segment: int):
+    curve.insert(0, "z", stack[segment].z)
+    curve.insert(1, "f", stack[segment].f)
+    return curve
+
+
 def generate_empty_curve():
     curve = {
         "filename": "noname",
@@ -153,8 +159,8 @@ def main() -> None:
         ),
     )
     save_json_button = file_select_col.button("Save to JSON")
-    file = file_upload_col.file_uploader("Choose a zip file")
 
+    file = file_upload_col.file_uploader("Choose a zip file")
     left_graph.line_chart()
     left_graph_title.write("Raw Curve")
 
@@ -172,7 +178,6 @@ def main() -> None:
         "Data type",
         ("deflection", "force", "indentation", "time", "z"),
     )
-
     if file is not None:
         save_uploaded_file(file, "data")
         fname = "data/" + file.name
@@ -181,15 +186,11 @@ def main() -> None:
             dir_name = fname.replace(".zip", "")
             experiment = get_experiment(dir_name, quale)
         else:
-            dir_name = tempfile.mkdtemp()#create a temp folder to pass to experiment
-            save_uploaded_file(file, dir_name)#save the file to the temp folder
+            dir_name = tempfile.mkdtemp()  # create a temp folder to pass to experiment
+            save_uploaded_file(file, dir_name)  # save the file to the temp folder
             experiment = get_experiment(dir_name, quale)
 
-
         # get extracted dir name
-
-
-
 
         for c in experiment.haystack:
             c.open()
@@ -205,6 +206,30 @@ def main() -> None:
 
         left_graph.line_chart(raw_curve)
         right_graph.line_chart(ref.data[data_type])
+        new_file_button = file_select_col.button("Add new file")
+        if new_file_button:
+            file2 = file_upload_col.file_uploader("Choose a file or zip file")
+            if file2 is not None:
+                save_uploaded_file(file2, "data")
+                fname2 = "data/" + file2.name
+                if fname2.endswith(".zip"):
+                    extract_zip(fname2, "data")
+                    dir_name = fname2.replace(".zip", "")
+                    experiment2 = get_experiment(dir_name, quale)
+                else:
+                    dir_name = tempfile.mkdtemp()
+                    save_uploaded_file(file2, dir_name)  # save the file to the temp folder
+                    experiment2 = get_experiment(dir_name, quale)
+                # get extracted dir name
+
+                for c in experiment2.haystack:
+                    c.open()
+                ref = experiment2.haystack[0]
+                segment = left_config_segment.selectbox("Segment file 2", (i for i in range(len(ref))))
+                curve = add_to_curve(raw_curve, ref, segment)
+                left_graph.line_chart(curve)
+                right_graph.line_chart(ref.data[data_type])
+                file = None
 
 
 if __name__ == "__main__":
@@ -228,9 +253,6 @@ def data_export(data, filename):
     except FileNotFoundError:
         st.error('File not found.')
 
-
 # def export_test():
 #     df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
 #     data_export(df, 'data.csv')
-
-
