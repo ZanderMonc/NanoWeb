@@ -77,10 +77,13 @@ def generate_raw_curve_plt(stack, segment: int):
 
 
 def generate_raw_curve(exps: list, segment: int):
-    for i in exps:
-        test_curve = pd.DataFrame({str(i) + "z": i[segment].z, str(i)+"f": i[segment].f})
-        test_curve.set_index(str(i)+"z")
-    return test_curve
+    dictz = {}
+    for exp in range(len(exps)):
+        internal = exps[exp].haystack[0]
+        dictz[str(exp)+"z"] = internal[segment].z
+        dictz[str(exp)+"f"] = internal[segment].f
+    out = pd.DataFrame(dictz)
+    return out
 
 
 def generate_empty_curve():
@@ -174,29 +177,29 @@ def main() -> None:
     )
 
     if file is not None:
+        experiments = []
         save_uploaded_file(file, "data")
         fname = "data/" + file.name
         if fname.endswith(".zip"):
             extract_zip(fname, "data")
             dir_name = fname.replace(".zip", "")
-            experiment = get_experiment(dir_name, quale)
+            for file in os.listdir(dir_name):
+                if file.endswith(".txt"):
+                    experiments.append(get_experiment(dir_name, quale))
         else:
-            dir_name = tempfile.mkdtemp()#create a temp folder to pass to experiment
-            save_uploaded_file(file, dir_name)#save the file to the temp folder
-            experiment = get_experiment(dir_name, quale)
-
+            dir_name = tempfile.mkdtemp()  # create a temp folder to pass to experiment
+            save_uploaded_file(file, dir_name)  # save the file to the temp folder
+            experiments.append(get_experiment(dir_name, quale))
 
         # get extracted dir name
 
+        for exp in experiments:
+            for c in exp.haystack:
+                c.open()
 
+        ref = experiments
 
-
-        for c in experiment.haystack:
-            c.open()
-
-        ref = experiment.haystack
-
-        segment = left_config_segment.selectbox("Segment", (i for i in range(len(ref))))
+        segment = left_config_segment.selectbox("Segment", (i for i in range(len(ref[0].haystack[0]))))
 
         if save_json_button:
             save_to_json(ref)
@@ -204,8 +207,7 @@ def main() -> None:
         raw_curve = generate_raw_curve(ref, segment)
 
         left_graph.line_chart(raw_curve)
-        right_graph.line_chart(ref[0].data[data_type])
-
+        right_graph.line_chart(experiments[0].haystack[0].data[data_type])
 
 
 if __name__ == "__main__":
