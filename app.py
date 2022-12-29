@@ -76,17 +76,19 @@ def generate_raw_curve_plt(stack, segment: int):
     return fig
 
 
-def generate_raw_curve(stack, segment: int):
-    test_curve = pd.DataFrame({"z": stack[segment].z, "f": stack[segment].f})
-    test_curve = test_curve.set_index("z")
+def generate_raw_curve(list_of_exps, segment: int):
+    data_f = {}
+    data_z = {}
+    for i in list_of_exps:
+        for segment in i:
+            data_f[i.basename + " " + str(segment) + " f"] = i[segment].f
+            data_z[i.basename + " " + str(segment) + " z"] = i[segment].z
+    if data_f or data_z != {}:
+        test_curve = pd.DataFrame(data_f
+        return test_curve
+    else:
+        return 0
 
-    return test_curve
-
-
-def add_to_curve(curve, stack, segment: int):
-    curve.insert(0, "z", stack[segment].z)
-    curve.insert(1, "f", stack[segment].f)
-    return curve
 
 
 def generate_empty_curve():
@@ -145,6 +147,7 @@ def main() -> None:
     left_config_col, right_config_col = config_bar.columns(2)
     left_config_title = left_config_col.empty()
     left_config_segment = left_config_col.empty()
+    left_config_segment_file = left_config_col.empty()
 
     quale = file_select_col.selectbox(
         "File type",
@@ -159,8 +162,8 @@ def main() -> None:
         ),
     )
     save_json_button = file_select_col.button("Save to JSON")
-
     file = file_upload_col.file_uploader("Choose a zip file")
+
     left_graph.line_chart()
     left_graph_title.write("Raw Curve")
 
@@ -180,25 +183,28 @@ def main() -> None:
     )
 
     if file is not None:
+        experiments = {}
         save_uploaded_file(file, "data")
         fname = "data/" + file.name
         if fname.endswith(".zip"):
             extract_zip(fname, "data")
             dir_name = fname.replace(".zip", "")
-            experiment = get_experiment(dir_name, quale)
+            for f in os.listdir(dir_name):
+                if f.endswith(".txt"):
+                    experiments[f] = get_experiment(dir_name + "/" + f, quale)
         else:
             dir_name = tempfile.mkdtemp()  # create a temp folder to pass to experiment
             save_uploaded_file(file, dir_name)  # save the file to the temp folder
-            experiment = get_experiment(dir_name, quale)
+            exp = get_experiment(dir_name, quale)
+            experiments[exp.basename] = exp
 
-        # get extracted dir name
-
-        for c in experiment.haystack:
+        # get extracted dir names
+    ref = []
+    for exp in experiments.values():
+        for c in exp.haystack:
             c.open()
-
-        ref = experiment.haystack[0]
-
-        segment = left_config_segment.selectbox("Segment", (i for i in range(len(ref))))
+            ref.append(c)
+        segment = left_config_segment.selectbox("Segment", (i for i in range(len(ref[0]))))
 
         if save_json_button:
             save_to_json(ref)
@@ -206,30 +212,7 @@ def main() -> None:
         raw_curve = generate_raw_curve(ref, segment)
 
         left_graph.line_chart(raw_curve)
-        right_graph.line_chart(ref.data[data_type])
-        new_file_button = file_select_col.button("Add new file")
-        if new_file_button:
-            file2 = file_upload_col.file_uploader("Choose a file or zip file")
-            if file2 is not None:
-                save_uploaded_file(file2, "data")
-                fname2 = "data/" + file2.name
-                if fname2.endswith(".zip"):
-                    extract_zip(fname2, "data")
-                    dir_name = fname2.replace(".zip", "")
-                    experiment2 = get_experiment(dir_name, quale)
-                else:
-                    dir_name = tempfile.mkdtemp()
-                    save_uploaded_file(file2, dir_name)  # save the file to the temp folder
-                    experiment2 = get_experiment(dir_name, quale)
-                # get extracted dir name
-
-                for c in experiment2.haystack:
-                    c.open()
-                ref2 = experiment2.haystack[0]
-                segment2 = left_config_segment.selectbox("Segment file 2", (i for i in range(len(ref2))))
-                curve = add_to_curve(raw_curve, ref2, segment2)
-                left_graph.line_chart(curve)
-                right_graph.line_chart(ref2.data[data_type])
+        right_graph.line_chart(ref[segment].data[data_type])
 
 
 if __name__ == "__main__":
