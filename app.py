@@ -76,17 +76,11 @@ def generate_raw_curve_plt(stack, segment: int):
     return fig
 
 
-def generate_raw_curve(list_of_exps, segment: int):
-    data_f = {}
-    data_z = {}
-    for i in list_of_exps:
-        data_f[i.basename + " " + str(segment) + " f"] = i[segment].f
-        data_z[i.basename + " " + str(segment) + " z"] = i[segment].z
-    if data_f or data_z != {}:
-        test_curve = pd.DataFrame({data_f, data_z})
-        return test_curve
-    else:
-        return 0
+def generate_raw_curve(exps: list, segment: int):
+    for i in exps:
+        test_curve = pd.DataFrame({str(i) + "z": i[segment].z, str(i)+"f": i[segment].f})
+        test_curve.set_index(str(i)+"z")
+    return test_curve
 
 
 def generate_empty_curve():
@@ -200,7 +194,7 @@ def main() -> None:
         for c in experiment.haystack:
             c.open()
 
-        ref = experiment.haystack[0]
+        ref = experiment.haystack
 
         segment = left_config_segment.selectbox("Segment", (i for i in range(len(ref))))
 
@@ -210,7 +204,7 @@ def main() -> None:
         raw_curve = generate_raw_curve(ref, segment)
 
         left_graph.line_chart(raw_curve)
-        right_graph.line_chart(ref.data[data_type])
+        right_graph.line_chart(ref[0].data[data_type])
 
 
 
