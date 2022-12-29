@@ -145,7 +145,6 @@ def main() -> None:
     left_config_col, right_config_col = config_bar.columns(2)
     left_config_title = left_config_col.empty()
     left_config_segment = left_config_col.empty()
-    left_config_segment_file = left_config_col.empty()
 
     quale = file_select_col.selectbox(
         "File type",
@@ -181,28 +180,29 @@ def main() -> None:
     )
 
     if file is not None:
-        experiments = {}
         save_uploaded_file(file, "data")
         fname = "data/" + file.name
         if fname.endswith(".zip"):
             extract_zip(fname, "data")
             dir_name = fname.replace(".zip", "")
-            for f in os.listdir(dir_name):
-                if f.endswith(".txt"):
-                    experiments[f] = get_experiment(dir_name + "/" + f, quale)
+            experiment = get_experiment(dir_name, quale)
         else:
-            dir_name = tempfile.mkdtemp()  # create a temp folder to pass to experiment
-            save_uploaded_file(file, dir_name)  # save the file to the temp folder
-            exp = get_experiment(dir_name, quale)
-            experiments[exp.basename] = exp
+            dir_name = tempfile.mkdtemp()#create a temp folder to pass to experiment
+            save_uploaded_file(file, dir_name)#save the file to the temp folder
+            experiment = get_experiment(dir_name, quale)
 
-        # get extracted dir names
-    ref = []
-    for exp in experiments.values():
-        for c in exp.haystack:
+
+        # get extracted dir name
+
+
+
+
+        for c in experiment.haystack:
             c.open()
-            ref.append(c)
-        segment = left_config_segment.selectbox("Segment", (i for i in range(len(ref[0]))))
+
+        ref = experiment.haystack[0]
+
+        segment = left_config_segment.selectbox("Segment", (i for i in range(len(ref))))
 
         if save_json_button:
             save_to_json(ref)
@@ -210,7 +210,8 @@ def main() -> None:
         raw_curve = generate_raw_curve(ref, segment)
 
         left_graph.line_chart(raw_curve)
-        right_graph.line_chart(ref[segment].data[data_type])
+        right_graph.line_chart(ref.data[data_type])
+
 
 
 if __name__ == "__main__":
