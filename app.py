@@ -80,15 +80,13 @@ def generate_raw_curve(list_of_exps, segment: int):
     data_f = {}
     data_z = {}
     for i in list_of_exps:
-        for segment in i:
-            data_f[i.basename + " " + str(segment) + " f"] = i[segment].f
-            data_z[i.basename + " " + str(segment) + " z"] = i[segment].z
+        data_f[i.basename + " " + str(segment) + " f"] = i[segment].f
+        data_z[i.basename + " " + str(segment) + " z"] = i[segment].z
     if data_f or data_z != {}:
-        test_curve = pd.DataFrame(data_f
+        test_curve = pd.DataFrame({data_f, data_z})
         return test_curve
     else:
         return 0
-
 
 
 def generate_empty_curve():
