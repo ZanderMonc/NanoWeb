@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import json
 import shutil
+import altair as alt
 
 
 def get_selection(title: str, options: tuple | list) -> str:
@@ -77,12 +78,14 @@ def generate_raw_curve_plt(stack, segment: int):
 
 
 def generate_raw_curve(exps: list, segment: int):
-    dictz = {}
+    dictz = pd.DataFrame()
+    dictf = pd.DataFrame()
     for exp in range(len(exps)):
         internal = exps[exp].haystack[0]
         dictz[str(exp)+"z"] = internal[segment].z
-        dictz[str(exp)+"f"] = internal[segment].f
-    out = pd.DataFrame(dictz)
+        dictf[str(exp)+"f"] = internal[segment].f
+    out = dictz.join(dictf)
+    out = out.set_index("0f")
     return out
 
 
@@ -199,13 +202,13 @@ def main() -> None:
 
         ref = experiments
 
-        segment = left_config_segment.selectbox("Segment", (i for i in range(len(ref[0].haystack[0]))))
+        segment = left_config_segment.selectbox("Segment", (i for i in range(len(ref[0].haystack[0])+1)))
 
         if save_json_button:
             save_to_json(ref)
 
         raw_curve = generate_raw_curve(ref, segment)
-
+        #left_graph.altair_chart(raw_curve, use_container_width=True)
         left_graph.line_chart(raw_curve)
         right_graph.line_chart(experiments[0].haystack[0].data[data_type])
 
