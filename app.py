@@ -78,14 +78,17 @@ def generate_raw_curve_plt(stack, segment: int):
 
 
 def generate_raw_curve(exps: list, segment: int):
-    dictz = pd.DataFrame()
-    dictf = pd.DataFrame()
+    out = []
     for exp in range(len(exps)):
         internal = exps[exp].haystack[0]
-        dictz[str(exp)+"z"] = internal[segment].z
-        dictf[str(exp)+"f"] = internal[segment].f
-    out = dictz.join(dictf)
-    out = out.set_index("0f")
+        df = pd.DataFrame(
+            {
+                "z": internal[segment].z,
+                "f": internal[segment].f,
+                "exp": exp,
+            }
+        )
+        out.append(df)
     return out
 
 
@@ -202,14 +205,38 @@ def main() -> None:
 
         ref = experiments
 
-        segment = left_config_segment.selectbox("Segment", (i for i in range(len(ref[0].haystack[0])+1)))
+        segment = left_config_segment.selectbox("Segment", (i for i in range(len(ref[0].haystack[0]))))
 
         if save_json_button:
             save_to_json(ref)
 
         raw_curve = generate_raw_curve(ref, segment)
-        #left_graph.altair_chart(raw_curve, use_container_width=True)
-        left_graph.line_chart(raw_curve)
+
+        # make a layered altair chart with each curve from raw_curve as a layer
+
+        def base_chart(df):
+            base = alt.Chart(
+                df,
+            ).mark_line(
+            ).encode(
+                x="z:Q",
+                y="f:Q",
+                color="exp:N",
+            ).interactive()
+
+            return base
+
+        def layer_charts(dfs, chart_func):
+            """Return a layered chart."""
+            layers = [chart_func(df) for df in dfs]
+            return alt.layer(*layers)
+
+        left_graph.altair_chart(layer_charts(raw_curve, base_chart), use_container_width=True)
+
+        # plot every item in raw_curve
+        # turn raw_curve into a dataframe
+        # raw_curve = pd.concat(raw_curve)
+        # left_graph.line_chart(raw_curve)
         right_graph.line_chart(experiments[0].haystack[0].data[data_type])
 
 
