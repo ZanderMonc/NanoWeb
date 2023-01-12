@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import tempfile
 
 import streamlit as st
@@ -80,7 +82,7 @@ def generate_raw_curve_plt(stack, segment: int):
 def generate_raw_curve(exps: list, segment: int):
     out = []
     for exp in range(len(exps)):
-        internal = exps[exp].haystack[0]
+        internal = exps[exp].haystack[exp]
         df = pd.DataFrame(
             {
                 "z": internal[segment].z,
