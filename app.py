@@ -78,18 +78,19 @@ def generate_raw_curve_plt(stack, segment: int):
 
 def generate_raw_curve(exps: list, segment: int):
     # takes a list of experiments and returns a list of experiment dataframes for the selected segment
-    out = []
-    for exp in range(len(exps)):
-        internal = exps[exp].haystack[exp]
+    exp_data_frames = []
+    for exp in exps:
+        internal = exp.haystack[exps.index(exp)]
         df = pd.DataFrame(
             {
                 "z": internal[segment].z,
                 "f": internal[segment].f,
-                "exp": exp,
+                "exp": exps.index(exp),
             }
         )
-        out.append(df)
-    return out
+        exp_data_frames.append(df)
+
+    return exp_data_frames
 
 
 def generate_empty_curve():
@@ -130,10 +131,10 @@ def save_to_json(ref):
     json.dump({"experiment": exp, "protocol": pro, "curves": curves}, open(fname, "w"))
 
 
-def base_chart(df):
+def base_chart(data_frame):
     # produces a chart to be used as a layer in a layered chart
     base = alt.Chart(
-        df,
+        data_frame,
     ).mark_line(
     ).encode(
         x="z:Q",
@@ -143,10 +144,26 @@ def base_chart(df):
     return base
 
 
-def layer_charts(dfs, chart_func):
-    # takes a list of dataframes and a chart function and returns a layered chart
-    layers = [chart_func(df) for df in dfs]
+def layer_charts(data_frames, chart_func):
+    # takes a list of pandas dataframes and a chart function and returns a layered chart
+    layers = [chart_func(data_frame) for data_frame in data_frames]
     return alt.layer(*layers)
+
+
+def file_handler(file_name: str, quale: str, experiments: list, file):
+    # takes a file name, a string indicating the type of file, a list of experiments and a file object
+    # and returns a list of experiments with the new file added
+    if file_name.endswith(".zip"):
+        extract_zip(file_name, "data")
+        dir_name = file_name.replace(".zip", "")
+        for file in os.listdir(dir_name):
+            if file.endswith(".txt"):
+                experiments.append(get_experiment(dir_name, quale))
+    else:
+        dir_name = tempfile.mkdtemp()  # create a temp folder to pass to experiment
+        save_uploaded_file(file, dir_name)  # save the file to the temp folder
+        experiments.append(get_experiment(dir_name, quale))
+    return experiments
 
 
 def main() -> None:
@@ -205,31 +222,17 @@ def main() -> None:
         experiments = []
         save_uploaded_file(file, "data")
         fname = "data/" + file.name
-        if fname.endswith(".zip"):
-            extract_zip(fname, "data")
-            dir_name = fname.replace(".zip", "")
-            for file in os.listdir(dir_name):
-                if file.endswith(".txt"):
-                    experiments.append(get_experiment(dir_name, quale))
-        else:
-            dir_name = tempfile.mkdtemp()  # create a temp folder to pass to experiment
-            save_uploaded_file(file, dir_name)  # save the file to the temp folder
-            experiments.append(get_experiment(dir_name, quale))
-
-        # get extracted dir name
-
+        experiments = (fname, quale, experiments, file)
         for exp in experiments:
             for c in exp.haystack:
                 c.open()
 
-        ref = experiments
-
-        segment = left_config_segment.selectbox("Segment", (i for i in range(len(ref[0].haystack[0]))))
+        segment = left_config_segment.selectbox("Segment", (i for i in range(len(experiments[0].haystack[0]))))
 
         if save_json_button:
-            save_to_json(ref)
+            save_to_json(experiments)
 
-        raw_curve = generate_raw_curve(ref, segment)
+        raw_curve = generate_raw_curve(experiments, segment)
 
         # make a layered altair chart with each curve from raw_curve as a layer
 
