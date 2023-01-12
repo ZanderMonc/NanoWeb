@@ -80,6 +80,7 @@ def generate_raw_curve_plt(stack, segment: int):
 
 
 def generate_raw_curve(exps: list, segment: int):
+    # takes a list of experiments and returns a list of experiment dataframes for the selected segment
     out = []
     for exp in range(len(exps)):
         internal = exps[exp].haystack[exp]
@@ -133,6 +134,7 @@ def save_to_json(ref):
 
 
 def base_chart(df):
+    # produces a chart to be used as a layer in a layered chart
     base = alt.Chart(
         df,
     ).mark_line(
@@ -145,7 +147,7 @@ def base_chart(df):
 
 
 def layer_charts(dfs, chart_func):
-    """Return a layered chart."""
+    # takes a list of dataframes and a chart function and returns a layered chart
     layers = [chart_func(df) for df in dfs]
     return alt.layer(*layers)
 
