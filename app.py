@@ -132,6 +132,24 @@ def save_to_json(ref):
     json.dump({"experiment": exp, "protocol": pro, "curves": curves}, open(fname, "w"))
 
 
+def base_chart(df):
+    base = alt.Chart(
+        df,
+    ).mark_line(
+    ).encode(
+        x="z:Q",
+        y="f:Q",
+        color="exp:N",
+    ).interactive()
+    return base
+
+
+def layer_charts(dfs, chart_func):
+    """Return a layered chart."""
+    layers = [chart_func(df) for df in dfs]
+    return alt.layer(*layers)
+
+
 def main() -> None:
     st.set_page_config(
         layout="wide", page_title="NanoWeb", page_icon="images/cellmech.png"
@@ -216,53 +234,9 @@ def main() -> None:
 
         # make a layered altair chart with each curve from raw_curve as a layer
 
-        def base_chart(df):
-            base = alt.Chart(
-                df,
-            ).mark_line(
-            ).encode(
-                x="z:Q",
-                y="f:Q",
-                color="exp:N",
-            ).interactive()
-
-            return base
-
-        def layer_charts(dfs, chart_func):
-            """Return a layered chart."""
-            layers = [chart_func(df) for df in dfs]
-            return alt.layer(*layers)
-
         left_graph.altair_chart(layer_charts(raw_curve, base_chart), use_container_width=True)
-
-        # plot every item in raw_curve
-        # turn raw_curve into a dataframe
-        # raw_curve = pd.concat(raw_curve)
-        # left_graph.line_chart(raw_curve)
         right_graph.line_chart(experiments[0].haystack[0].data[data_type])
 
 
 if __name__ == "__main__":
     main()
-
-
-def data_upload(filename: str):
-    try:
-        with open(filename) as data:
-            data_in = pd.read_csv(data)
-            st.write(data_in)
-            st.write('Data uploaded successfully')
-    except FileNotFoundError:
-        st.error('File not found.')
-
-
-def data_export(data, filename):
-    try:
-        with open(filename) as f:
-            st.download_button('Download CSV', f, 'data.csv')
-    except FileNotFoundError:
-        st.error('File not found.')
-
-# def export_test():
-#     df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
-#     data_export(df, 'data.csv')
