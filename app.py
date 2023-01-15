@@ -107,28 +107,48 @@ def generate_empty_curve():
     return curve
 
 
-def save_to_json(ref):
+def save_to_json(experiments: list, file_name: str):
+    # takes a list of experiments and a file name and saves the experiments to a json file
     curves = []
-    fname = "data/test.json"
-    print(len(ref))
+    for experiment in experiments:
+        geometry = experiment.tip_shape
+        radius = experiment.tip_radius
+        spring = experiment.cantilever_k
+        for segment in experiment.haystack[experiments.index(experiment)]:
+            curve = generate_empty_curve()
+            # curve["filename"] = segment.basename
+            curve["tip"]["radius"] = radius * 1e-9
+            curve["tip"]["geometry"] = geometry
+            curve["spring_constant"] = spring
+            # curve["position"] = (segment.xpos, segment.ypos)
+            curve["data"]["Z"] = list(segment.z * 1e-9)
+            curve["data"]["F"] = list(segment.f * 1e-9)
+            curves.append(curve)
 
-    geometry = ref.tip_shape
-    radius = ref.tip_radius
-    spring = ref.cantilever_k
+    with open(file_name, "w") as f:
+        json.dump(curves, f, indent=4)
 
-    for segment in ref:
-        cv = generate_empty_curve()
-        # cv["filename"] = segment.basename
-        cv["tip"]["radius"] = radius * 1e-9
-        cv["tip"]["geometry"] = geometry
-        cv["spring_constant"] = spring
-        # cv["position"] = (segment.xpos, segment.ypos)
-        cv["data"]["Z"] = list(segment.z * 1e-9)
-        cv["data"]["F"] = list(segment.f * 1e-9)
-        curves.append(cv)
-    exp = {"Description": "Optics11 data"}
-    pro = {}
-    json.dump({"experiment": exp, "protocol": pro, "curves": curves}, open(fname, "w"))
+    # curves = []
+    # fname = "data/test.json"
+    # print(len(ref))
+    #
+    # geometry = ref.tip_shape
+    # radius = ref.tip_radius
+    # spring = ref.cantilever_k
+    #
+    # for segment in ref:
+    #     curve = generate_empty_curve()
+    #     # curve["filename"] = segment.basename
+    #     curve["tip"]["radius"] = radius * 1e-9
+    #     curve["tip"]["geometry"] = geometry
+    #     curve["spring_constant"] = spring
+    #     # curve["position"] = (segment.xpos, segment.ypos)
+    #     curve["data"]["Z"] = list(segment.z * 1e-9)
+    #     curve["data"]["F"] = list(segment.f * 1e-9)
+    #     curves.append(curve)
+    # experiment = {"Description": "Optics11 data"}
+    # pro = {}
+    # json.dump({"experiment": experiment, "protocol": pro, "curves": curves}, open(fname, "w"))
 
 
 def base_chart(data_frame):
@@ -230,7 +250,7 @@ def main() -> None:
         segment = left_config_segment.selectbox("Segment", (i for i in range(len(experiments[0].haystack[0]))))
 
         if save_json_button:
-            save_to_json(experiments)
+            save_to_json(experiments, "data/test.json")
 
         raw_curve = generate_raw_curve(experiments, segment)
 
