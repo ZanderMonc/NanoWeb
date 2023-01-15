@@ -222,7 +222,7 @@ def main() -> None:
         experiments = []
         save_uploaded_file(file, "data")
         fname = "data/" + file.name
-        experiments = (fname, quale, experiments, file)
+        experiments = file_handler(fname, quale, experiments, file)
         for exp in experiments:
             for c in exp.haystack:
                 c.open()
