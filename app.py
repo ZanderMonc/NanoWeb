@@ -1,3 +1,4 @@
+import calendar
 import tempfile
 
 import streamlit as st
@@ -107,18 +108,31 @@ def save_to_json(ref):
     spring = ref.cantilever_k
 
     for segment in ref:
-        cv = generate_empty_curve()
-        # cv["filename"] = segment.basename
-        cv["tip"]["radius"] = radius * 1e-9
-        cv["tip"]["geometry"] = geometry
-        cv["spring_constant"] = spring
-        # cv["position"] = (segment.xpos, segment.ypos)
-        cv["data"]["Z"] = list(segment.z * 1e-9)
-        cv["data"]["F"] = list(segment.f * 1e-9)
-        curves.append(cv)
+        if segment.active:
+            cv = generate_empty_curve()
+            # cv["filename"] = segment.basename
+            cv["tip"]["radius"] = radius * 1e-9
+            cv["tip"]["geometry"] = geometry
+            cv["spring_constant"] = spring
+            # cv["position"] = (segment.xpos, segment.ypos)
+            cv["data"]["Z"] = list(segment.z * 1e-9)
+            cv["data"]["F"] = list(segment.f * 1e-9)
+            curves.append(cv)
+
     exp = {"Description": "Optics11 data"}
     pro = {}
     json.dump({"experiment": exp, "protocol": pro, "curves": curves}, open(fname, "w"))
+
+
+# Threshold filter
+def threshold_filter(stack, threshold: float):
+    threshold = threshold * 1e-9
+
+    for segment in stack:
+        if np.max(segment.f) < threshold:
+            segment.active = False
+        else:
+            segment.active = True
 
 
 def main() -> None:
@@ -173,16 +187,12 @@ def main() -> None:
         ("deflection", "force", "indentation", "time", "z"),
     )
 
-    # Filter GUI elements
 
+    # Filter GUI elements
     select_filter = st.selectbox(
         "Filter",
         ("--select--", "Threshold"),
     )
-
-    if select_filter == "Threshold":
-        st.text_input("Force Threshold (nN)" , 0.0)
-
 
 
     if file is not None:
@@ -197,11 +207,7 @@ def main() -> None:
             save_uploaded_file(file, dir_name)#save the file to the temp folder
             experiment = get_experiment(dir_name, quale)
 
-
         # get extracted dir name
-
-
-
 
         for c in experiment.haystack:
             c.open()
@@ -217,6 +223,11 @@ def main() -> None:
 
         left_graph.line_chart(raw_curve)
         right_graph.line_chart(ref.data[data_type])
+
+        # Execute filters
+        if select_filter == "Threshold":
+            threshold = st.text_input("Force Threshold (nN)", 0.0)
+            threshold_filter(ref, float(threshold))
 
 
 if __name__ == "__main__":
