@@ -173,6 +173,18 @@ def main() -> None:
         ("deflection", "force", "indentation", "time", "z"),
     )
 
+    # Filter GUI elements
+
+    select_filter = st.selectbox(
+        "Filter",
+        ("--select--", "Threshold"),
+    )
+
+    if select_filter == "Threshold":
+        st.text_input("Force Threshold (nN)" , 0.0)
+
+
+
     if file is not None:
         save_uploaded_file(file, "data")
         fname = "data/" + file.name
