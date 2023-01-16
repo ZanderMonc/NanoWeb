@@ -1,9 +1,5 @@
-from __future__ import annotations
-
-import tempfile
 import streamlit as st
 from streamlit.runtime.uploaded_file_manager import UploadedFile
-
 import os
 import sys
 import mvexperiment.experiment as experiment
@@ -12,12 +8,12 @@ import zipfile
 import matplotlib.pyplot as plt
 import pandas as pd
 import json
-import shutil
-import altair as alt
 
 
 def get_selection(title: str, options: tuple | list) -> str:
-    return st.selectbox(title,options,
+    return st.selectbox(
+        title,
+        options,
     )
 
 
@@ -77,21 +73,11 @@ def generate_raw_curve_plt(stack, segment: int):
     return fig
 
 
-def generate_raw_curve(exps: list, segment: int):
-    # takes a list of experiments and returns a list of experiment dataframes for the selected segment
-    exp_data_frames = []
-    for exp in exps:
-        internal = exp.haystack[exps.index(exp)]
-        df = pd.DataFrame(
-            {
-                "z": internal[segment].z,
-                "f": internal[segment].f,
-                "exp": exps.index(exp),
-            }
-        )
-        exp_data_frames.append(df)
+def generate_raw_curve(stack, segment: int):
+    test_curve = pd.DataFrame({"z": stack[segment].z, "f": stack[segment].f})
+    test_curve = test_curve.set_index("z")
 
-    return exp_data_frames
+    return test_curve
 
 
 def generate_empty_curve():
@@ -130,41 +116,6 @@ def save_to_json(ref):
     exp = {"Description": "Optics11 data"}
     pro = {}
     json.dump({"experiment": exp, "protocol": pro, "curves": curves}, open(fname, "w"))
-
-
-def base_chart(data_frame):
-    # produces a chart to be used as a layer in a layered chart
-    base = alt.Chart(
-        data_frame,
-    ).mark_line(
-    ).encode(
-        x="z:Q",
-        y="f:Q",
-        color="exp:N",
-    ).interactive()
-    return base
-
-
-def layer_charts(data_frames, chart_func):
-    # takes a list of pandas dataframes and a chart function and returns a layered chart
-    layers = [chart_func(data_frame) for data_frame in data_frames]
-    return alt.layer(*layers)
-
-
-def file_handler(file_name: str, quale: str, experiments: list, file):
-    # takes a file name, a string indicating the type of file, a list of experiments and a file object
-    # and returns a list of experiments with the new file added
-    if file_name.endswith(".zip"):
-        extract_zip(file_name, "data")
-        dir_name = file_name.replace(".zip", "")
-        for file in os.listdir(dir_name):
-            if file.endswith(".txt"):
-                experiments.append(get_experiment(dir_name, quale))
-    else:
-        dir_name = tempfile.mkdtemp()  # create a temp folder to pass to experiment
-        save_uploaded_file(file, dir_name)  # save the file to the temp folder
-        experiments.append(get_experiment(dir_name, quale))
-    return experiments
 
 
 def main() -> None:
@@ -220,26 +171,54 @@ def main() -> None:
     )
 
     if file is not None:
-        experiments = []
         save_uploaded_file(file, "data")
         fname = "data/" + file.name
-        experiments = file_handler(fname, quale, experiments, file)
-        for exp in experiments:
-            for c in exp.haystack:
-                c.open()
+        extract_zip(fname, "data")
+        # get extracted dir name
+        dir_name = fname.replace(".zip", "")
 
-        segment = left_config_segment.selectbox("Segment", (i for i in range(len(experiments[0].haystack[0]))))
+        experiment = get_experiment(dir_name, quale)
+
+        for c in experiment.haystack:
+            c.open()
+
+        ref = experiment.haystack[0]
+
+        segment = left_config_segment.selectbox("Segment", (i for i in range(len(ref))))
 
         if save_json_button:
-            save_to_json(experiments)
+            save_to_json(ref)
 
-        raw_curve = generate_raw_curve(experiments, segment)
+        raw_curve = generate_raw_curve(ref, segment)
 
-        # make a layered altair chart with each curve from raw_curve as a layer
-
-        left_graph.altair_chart(layer_charts(raw_curve, base_chart), use_container_width=True)
-        right_graph.line_chart(experiments[0].haystack[0].data[data_type])
+        left_graph.line_chart(raw_curve)
+        right_graph.line_chart(ref.data[data_type])
 
 
 if __name__ == "__main__":
     main()
+
+
+def data_upload(filename: str):
+    try:
+        with open(filename) as data:
+            data_in = pd.read_csv(data)
+            st.write(data_in)
+            st.write('Data uploaded successfully')
+    except FileNotFoundError:
+        st.error('File not found.')
+
+
+def data_export(data, filename):
+    try:
+        with open(filename) as f:
+            st.download_button('Download CSV', f, 'data.csv')
+    except FileNotFoundError:
+        st.error('File not found.')
+
+
+# def export_test():
+#     df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
+#     data_export(df, 'data.csv')
+
+
