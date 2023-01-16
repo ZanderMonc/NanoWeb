@@ -17,9 +17,7 @@ import altair as alt
 
 
 def get_selection(title: str, options: tuple | list) -> str:
-    return st.selectbox(
-        title,P
-        options,
+    return st.selectbox(title,options,
     )
 
 
