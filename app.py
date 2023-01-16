@@ -1,3 +1,4 @@
+import calendar
 import tempfile
 import streamlit as st
 from streamlit.runtime.uploaded_file_manager import UploadedFile
@@ -117,15 +118,17 @@ def save_to_json(ref):
     spring = ref.cantilever_k
 
     for segment in ref:
-        cv = generate_empty_curve()
-        # cv["filename"] = segment.basename
-        cv["tip"]["radius"] = radius * 1e-9
-        cv["tip"]["geometry"] = geometry
-        cv["spring_constant"] = spring
-        # cv["position"] = (segment.xpos, segment.ypos)
-        cv["data"]["Z"] = list(segment.z * 1e-9)
-        cv["data"]["F"] = list(segment.f * 1e-9)
-        curves.append(cv)
+        if segment.active:
+            cv = generate_empty_curve()
+            # cv["filename"] = segment.basename
+            cv["tip"]["radius"] = radius * 1e-9
+            cv["tip"]["geometry"] = geometry
+            cv["spring_constant"] = spring
+            # cv["position"] = (segment.xpos, segment.ypos)
+            cv["data"]["Z"] = list(segment.z * 1e-9)
+            cv["data"]["F"] = list(segment.f * 1e-9)
+            curves.append(cv)
+
     exp = {"Description": "Optics11 data"}
     pro = {}
     json.dump({"experiment": exp, "protocol": pro, "curves": curves}, open(fname, "w"))
@@ -218,6 +221,14 @@ def main() -> None:
         ("deflection", "force", "indentation", "time", "z"),
     )
 
+
+    # Filter GUI elements
+    select_filter = st.selectbox(
+        "Filter",
+        ("--select--", "Threshold"),
+    )
+
+
     if file is not None:
         experiments = []
         save_uploaded_file(file, "data")
@@ -238,6 +249,11 @@ def main() -> None:
 
         left_graph.altair_chart(layer_charts(raw_curve, base_chart), use_container_width=True)
         right_graph.line_chart(experiments[0].haystack[0].data[data_type])
+
+        # Execute filters
+        if select_filter == "Threshold":
+            threshold = st.text_input("Force Threshold (nN)", 0.0)
+            threshold_filter(ref, float(threshold))
 
 
 if __name__ == "__main__":
