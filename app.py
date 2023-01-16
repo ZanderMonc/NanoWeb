@@ -169,6 +169,17 @@ def file_handler(file_name: str, quale: str, experiments: list, file):
     return experiments
 
 
+def threshold_filter(experiments: list, threshold: float):
+    threshold = threshold * 1e-9
+
+    for stack in experiments:   
+        for segment in stack:
+            if np.max(segment.f) < threshold:
+                segment.active = False
+            else:
+                segment.active = True
+
+
 def main() -> None:
     st.set_page_config(
         layout="wide", page_title="NanoWeb", page_icon="images/cellmech.png"
@@ -200,6 +211,7 @@ def main() -> None:
             "jpk-fmap",
         ),
     )
+
     save_json_button = file_select_col.button("Save to JSON")
     file = file_upload_col.file_uploader("Choose a zip file")
 
@@ -221,19 +233,18 @@ def main() -> None:
         ("deflection", "force", "indentation", "time", "z"),
     )
 
-
     # Filter GUI elements
     select_filter = st.selectbox(
         "Filter",
         ("--select--", "Threshold"),
     )
 
-
     if file is not None:
         experiments = []
         save_uploaded_file(file, "data")
         fname = "data/" + file.name
         experiments = file_handler(fname, quale, experiments, file)
+
         for exp in experiments:
             for c in exp.haystack:
                 c.open()
@@ -253,7 +264,7 @@ def main() -> None:
         # Execute filters
         if select_filter == "Threshold":
             threshold = st.text_input("Force Threshold (nN)", 0.0)
-            threshold_filter(ref, float(threshold))
+            threshold_filter(experiments, float(threshold))
 
 
 if __name__ == "__main__":
