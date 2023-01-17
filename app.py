@@ -80,13 +80,14 @@ def generate_raw_curve_plt(stack, segment: int):
 def generate_raw_curve(exps: list, segment: int):
     # takes a list of experiments and returns a list of experiment dataframes for the selected segment
     exp_data_frames = []
-    for exp in exps:
-        internal = exp.haystack[exps.index(exp)]
+
+    for i, x in enumerate(exps[0].haystack):
+        internal = x
         df = pd.DataFrame(
             {
                 "z": internal[segment].z,
                 "f": internal[segment].f,
-                "exp": exps.index(exp),
+                "exp": i,
             }
         )
         exp_data_frames.append(df)
@@ -136,14 +137,18 @@ def save_to_json(ref):
 
 def base_chart(data_frame):
     # produces a chart to be used as a layer in a layered chart
-    base = alt.Chart(
-        data_frame,
-    ).mark_line(
-    ).encode(
-        x="z:Q",
-        y="f:Q",
-        color="exp:N",
-    ).interactive()
+    base = (
+        alt.Chart(
+            data_frame,
+        )
+        .mark_line()
+        .encode(
+            x="z:Q",
+            y="f:Q",
+            color="exp:N",
+        )
+        .interactive()
+    )
     return base
 
 
@@ -159,9 +164,13 @@ def file_handler(file_name: str, quale: str, experiments: list, file):
     if file_name.endswith(".zip"):
         extract_zip(file_name, "data")
         dir_name = file_name.replace(".zip", "")
+        print(f"There are {len(os.listdir(dir_name))} files in the directory")
+        done = 0
         for file in os.listdir(dir_name):
             if file.endswith(".txt"):
                 experiments.append(get_experiment(dir_name, quale))
+            done += 1
+            print(f"Progress: {done}/{len(os.listdir(dir_name))}", end="\r")
     else:
         dir_name = tempfile.mkdtemp()  # create a temp folder to pass to experiment
         save_uploaded_file(file, dir_name)  # save the file to the temp folder
@@ -172,7 +181,7 @@ def file_handler(file_name: str, quale: str, experiments: list, file):
 def threshold_filter(experiments: list, threshold: float):
     threshold = threshold * 1e-9
 
-    for stack in experiments:   
+    for stack in experiments:
         for segment in stack:
             if np.max(segment.f) < threshold:
                 segment.active = False
@@ -249,7 +258,9 @@ def main() -> None:
             for c in exp.haystack:
                 c.open()
 
-        segment = left_config_segment.selectbox("Segment", (i for i in range(len(experiments[0].haystack[0]))))
+        segment = left_config_segment.selectbox(
+            "Segment", (i for i in range(len(experiments[0].haystack[0])))
+        )
 
         if save_json_button:
             save_to_json(experiments)
@@ -258,7 +269,9 @@ def main() -> None:
 
         # make a layered altair chart with each curve from raw_curve as a layer
 
-        left_graph.altair_chart(layer_charts(raw_curve, base_chart), use_container_width=True)
+        left_graph.altair_chart(
+            layer_charts(raw_curve, base_chart), use_container_width=True
+        )
         right_graph.line_chart(experiments[0].haystack[0].data[data_type])
 
         # Execute filters
