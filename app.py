@@ -181,7 +181,7 @@ def file_handler(file_name: str, quale: str, experiments: list, file):
 def threshold_filter(experiments: list, threshold: float):
     threshold = threshold * 1e-9
 
-    for stack in experiments:
+    for stack in experiments[0].haystack:
         for segment in stack:
             if np.max(segment.f) < threshold:
                 segment.active = False
