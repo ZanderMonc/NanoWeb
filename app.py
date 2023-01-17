@@ -109,10 +109,10 @@ def generate_empty_curve():
     return curve
 
 
-def save_to_json(ref):
+def save_to_json(experiments):
+    ref = experiments[0].haystack[0]
     curves = []
     fname = "data/test.json"
-    print(len(ref))
 
     geometry = ref.tip_shape
     radius = ref.tip_radius
@@ -129,9 +129,12 @@ def save_to_json(ref):
             cv["data"]["Z"] = list(segment.z * 1e-9)
             cv["data"]["F"] = list(segment.f * 1e-9)
             curves.append(cv)
+        else:
+            print("Segment not active")
 
     exp = {"Description": "Optics11 data"}
     pro = {}
+    print(len(curves))
     json.dump({"experiment": exp, "protocol": pro, "curves": curves}, open(fname, "w"))
 
 
@@ -164,13 +167,9 @@ def file_handler(file_name: str, quale: str, experiments: list, file):
     if file_name.endswith(".zip"):
         extract_zip(file_name, "data")
         dir_name = file_name.replace(".zip", "")
-        print(f"There are {len(os.listdir(dir_name))} files in the directory")
-        done = 0
         for file in os.listdir(dir_name):
             if file.endswith(".txt"):
                 experiments.append(get_experiment(dir_name, quale))
-            done += 1
-            print(f"Progress: {done}/{len(os.listdir(dir_name))}", end="\r")
     else:
         dir_name = tempfile.mkdtemp()  # create a temp folder to pass to experiment
         save_uploaded_file(file, dir_name)  # save the file to the temp folder
