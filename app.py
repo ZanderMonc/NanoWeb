@@ -129,12 +129,10 @@ def save_to_json(experiments):
             cv["data"]["Z"] = list(segment.z * 1e-9)
             cv["data"]["F"] = list(segment.f * 1e-9)
             curves.append(cv)
-        else:
-            print("Segment not active")
 
     exp = {"Description": "Optics11 data"}
     pro = {}
-    print(len(curves))
+
     json.dump({"experiment": exp, "protocol": pro, "curves": curves}, open(fname, "w"))
 
 
