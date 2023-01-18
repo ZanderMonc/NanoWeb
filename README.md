@@ -9,8 +9,8 @@
 ### Uninstallation
     Delete the SH32 main directory in your filesystem.
 ### File input
-    accepted files are currently zip directories, 
-    for instance optics11 d mode directory containing one file, 
+    accepted files are currently zip directories of any number of .txt experiments, or unzipped single .txt experiments
+    for instance an optics11 d mode directory containing one file, 
     a .txt file, with relevant header to the filetype followed by data.
 ### JSON output 
-    when clicked, JSON will be outputted to the data directory in main, as test.json
+    first click save to json, then download JSON file, JSON as test.json will be downloaded to your downloads folder.

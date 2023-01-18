@@ -261,6 +261,8 @@ def main() -> None:
 
         if save_json_button:
             save_to_json(experiments)
+            with open('data/test.json') as f:
+                file_select_col.download_button('Download JSON', data=f,file_name='test.json')
 
         raw_curve = generate_raw_curve(experiments, segment)
 
