@@ -1,3 +1,5 @@
+import calendar
+import tempfile
 import streamlit as st
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 import os
@@ -8,6 +10,8 @@ import zipfile
 import matplotlib.pyplot as plt
 import pandas as pd
 import json
+import shutil
+import altair as alt
 
 
 def get_selection(title: str, options: tuple | list) -> str:
@@ -73,11 +77,22 @@ def generate_raw_curve_plt(stack, segment: int):
     return fig
 
 
-def generate_raw_curve(stack, segment: int):
-    test_curve = pd.DataFrame({"z": stack[segment].z, "f": stack[segment].f})
-    test_curve = test_curve.set_index("z")
+def generate_raw_curve(exps: list, segment: int):
+    # takes a list of experiments and returns a list of experiment dataframes for the selected segment
+    exp_data_frames = []
 
-    return test_curve
+    for i, x in enumerate(exps[0].haystack):
+        internal = x
+        df = pd.DataFrame(
+            {
+                "z": internal[segment].z,
+                "f": internal[segment].f,
+                "exp": i,
+            }
+        )
+        exp_data_frames.append(df)
+
+    return exp_data_frames
 
 
 def generate_empty_curve():
@@ -94,28 +109,81 @@ def generate_empty_curve():
     return curve
 
 
-def save_to_json(ref):
+def save_to_json(experiments):
+    ref = experiments[0].haystack[0]
     curves = []
     fname = "data/test.json"
-    print(len(ref))
 
     geometry = ref.tip_shape
     radius = ref.tip_radius
     spring = ref.cantilever_k
 
     for segment in ref:
-        cv = generate_empty_curve()
-        # cv["filename"] = segment.basename
-        cv["tip"]["radius"] = radius * 1e-9
-        cv["tip"]["geometry"] = geometry
-        cv["spring_constant"] = spring
-        # cv["position"] = (segment.xpos, segment.ypos)
-        cv["data"]["Z"] = list(segment.z * 1e-9)
-        cv["data"]["F"] = list(segment.f * 1e-9)
-        curves.append(cv)
+        if segment.active:
+            cv = generate_empty_curve()
+            # cv["filename"] = segment.basename
+            cv["tip"]["radius"] = radius * 1e-9
+            cv["tip"]["geometry"] = geometry
+            cv["spring_constant"] = spring
+            # cv["position"] = (segment.xpos, segment.ypos)
+            cv["data"]["Z"] = list(segment.z * 1e-9)
+            cv["data"]["F"] = list(segment.f * 1e-9)
+            curves.append(cv)
+
     exp = {"Description": "Optics11 data"}
     pro = {}
+
     json.dump({"experiment": exp, "protocol": pro, "curves": curves}, open(fname, "w"))
+
+
+def base_chart(data_frame):
+    # produces a chart to be used as a layer in a layered chart
+    base = (
+        alt.Chart(
+            data_frame,
+        )
+        .mark_line()
+        .encode(
+            x="z:Q",
+            y="f:Q",
+            color="exp:N",
+        )
+        .interactive()
+    )
+    return base
+
+
+def layer_charts(data_frames, chart_func):
+    # takes a list of pandas dataframes and a chart function and returns a layered chart
+    layers = [chart_func(data_frame) for data_frame in data_frames]
+    return alt.layer(*layers)
+
+
+def file_handler(file_name: str, quale: str, experiments: list, file):
+    # takes a file name, a string indicating the type of file, a list of experiments and a file object
+    # and returns a list of experiments with the new file added
+    if file_name.endswith(".zip"):
+        extract_zip(file_name, "data")
+        dir_name = file_name.replace(".zip", "")
+        for file in os.listdir(dir_name):
+            if file.endswith(".txt"):
+                experiments.append(get_experiment(dir_name, quale))
+    else:
+        dir_name = tempfile.mkdtemp()  # create a temp folder to pass to experiment
+        save_uploaded_file(file, dir_name)  # save the file to the temp folder
+        experiments.append(get_experiment(dir_name, quale))
+    return experiments
+
+
+def threshold_filter(experiments: list, threshold: float):
+    threshold = threshold * 1e-9
+
+    for stack in experiments[0].haystack:
+        for segment in stack:
+            if np.max(segment.f) < threshold:
+                segment.active = False
+            else:
+                segment.active = True
 
 
 def main() -> None:
@@ -149,6 +217,7 @@ def main() -> None:
             "jpk-fmap",
         ),
     )
+
     save_json_button = file_select_col.button("Save to JSON")
     file = file_upload_col.file_uploader("Choose a zip file")
 
@@ -170,55 +239,49 @@ def main() -> None:
         ("deflection", "force", "indentation", "time", "z"),
     )
 
+    # Filter GUI elements
+    select_filter = st.selectbox(
+        "Filter",
+        ("--select--", "Threshold"),
+    )
+
     if file is not None:
+        experiments = []
         save_uploaded_file(file, "data")
         fname = "data/" + file.name
-        extract_zip(fname, "data")
-        # get extracted dir name
-        dir_name = fname.replace(".zip", "")
+        experiments = file_handler(fname, quale, experiments, file)
 
-        experiment = get_experiment(dir_name, quale)
+        for exp in experiments:
+            for c in exp.haystack:
+                c.open()
 
-        for c in experiment.haystack:
-            c.open()
-
-        ref = experiment.haystack[0]
-
-        segment = left_config_segment.selectbox("Segment", (i for i in range(len(ref))))
+        segment = left_config_segment.selectbox(
+            "Segment", (i for i in range(len(experiments[0].haystack[0])))
+        )
 
         if save_json_button:
-            save_to_json(ref)
+            save_to_json(experiments)
+            file_select_col.download_button(
+                label="Download JSON file",
+                data=open(fname, "rb"),
+                file_name='test.json',
+                mime='application/json',
+            )
 
-        raw_curve = generate_raw_curve(ref, segment)
+        raw_curve = generate_raw_curve(experiments, segment)
 
-        left_graph.line_chart(raw_curve)
-        right_graph.line_chart(ref.data[data_type])
+        # make a layered altair chart with each curve from raw_curve as a layer
+
+        left_graph.altair_chart(
+            layer_charts(raw_curve, base_chart), use_container_width=True
+        )
+        right_graph.line_chart(experiments[0].haystack[0].data[data_type])
+
+        # Execute filters
+        if select_filter == "Threshold":
+            threshold = st.text_input("Force Threshold (nN)", 0.0)
+            threshold_filter(experiments, float(threshold))
 
 
 if __name__ == "__main__":
     main()
-
-
-def data_upload(filename: str):
-    try:
-        with open(filename) as data:
-            data_in = pd.read_csv(data)
-            st.write(data_in)
-            st.write('Data uploaded successfully')
-    except FileNotFoundError:
-        st.error('File not found.')
-
-
-def data_export(data, filename):
-    try:
-        with open(filename) as f:
-            st.download_button('Download CSV', f, 'data.csv')
-    except FileNotFoundError:
-        st.error('File not found.')
-
-
-# def export_test():
-#     df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
-#     data_export(df, 'data.csv')
-
-
