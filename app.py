@@ -146,7 +146,6 @@ def base_chart(data_frame):
         .encode(
             x="z:Q",
             y="f:Q",
-            color="exp:N",
         )
         .interactive()
     )
