@@ -1,6 +1,5 @@
 import inspect
 import os
-import traceback
 
 
 class AbstractNotImplementedError(Exception):
