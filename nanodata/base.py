@@ -1,5 +1,6 @@
 import os
-from typing import Iterable, Optional
+import numpy as np
+from typing import Iterable, Optional, Any
 from abc import ABC, abstractmethod
 
 from abstract import (
@@ -136,3 +137,169 @@ class DataSet(AbstractDataSet, ABC):
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}(name={self._name})"
+
+
+class NanoDataSet(DataSet, ABC):
+    """Abstract class for CellMechLab related data sets without AFMformats.
+
+    Args:
+        name (str): Name of the data set.
+        path (str): Path to the data set.
+
+    Attributes:
+        _header (dict[str, float | str]): The header of the data set.
+        _segments (list[Segment]): The segments of the data set.
+        _active (bool): Whether the data set is active or not based on filters.
+    """
+
+    def __init__(self, name: str, path: str):
+        super().__init__(name, path)
+        self._header: dict[str, float | str] = {"version": "old"}
+        # self._body: dict[str, Any] = {}
+        self._segments: list[Segment] = []
+        self._active: bool = True
+
+    @abstractmethod
+    def _load_header(self, lines: list[str]) -> int:
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def _load_body(self, lines: list[str], line_num: int = 0) -> None:
+        raise AbstractNotImplementedError()
+
+    # @abstractmethod
+    # def _create_segments(self) -> None:
+    #     raise AbstractNotImplementedError()
+
+    def load(self) -> None:
+        # TODO check file extension
+        lines: list[str]
+        line_num: int
+
+        if not os.path.exists(self._path):
+            raise FileNotFoundError(f"File '{self._path}' does not exist.")
+        with open(self.path, "r") as file:
+            lines = file.readlines()
+            lines = [
+                line.strip() for line in lines if line.strip()
+            ]  # remove empty lines
+
+        # TODO verify that empty files actually have 0 lines
+        if len(lines) == 0:
+            raise ValueError(f"File '{self._path}' is empty.")
+
+        line_num = self._load_header(lines)
+        self._load_body(lines, line_num)
+        # self._create_segments()
+
+    def _get_fraction(self, data: np.ndarray, percent: float) -> np.ndarray:
+        """Returns a fraction of the data.
+
+        Args:
+            data (np.ndarray): The ndarray data to get the fraction from.
+            percent (float): The percentage of the data to return.
+
+        Returns:
+            np.ndarray: The reduced data.
+        """
+        return data[:: int(100 / percent)]
+
+    def get_time_fraction(self, percent: float) -> np.ndarray:
+        """Returns a fraction of the time data."""
+        return self._get_fraction(self.time, percent)
+
+    def get_force_fraction(self, percent: float) -> np.ndarray:
+        """Returns a fraction of the force data."""
+        return self._get_fraction(self.force, percent)
+
+    def get_deflection_fraction(self, percent: float) -> np.ndarray:
+        """Returns a fraction of the deflection data."""
+        return self._get_fraction(self.deflection, percent)
+
+    def get_z_fraction(self, percent: float) -> np.ndarray:
+        """Returns a fraction of the z data."""
+        return self._get_fraction(self.z, percent)
+
+    def get_indentation_fraction(self, percent: float) -> np.ndarray:
+        """Returns a fraction of the indentation data."""
+        return self._get_fraction(self.indentation, percent)
+
+    def add_segment(self, segment: "Segment") -> None:
+        """Adds a segment to the data set.
+
+        Args:
+            segment (Segment): The segment to add.
+        """
+        if segment not in self._segments:
+            self._segments.append(segment)
+        else:
+            raise ValueError("Segment already exists.")
+
+    def activate(self) -> None:
+        """Activates the data set."""
+        self._active = True
+
+    def deactivate(self) -> None:
+        """Deactivates the data set."""
+        self._active = False
+
+    @property
+    def header(self) -> dict[str, float | str]:
+        """dict[str, float | str]: Returns the header of the data set."""
+        return self._header
+
+    @property
+    def segments(self) -> list["Segment"]:
+        """list[Segment]: Returns the segments of the data set."""
+        return self._segments
+
+    @property
+    def protocol(self) -> np.ndarray:
+        """np.ndarray: Returns the tip commands."""
+        return self.header.get("protocol", np.empty((0, 2)))
+
+    @property
+    def time(self) -> np.ndarray:
+        """np.ndarray: Returns the combined time data of all the segments."""
+        return np.concatenate([segment.time for segment in self._segments])
+
+    @property
+    def force(self) -> np.ndarray:
+        """np.ndarray: Returns the combined force data of all the segments"""
+        return np.concatenate([segment.force for segment in self._segments])
+
+    @property
+    def deflection(self) -> np.ndarray:
+        """np.ndarray: Returns the combined deflection data of all the segments"""
+        return np.concatenate([segment.deflection for segment in self._segments])
+
+    @property
+    def z(self) -> np.ndarray:
+        """np.ndarray: Returns the combined z data of all the segments"""
+        return np.concatenate([segment.z for segment in self._segments])
+
+    @property
+    def indentation(self) -> np.ndarray:
+        """np.ndarray: Returns the combined indentation data of all the segments"""
+        return np.concatenate([segment.indentation for segment in self._segments])
+
+    @property
+    def tip_radius(self) -> float:
+        """float: Returns the tip radius of the data set."""
+        return self._header.get("tip_radius", 0.0)
+
+    @property
+    def cantilever_k(self) -> float:
+        """float: Returns the cantilever spring constant of the data set."""
+        return self._header.get("cantilever_k", 0.0)
+
+    @property
+    def active(self) -> bool:
+        """bool: Returns whether the data set is active."""
+        return self._active
+
+    def __len__(self) -> int:
+        return len(self.segments)
+
+    def __iter__(self) -> Iterable["Segment"]:
+        return iter(self.segments)
