@@ -63,3 +63,28 @@ class AbstractDataManager(ABC):
     @abstractmethod
     def path(self) -> str:
         raise AbstractNotImplementedError()
+
+
+class AbstractDataSet(ABC):
+    """Abstract class for data sets.
+
+    Args:
+        name (str): Name of the data set.
+        path (str): Path to the data set.
+    """
+
+    def __init__(self, name: str, path: str):
+        self._name: str = name
+        self._path: str = path
+
+    @abstractmethod
+    def load(self) -> None:
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def name(self) -> str:
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def path(self) -> str:
+        raise AbstractNotImplementedError()
