@@ -356,3 +356,13 @@ class NanoSurfDataSetType(NanoDataSetType):
             return True
 
         return False
+
+
+# TODO Easytsv DataSetType
+# * experiment.py contains check which can be used
+
+# TODO Jpk DataSetType
+# * experiment.py shows that there is no check function, will need working out
+
+# TODO JpkForceMap DataSetType
+# * experiment.py shows that there is no check function, will need working out
