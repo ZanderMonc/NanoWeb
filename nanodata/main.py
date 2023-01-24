@@ -6,7 +6,7 @@ from nano import NanoDataManager
 
 if __name__ == "__main__":
     start_time = time.time()
-    data_manager = NanoDataManager("data/test_data")
+    data_manager = NanoDataManager("../data/matrix_scan02")
     data_manager.preload()
     # data_manager.load_all()
     end_time = time.time()

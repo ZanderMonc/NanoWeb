@@ -9,6 +9,7 @@ from abstract import (
     AbstractDataSetType,
     AbstractSegment,
     TDataSet,
+    TDataSetType,
 )
 
 from errors import AbstractNotImplementedError
@@ -47,7 +48,7 @@ class DataManager(AbstractDataManager, ABC):
         """Returns the data set with the given name. Returns None if it does not exist."""
         return self._data_sets.get(name)
 
-    def register_file_type(self, file_type: "TDataSet") -> None:
+    def register_file_type(self, file_type: "TDataSetType") -> None:
         """Registers a file type with the manager."""
         self._file_types.append(file_type)
 
