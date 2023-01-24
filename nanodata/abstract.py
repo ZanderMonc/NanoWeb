@@ -137,3 +137,79 @@ class AbstractDataSetType(ABC):
     def name(self) -> str:
         """Get name of the data set type."""
         raise AbstractNotImplementedError()
+
+
+class AbstractSegment(ABC):
+    @abstractmethod
+    def has_bilayer(self):
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def set_data(self):
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def get_n_odd(self):
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def smooth(self):
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def find_out_of_contact_region(self):
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def find_contact_point(self):
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def create_indentation(self):
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def hertz(self):
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def fit_hertz(self):
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def set_z(self) -> None:
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def set_f(self) -> None:
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def time(self):
+        """Returns the time data of the data set."""
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def force(self):
+        """Returns the force data of the data set."""
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def deflection(self):
+        """Returns the deflection data of the data set."""
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def z(self):
+        """Returns the z data of the data set."""
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def indentation(self):
+        """Returns the indentation data of the data set."""
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def data(self):
+        """Returns the header of the data set."""
+        raise AbstractNotImplementedError()
