@@ -303,3 +303,53 @@ class NanoDataSet(DataSet, ABC):
 
     def __iter__(self) -> Iterable["Segment"]:
         return iter(self.segments)
+
+
+##################################
+#### Data Set Types ##############
+##################################
+
+
+class DataSetType(AbstractDataSetType, ABC):
+    """Base abstract class for all data set types.
+
+    Args:
+        name (str): Name of the data set type.
+        extensions (list[str]): List of file extensions that are associated with this data set type.
+        data_type (type[DataSetType]): Type class of the data set that is associated with this data set type.
+    """
+
+    def __init__(self, name: str, extensions: list[str], data_type: type[DataSetType]):
+        super().__init__(name, extensions, data_type)
+
+    @abstractmethod
+    def is_valid(self, path: str) -> bool:
+        """Check if file is valid for self data type.
+
+        Args:
+            path (str): Path to file.
+
+        Raises:
+            AbstractNotImplementedError: This method is abstract and needs to be implemented.
+
+        Returns:
+            bool: True if file is valid for self data type.
+        """
+        raise AbstractNotImplementedError()
+
+    def create_dataset(self, name: str, path: str) -> DataSet:
+        """Create data set for self data type.
+
+        Args:
+            name (str): Data set name.
+            path (str): Path to file.
+
+        Returns:
+            DataSet: Data set for self data type.
+        """
+        return self._data_type(name, path)
+
+    @property
+    def extensions(self) -> list[str]:
+        """Get list of file extensions that are associated with this data set type."""
+        return self._extensions
