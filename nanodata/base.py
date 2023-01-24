@@ -102,3 +102,37 @@ class DataManager(AbstractDataManager, ABC):
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}(path={self._path}, data_sets={len(self)}"
+
+
+##################################
+#### Data Sets ###################
+##################################
+
+
+class DataSet(AbstractDataSet, ABC):
+    """Base class for data sets.
+
+    Args:
+        name (str): Name of the data set.
+        path (str): Path to the data set.
+    """
+
+    def __init__(self, name: str, path: str):
+        super().__init__(name, path)
+
+    def load(self) -> None:
+        """Loads the data set."""
+        raise AbstractNotImplementedError()
+
+    @property
+    def name(self) -> str:
+        """str: Returns the name of the data set."""
+        return self._name
+
+    @property
+    def path(self) -> str:
+        """str: Returns the path to the data set."""
+        return self._path
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}(name={self._name}, data_manager={self._data_manager})"
