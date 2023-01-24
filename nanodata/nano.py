@@ -296,3 +296,20 @@ class ChiaroDataSet(NanoDataSet):
             create_segments_2019()
         else:
             create_segments_current()
+
+
+class NanoSurfDataSet(NanoDataSet):
+    def __init__(self, name: str, path: str):
+        super().__init__(name, path)
+
+    def _load_header(self, lines: list[str]) -> int:
+        # TODO implement header loading from experiment.py NanoSurf
+        raise AbstractNotImplementedError()
+
+    def _load_body(self, lines: list[str], line_num: int = 0) -> None:
+        # TODO implement body loading from experiment.py NanoSurf
+        raise AbstractNotImplementedError()
+
+    def _create_segments(self) -> None:
+        # TODO implement segment creation from experiment.py NanoSurf
+        raise AbstractNotImplementedError()
