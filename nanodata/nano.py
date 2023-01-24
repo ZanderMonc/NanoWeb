@@ -313,3 +313,13 @@ class NanoSurfDataSet(NanoDataSet):
     def _create_segments(self) -> None:
         # TODO implement segment creation from experiment.py NanoSurf
         raise AbstractNotImplementedError()
+
+
+# TODO Easytsv
+# * experiment.py states there is no header, will need working out
+
+# TODO Jpk
+# * experiment.py shows that afmformats is used in this file and there is no load header, will need working out
+
+# TODO JpkForceMap
+# * experiment.py shows that afmformats is used in this file and there is no load header or body, will need working out
