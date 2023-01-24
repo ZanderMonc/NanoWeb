@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Iterable, Optional, TypeVar
+from typing import Iterable, Optional, TypeVar, Any
 
 from errors import AbstractNotImplementedError
 
@@ -140,6 +140,9 @@ class AbstractDataSetType(ABC):
 
 
 class AbstractSegment(ABC):
+    def __init__(self, data: dict[str, Any]):
+        self._data: dict = data
+
     @abstractmethod
     def has_bilayer(self):
         raise AbstractNotImplementedError()

@@ -367,3 +367,85 @@ class NanoDataSetType(DataSetType, ABC):
 
     def __init__(self, name: str, extensions: list[str], data_type: type[DataSetType]):
         super().__init__(name, extensions, data_type)
+
+
+##################################
+#### Segments ####################
+##################################
+
+
+class Segment(AbstractSegment, ABC):
+    def __init__(self, data: dict[str, Any]):
+        super().__init__(data)
+
+    @abstractmethod
+    def has_bilayer(self):
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def set_data(self):
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def get_n_odd(self):
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def smooth(self):
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def find_out_of_contact_region(self):
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def find_contact_point(self):
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def create_indentation(self):
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def hertz(self):
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def fit_hertz(self):
+        raise AbstractNotImplementedError()
+
+    def set_z(self, z: np.ndarray):
+        self._data["z"] = z
+
+    def set_f(self, f: np.ndarray):
+        self._data["f"] = f
+
+    @property
+    def time(self) -> np.ndarray:
+        """np.ndarray: Returns the time data of the data set."""
+        return self._data.get("time", np.array([]))
+
+    @property
+    def force(self) -> np.ndarray:
+        """np.ndarray: Returns the force data of the data set."""
+        return self._data.get("force", np.array([]))
+
+    @property
+    def deflection(self) -> np.ndarray:
+        """np.ndarray: Returns the deflection data of the data set."""
+        return self._data.get("deflection", np.array([]))
+
+    @property
+    def z(self) -> np.ndarray:
+        """np.ndarray: Returns the z data of the data set."""
+        return self._data.get("z", np.array([]))
+
+    @property
+    def indentation(self) -> np.ndarray:
+        """np.ndarray: Returns the indentation data of the data set."""
+        return self._data.get("indentation", np.array([]))
+
+    @property
+    def data(self) -> dict[str, float | str]:
+        """dict[str, float | str]: Returns the header of the data set."""
+        return self._data
