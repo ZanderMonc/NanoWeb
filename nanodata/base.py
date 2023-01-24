@@ -8,7 +8,7 @@ from abstract import (
     AbstractDataSet,
     AbstractDataSetType,
     AbstractSegment,
-    DataSetType,
+    TDataSet,
 )
 
 from errors import AbstractNotImplementedError
@@ -47,7 +47,7 @@ class DataManager(AbstractDataManager, ABC):
         """Returns the data set with the given name. Returns None if it does not exist."""
         return self._data_sets.get(name)
 
-    def register_file_type(self, file_type: "DataSetType") -> None:
+    def register_file_type(self, file_type: "TDataSet") -> None:
         """Registers a file type with the manager."""
         self._file_types.append(file_type)
 
@@ -320,23 +320,10 @@ class DataSetType(AbstractDataSetType, ABC):
         data_type (type[DataSetType]): Type class of the data set that is associated with this data set type.
     """
 
-    def __init__(self, name: str, extensions: list[str], data_type: type[DataSetType]):
-        super().__init__(name, extensions, data_type)
-
-    @abstractmethod
-    def is_valid(self, path: str) -> bool:
-        """Check if file is valid for self data type.
-
-        Args:
-            path (str): Path to file.
-
-        Raises:
-            AbstractNotImplementedError: This method is abstract and needs to be implemented.
-
-        Returns:
-            bool: True if file is valid for self data type.
-        """
-        raise AbstractNotImplementedError()
+    def __init__(self, name: str, extensions: list[str], data_type: type[TDataSet]):
+        self._name: str = name
+        self._extensions: list[str] = extensions
+        self._data_type = data_type
 
     def create_dataset(self, name: str, path: str) -> DataSet:
         """Create data set for self data type.
@@ -355,6 +342,11 @@ class DataSetType(AbstractDataSetType, ABC):
         """Get list of file extensions that are associated with this data set type."""
         return self._extensions
 
+    @property
+    def name(self) -> str:
+        """Get name of the data set type."""
+        return self._name
+
 
 class NanoDataSetType(DataSetType, ABC):
     """Base abstract class for all data set types for CellMechLab.
@@ -365,7 +357,7 @@ class NanoDataSetType(DataSetType, ABC):
         data_type (type[DataSetType]): Type class of the data set that is associated with this data set type.
     """
 
-    def __init__(self, name: str, extensions: list[str], data_type: type[DataSetType]):
+    def __init__(self, name: str, extensions: list[str], data_type: type[TDataSet]):
         super().__init__(name, extensions, data_type)
 
 

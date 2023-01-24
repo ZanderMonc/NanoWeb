@@ -3,7 +3,7 @@ from typing import Iterable, Optional, TypeVar, Any
 
 from errors import AbstractNotImplementedError
 
-DataSetType = TypeVar("DataSetType", bound="AbstractDataSet")
+TDataSet = TypeVar("TDataSet", bound="AbstractDataSet")
 
 
 class AbstractDataManager(ABC):
@@ -18,7 +18,7 @@ class AbstractDataManager(ABC):
     def __init__(self, dir_path: str):
         self._path: str = dir_path
         self._data_sets: dict[str, "AbstractDataSet"] = {}
-        self._file_types: list["DataSetType"] = []
+        self._file_types: list["TDataSet"] = []
 
     @abstractmethod
     def add_data_set(self) -> None:
@@ -33,7 +33,7 @@ class AbstractDataManager(ABC):
         raise AbstractNotImplementedError()
 
     @abstractmethod
-    def register_file_type(self, file_type: "DataSetType") -> None:
+    def register_file_type(self, file_type: "TDataSet") -> None:
         raise AbstractNotImplementedError()
 
     @abstractmethod
@@ -91,18 +91,7 @@ class AbstractDataSet(ABC):
 
 
 class AbstractDataSetType(ABC):
-    """Base abstract class for all data set types.
-
-    Args:
-        name (str): Name of the data set type.
-        extensions (list[str]): List of file extensions that are associated with this data set type.
-        data_type (type[DataSetType]): Type class of the data set that is associated with this data set type.
-    """
-
-    def __init__(self, name: str, extensions: list[str], data_type: type[DataSetType]):
-        self._name: str = name
-        self._extensions: list[str] = extensions
-        self._data_type = data_type
+    """Abstract class for all data set types."""
 
     @abstractmethod
     def is_valid(self, path: str) -> bool:
