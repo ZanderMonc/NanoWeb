@@ -35,7 +35,7 @@ def cross(x1, x2, th, dth) -> bool:
 ##################################
 
 
-class NanoDataManager(DataManager):
+class NanoDataManager(DataManager[NanoDataSet]):
     """Class for managing data sets.
 
     Used for CellMechLab related data sets.

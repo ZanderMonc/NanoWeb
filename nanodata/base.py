@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from typing import Iterable, Optional, Any
+from typing import Iterable, Optional, Any, Generic
 from abc import ABC, abstractmethod
 
 from abstract import (
@@ -19,7 +19,7 @@ from errors import AbstractNotImplementedError
 ##################################
 
 
-class DataManager(AbstractDataManager, ABC):
+class DataManager(AbstractDataManager[TDataSet], Generic[TDataSet], ABC):
     """Base class for managing data sets.
 
     Is effectively a dictionary of data sets which points to top level directory.
@@ -31,7 +31,7 @@ class DataManager(AbstractDataManager, ABC):
     def __init__(self, dir_path: str):
         super().__init__(dir_path)
 
-    def add_data_set(self, data_set: "DataSet") -> None:
+    def add_data_set(self, data_set: TDataSet) -> None:
         """Adds a data set to the manager. Raises an error if a data set with the same name already exists."""
         if data_set.name in self._data_sets:
             raise ValueError(f"DataSet with name '{data_set.name}' already exists.")
@@ -44,11 +44,11 @@ class DataManager(AbstractDataManager, ABC):
         else:
             raise ValueError(f"DataSet with name '{name}' does not exist.")
 
-    def get_data_set(self, name: str) -> Optional["DataSet"]:
+    def get_data_set(self, name: str) -> Optional[TDataSet]:
         """Returns the data set with the given name. Returns None if it does not exist."""
         return self._data_sets.get(name)
 
-    def register_file_type(self, file_type: "TDataSetType") -> None:
+    def register_file_type(self, file_type: TDataSetType) -> None:
         """Registers a file type with the manager."""
         self._file_types.append(file_type)
 
@@ -83,12 +83,12 @@ class DataManager(AbstractDataManager, ABC):
         return self._data_sets.keys()
 
     @property
-    def values(self) -> Iterable["DataSet"]:
+    def values(self) -> Iterable[TDataSet]:
         """Iterable[DataSet]: Returns the data sets in the manager."""
         return self._data_sets.values()
 
     @property
-    def items(self) -> Iterable[tuple[str, "DataSet"]]:
+    def items(self) -> Iterable[tuple[str, TDataSet]]:
         """Iterable[tuple[str, DataSet]]: Returns the names and data sets in the manager."""
         return self._data_sets.items()
 
@@ -100,7 +100,7 @@ class DataManager(AbstractDataManager, ABC):
     def __len__(self) -> int:
         return len(self._data_sets)
 
-    def __iter__(self) -> Iterable["DataSet"]:
+    def __iter__(self) -> Iterable[TDataSet]:
         return iter(self.values)
 
     def __repr__(self) -> str:

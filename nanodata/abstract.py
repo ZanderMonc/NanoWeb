@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Iterable, Optional, TypeVar, Any
+from typing import Iterable, Optional, TypeVar, Any, Generic
 
 from errors import AbstractNotImplementedError
 
@@ -7,7 +7,7 @@ TDataSet = TypeVar("TDataSet", bound="AbstractDataSet")
 TDataSetType = TypeVar("TDataSetType", bound="AbstractDataSetType")
 
 
-class AbstractDataManager(ABC):
+class AbstractDataManager(ABC, Generic[TDataSet]):
     """Abstract class for managing data sets.
 
     Is effectively a dictionary of data sets which points to top level directory.
@@ -30,11 +30,11 @@ class AbstractDataManager(ABC):
         raise AbstractNotImplementedError()
 
     @abstractmethod
-    def get_data_set(self, name: str) -> Optional["AbstractDataSet"]:
+    def get_data_set(self, name: str) -> Optional[TDataSet]:
         raise AbstractNotImplementedError()
 
     @abstractmethod
-    def register_file_type(self, file_type: "TDataSet") -> None:
+    def register_file_type(self, file_type: TDataSetType) -> None:
         raise AbstractNotImplementedError()
 
     @abstractmethod
@@ -54,11 +54,11 @@ class AbstractDataManager(ABC):
         raise AbstractNotImplementedError()
 
     @abstractmethod
-    def values(self) -> Iterable["AbstractDataSet"]:
+    def values(self) -> Iterable[TDataSet]:
         raise AbstractNotImplementedError()
 
     @abstractmethod
-    def items(self) -> Iterable[tuple[str, "AbstractDataSet"]]:
+    def items(self) -> Iterable[tuple[str, TDataSet]]:
         raise AbstractNotImplementedError()
 
     @abstractmethod
