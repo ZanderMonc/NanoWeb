@@ -374,8 +374,8 @@ class NanoSurfDataSetType(NanoDataSetType):
 
 class NanoSegment(Segment):
     def __init__(self, data: dict[str, Any]):
+        super().__init__(data)
         # TODO organise instance variables
-        self._data: dict[str, Any] = data
         # self._active: bool = True
         self._i_contact: int = 0
         self._out_contact: int = 0
