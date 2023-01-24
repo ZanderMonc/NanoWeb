@@ -8,6 +8,7 @@ from abstract import (
     AbstractDataSet,
     AbstractDataSetType,
     AbstractSegment,
+    DataSetType,
 )
 
 from errors import AbstractNotImplementedError
