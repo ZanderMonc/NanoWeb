@@ -19,7 +19,7 @@ from errors import AbstractNotImplementedError
 ##################################
 
 
-class DataManager(AbstractDataManager[TDataSet], Generic[TDataSet], ABC):
+class DataManager(AbstractDataManager[TDataSet], ABC):
     """Base class for managing data sets.
 
     Is effectively a dictionary of data sets which points to top level directory.
