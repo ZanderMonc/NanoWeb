@@ -323,3 +323,22 @@ class NanoSurfDataSet(NanoDataSet):
 
 # TODO JpkForceMap
 # * experiment.py shows that afmformats is used in this file and there is no load header or body, will need working out
+
+##################################
+#### Data Set Types ##############
+##################################
+
+
+class ChiaroDataSetType(NanoDataSetType):
+    def __init__(self):
+        """Chiaro data set type. For Optics 11 format."""
+        super().__init__("Chiaro", [".txt"], ChiaroDataSet)
+
+    def is_valid(self, path: str) -> bool:
+        with open(path) as file:
+            signature = file.readline()
+
+        if signature[0:5] == "Date\t":
+            return True
+
+        return False
