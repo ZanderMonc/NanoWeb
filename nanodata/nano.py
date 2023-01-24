@@ -342,3 +342,17 @@ class ChiaroDataSetType(NanoDataSetType):
             return True
 
         return False
+
+
+class NanoSurfDataSetType(NanoDataSetType):
+    def __init__(self):
+        super().__init__("NanoSurf", [".txt"], NanoSurfDataSet)
+
+    def is_valid(self, path: str) -> bool:
+        with open(path) as file:
+            signature = file.readline()
+
+        if signature[0:9] == "#Filename":
+            return True
+
+        return False
