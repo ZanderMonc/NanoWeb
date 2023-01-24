@@ -418,7 +418,7 @@ class Segment(AbstractSegment, ABC):
         self._data["z"] = z
 
     def set_f(self, f: np.ndarray):
-        self._data["f"] = f
+        self._data["force"] = f
 
     @property
     def time(self) -> np.ndarray:
