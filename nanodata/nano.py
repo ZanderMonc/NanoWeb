@@ -366,3 +366,215 @@ class NanoSurfDataSetType(NanoDataSetType):
 
 # TODO JpkForceMap DataSetType
 # * experiment.py shows that there is no check function, will need working out
+
+##################################
+#### Segments ####################
+##################################
+
+
+class NanoSegment(Segment):
+    def __init__(self, data: dict[str, Any]):
+        # TODO organise instance variables
+        self._data: dict[str, Any] = data
+        # self._active: bool = True
+        self._i_contact: int = 0
+        self._out_contact: int = 0
+        # self._parent = None
+        self._mode_feedback = None
+        self._mode_set_point = None
+        self._mode_trigger = None
+        self._mode_threshold = None
+        self._poisson = 0.5
+        self._young = None
+        self._young_i_threshold = None
+        self._touch = None
+        self._h_indentation = None
+        self._indentation = None
+        self._h_touch = None
+        self._h_pressure = None
+        self._elastography = None
+        self._filterLength = 1 / 30
+        self._contactLength = 1 / 20
+
+        # TODO change/move this calculation
+        beg = int(len(self.z) / 3)
+        end = int(2 * len(self.z) / 3)
+        # ? for future reference maybe worth adding a fit ?
+        self._speed = (self.z[end] - self.z[beg]) / (self.time[end] - self.time[beg])
+
+    def has_bilayer(self):
+        # TODO
+        if self._elastography is not None and self._elastography.has_bilayer() is True:
+            return True
+        return False
+
+    def set_data(self, z: np.ndarray, f: np.ndarray, reorder=False):
+        # TODO
+        if reorder is True:
+            new_z = np.linspace(min(z), max(z), len(z))
+            f_int = np.interp(new_z, z, f)
+            z = new_z
+            f = f_int
+        self.set_z(z)
+        self.set_f(f)
+
+    def get_n_odd(self, fraction, total=None):
+        # TODO not sure what purpose of this is
+        if total is None:
+            total = len(self.z)
+        N = int(total * fraction)
+        if N % 2 == 0:
+            N += 1
+        return N
+
+    def smooth(self, method="sg"):
+        # TODO
+        N = self.get_n_odd(self._filterLength)
+        if method == "sg":
+            try:
+                y = savgol_filter(self.f, N, 6, 0)
+                self.f = y
+            except:
+                method = "basic"
+        if method == "basic":
+            self.f = medfilt(self.f, N)
+
+    # Spots the segments where sample arm is not touching the sample
+    # We were told this works as it is (partially) and that it is rather complicated (we don't have to fix this)
+    # Dependencies : numpy, scipy (curve_fit)
+    def find_out_of_contact_region(self, weight=20.0, refine=False):
+        # TODO
+        yy, xx = np.histogram(self.f, bins="auto")
+        xx = (xx[1:] + xx[:-1]) / 2.0
+        try:
+            func = Gauss
+            out = curve_fit(Gauss, xx, yy, p0=[xx[np.argmax(yy)], np.max(yy), 1.0])
+            threshold = out[0][1] / weight
+        except RuntimeError:
+            try:
+                func = Decay
+                out = curve_fit(Decay, xx, yy, p0=[np.max(yy), 1.0])
+                threshold = out[0][0] / weight
+            except RuntimeError:
+                return
+        fit = func(xx, *out[0])
+        if refine is True and len(out[0]) == 3:
+            # try to refine
+            x0, a0, s0 = out[0]
+            try:
+                out2 = curve_fit(GGauss, xx, yy, p0=[x0, x0 + s0, a0, a0 / 5.0, s0, s0])
+                threshold = out2[0][2] / weight
+            except RuntimeError:
+                pass
+        jend = 0
+        for i in range(len(xx) - 1, 0, -1):
+            if fit[i] < threshold and fit[i - 1] > threshold:
+                jend = i
+                break
+        xcontact = np.max(self.z[self.f < xx[jend]])
+        self.outContact = np.argmin((self.z - xcontact) ** 2)
+
+    # Spot the segment where the sample arm is in contact with the sample.
+    # Same as find_out_of_contact_region, part of the more complicated processes
+    # Dependencies = numpy
+    def find_contact_point(self):
+        # TODO
+        if self.outContact == 0:
+            return
+        pcoe = np.polyfit(self.z[: self.outContact], self.f[: self.outContact], 1)
+        ypoly = np.polyval(pcoe, self.z)
+        if self.f[self.outContact] < ypoly[self.outContact]:
+            self.iContact = self.outContact
+        else:
+            for i in range(self.outContact, 0, -1):
+                if self.f[i] < ypoly[i]:
+                    self.iContact = i
+                    break
+        return True
+
+    # Simulates the effect of an indentation of the sample, sets variables accordingly
+    # Dependencies : numpy
+    def create_indentation(self):
+        # TODO
+        if self.iContact == 0:
+            return
+        offsetY = np.average(self.f[: self.iContact])
+        offsetX = self.z[self.iContact]
+        Yf = self.f[self.iContact :] - offsetY
+        Xf = self.z[self.iContact :] - offsetX
+        self.indentation = Xf - Yf / self.parent.cantilever_k
+        self.touch = Yf
+
+    # Math - physics formula code
+    # Port as it is
+    # NB E should be in nN/nm^2 = 10^9 N/m^2 -> internal units for E is GPa
+    def hertz(self, x, E=None):
+        # TODO
+        if E is None:
+            E = self.young
+        x = np.abs(x)
+        # Eeff = E*1.0e9 #to convert E in GPa to keep consistency with the units nm and nN
+        y = (
+            (4.0 / 3.0)
+            * (E / (1 - self.poisson**2))
+            * np.sqrt(self.parent.tip_radius * x**3)
+        )
+        return y  # y will be in nN
+
+    # Again, math code.
+    # Port as it is
+    # Dependencies = numpy, scipy (curve_fit)
+    def fit_hertz(
+        self, seed=1000.0 / 1e9, threshold=None, threshold_type="indentation"
+    ):
+        # TODO
+        self.young = None
+        if self.indentation is None:
+            return
+        x = self.indentation
+        y = self.touch
+        if threshold is not None:
+            imax = len(x)
+            if threshold_type == "indentation":
+                if threshold > np.max(x):
+                    return False
+                imax = np.argmin((x - threshold) ** 2)
+            else:
+                if threshold > np.max(y) or threshold < np.min(y):
+                    return False
+                imax = np.argmin((y - threshold) ** 2)
+            if imax > 10:
+                x = x[:imax]
+                y = y[:imax]
+                self.youngIThreshold = imax
+            else:
+                return False
+        seeds = [seed]
+        # NB the curve is forced to have F=0 at indentation 0
+        try:
+            popt, pcov = curve_fit(self.hertz, x, y, p0=seeds, maxfev=10000)
+            self.young = popt[0]
+            self.H_indentation = x
+            self.H_touch = y
+            area = np.pi * self.parent.tip_radius * x
+            self.H_pressure = y / area
+            return self.young * 1e9
+
+        except RuntimeError:
+            return False
+        return True
+
+    # def deactivate(self) -> None:
+    #     self._active = False
+
+    # def activate(self) -> None:
+    #     self._active = True
+
+    # @property
+    # def active(self) -> bool:
+    #     return self._active
+
+
+#         _      _      _       _       _       _
+#      __(.)< __(.)> __(.)=   >(.)__  >(.)__  >(.)__
+#      \___)  \___)  \___)     (___/   (___/   (___/
