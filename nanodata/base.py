@@ -135,4 +135,4 @@ class DataSet(AbstractDataSet, ABC):
         return self._path
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}(name={self._name}, data_manager={self._data_manager})"
+        return f"{type(self).__name__}(name={self._name})"
