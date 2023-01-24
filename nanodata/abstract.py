@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod, abstractproperty
 from typing import Iterable, Optional, TypeVar
 
+from errors import AbstractNotImplementedError
+
 DataSetType = TypeVar("DataSetType", bound="AbstractDataSet")
 
 
