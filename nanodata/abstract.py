@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 from typing import Iterable, Optional, TypeVar
 
 from errors import AbstractNotImplementedError
@@ -48,18 +48,18 @@ class AbstractDataManager(ABC):
     def clear(self) -> None:
         raise AbstractNotImplementedError()
 
-    @abstractproperty
+    @abstractmethod
     def keys(self) -> Iterable[str]:
         raise AbstractNotImplementedError()
 
-    @abstractproperty
+    @abstractmethod
     def values(self) -> Iterable["AbstractDataSet"]:
         raise AbstractNotImplementedError()
 
-    @abstractproperty
+    @abstractmethod
     def items(self) -> Iterable[tuple[str, "AbstractDataSet"]]:
         raise AbstractNotImplementedError()
 
-    @abstractproperty
+    @abstractmethod
     def path(self) -> str:
         raise AbstractNotImplementedError()
