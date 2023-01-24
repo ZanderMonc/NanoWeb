@@ -88,3 +88,52 @@ class AbstractDataSet(ABC):
     @abstractmethod
     def path(self) -> str:
         raise AbstractNotImplementedError()
+
+
+class AbstractDataSetType(ABC):
+    """Base abstract class for all data set types.
+
+    Args:
+        name (str): Name of the data set type.
+        extensions (list[str]): List of file extensions that are associated with this data set type.
+        data_type (type[DataSetType]): Type class of the data set that is associated with this data set type.
+    """
+
+    def __init__(self, name: str, extensions: list[str], data_type: type[DataSetType]):
+        self._name: str = name
+        self._extensions: list[str] = extensions
+        self._data_type = data_type
+
+    @abstractmethod
+    def is_valid(self, path: str) -> bool:
+        """Check if file is valid for self data type.
+
+        Args:
+            path (str): Path to file.
+
+        Raises:
+            AbstractNotImplementedError: This method is abstract and needs to be implemented.
+
+        Returns:
+            bool: True if file is valid for self data type.
+        """
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def create_dataset(self) -> AbstractDataSet:
+        """Create data set for self data type.
+
+        Returns:
+            DataSet: Data set for self data type.
+        """
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def extensions(self) -> list[str]:
+        """Get list of file extensions that are associated with this data set type."""
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def name(self) -> str:
+        """Get name of the data set type."""
+        raise AbstractNotImplementedError()
