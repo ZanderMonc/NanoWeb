@@ -353,3 +353,16 @@ class DataSetType(AbstractDataSetType, ABC):
     def extensions(self) -> list[str]:
         """Get list of file extensions that are associated with this data set type."""
         return self._extensions
+
+
+class NanoDataSetType(DataSetType, ABC):
+    """Base abstract class for all data set types for CellMechLab.
+
+    Args:
+        name (str): Name of the data set type.
+        extensions (list[str]): List of file extensions that are associated with this data set type.
+        data_type (type[DataSetType]): Type class of the data set that is associated with this data set type.
+    """
+
+    def __init__(self, name: str, extensions: list[str], data_type: type[DataSetType]):
+        super().__init__(name, extensions, data_type)
