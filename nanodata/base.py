@@ -97,6 +97,10 @@ class DataManager(AbstractDataManager[TDataSet], ABC):
         """str: Returns the path to the directory containing the data sets."""
         return self._path
 
+    @property
+    def datasets(self) -> Iterable[TDataSet]:
+        return self.values
+
     def __len__(self) -> int:
         return len(self._data_sets)
 
