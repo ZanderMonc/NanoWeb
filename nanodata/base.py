@@ -38,6 +38,12 @@ class DataManager(AbstractDataManager[TDataSet], ABC):
         if os.path.splitext(dir_path)[1] == ".zip":
             self.unzip()
 
+        if not os.path.exists(self._path):
+            raise ValueError(f"Directory '{self._path}' does not exist.")
+
+        if len(os.listdir(self._path)) < 1:
+            raise ValueError(f"Directory '{self._path}' is empty.")
+
     def add_data_set(self, data_set: TDataSet) -> None:
         """Adds a data set to the manager. Raises an error if a data set with the same name already exists."""
         if data_set.name in self._data_sets:
