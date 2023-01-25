@@ -1,9 +1,11 @@
 import os
+import zipfile
 import numpy as np
 from typing import Iterable, Optional, Any, Generic
 from abc import ABC, abstractmethod
 
-from abstract import (
+
+from .abstract import (
     AbstractDataManager,
     AbstractDataSet,
     AbstractDataSetType,
@@ -12,7 +14,7 @@ from abstract import (
     TDataSetType,
 )
 
-from errors import AbstractNotImplementedError
+from .errors import AbstractNotImplementedError
 
 ##################################
 #### Data Managers ###############
@@ -30,6 +32,9 @@ class DataManager(AbstractDataManager[TDataSet], ABC):
 
     def __init__(self, dir_path: str):
         super().__init__(dir_path)
+
+        if os.path.splitext(dir_path)[1] == ".zip":
+            self.unzip()
 
     def add_data_set(self, data_set: TDataSet) -> None:
         """Adds a data set to the manager. Raises an error if a data set with the same name already exists."""
@@ -66,6 +71,14 @@ class DataManager(AbstractDataManager[TDataSet], ABC):
                             data_set.load()
                             self.add_data_set(data_set)
                             break
+
+    def unzip(self) -> None:
+        zip_file_name = "".join(os.path.splitext(os.path.basename(self._path)))
+        self._path = os.path.dirname(self._path)
+        path_to_zipfile = os.path.join(self._path, zip_file_name)
+
+        with zipfile.ZipFile(path_to_zipfile, "r") as zip_ref:
+            zip_ref.extractall(self._path)
 
     def load_data_set(self, name: str) -> None:
         data_set = self.get_data_set(name)
