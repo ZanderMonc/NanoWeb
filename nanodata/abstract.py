@@ -18,8 +18,8 @@ class AbstractDataManager(ABC, Generic[TDataSet]):
 
     def __init__(self, dir_path: str):
         self._path: str = dir_path
-        self._data_sets: dict[str, "AbstractDataSet"] = {}
-        self._file_types: list[AbstractDataSetType] = []
+        self._data_sets: dict[str, TDataSet] = {}
+        self._file_types: list[TDataSetType] = []
 
     @abstractmethod
     def add_data_set(self) -> None:

@@ -1,7 +1,7 @@
 import os
 import zipfile
 import numpy as np
-from typing import Iterable, Optional, Any, Generic
+from typing import Iterable, Optional, Any
 from abc import ABC, abstractmethod
 
 
