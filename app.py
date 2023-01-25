@@ -79,7 +79,7 @@ def generate_raw_curve_plt(stack, segment: int):
     return fig
 
 
-def generate_raw_curve(data_man, segment: int):
+def generate_raw_curve(data_man, segment: int, ratio=1):
     # takes a list of experiments and returns a list of experiment dataframes for the selected segment
     exp_data_frames = []
 
@@ -92,6 +92,9 @@ def generate_raw_curve(data_man, segment: int):
                 "exp": internal.path,
             }
         )
+        if ratio != 1:
+            #zoom into the data by cropping the data using the ratio
+            df = df[df["z"] < np.max(df["z"]) * ratio]
         exp_data_frames.append(df)
 
     return exp_data_frames
@@ -233,10 +236,8 @@ def main() -> None:
     )
 
     right_config_col.write("Additional Config")
-    data_type = right_config_col.selectbox(
-        "Data type",
-        ("deflection", "force", "indentation", "time", "z"),
-    )
+    ratio = right_config_col.slider('Zoom level', 0.0, 1.0, 0.5, 0.05)
+
 
     # Filter GUI elements
     select_filter = st.selectbox(
@@ -265,7 +266,12 @@ def main() -> None:
         left_graph.altair_chart(
             layer_charts(raw_curve, base_chart), use_container_width=True
         )
-        right_graph.altair_chart(layer_charts(raw_curve, base_chart), use_container_width=True)
+
+        #use the right graph to lense in on the left graph, where the cursor hovers on the left graph the right graph shows a zoomed in view
+        right_graph.altair_chart(
+            layer_charts(generate_raw_curve(experiment_manager,segment,ratio), base_chart), use_container_width=True
+        )
+
 
         # Execute filters
         if select_filter == "Threshold":
