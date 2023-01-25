@@ -34,7 +34,6 @@ class DataManager(AbstractDataManager[TDataSet], ABC):
         super().__init__(dir_path)
         # print current directory
         self._path = os.getcwd() + dir_path
-        print(os.getcwd())
 
         if os.path.splitext(dir_path)[1] == ".zip":
             self.unzip()
