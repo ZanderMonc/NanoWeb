@@ -93,8 +93,10 @@ def generate_raw_curve(data_man, segment: int, ratio=1):
             }
         )
         if ratio != 1:
-            #zoom into the data by cropping the data using the ratio
-            df = df[df["z"] < np.max(df["z"]) * ratio]
+            #crop the dataframe to only the z data range
+            df = df[df["z"] < ratio * np.max(df["z"])]
+
+
         exp_data_frames.append(df)
 
     return exp_data_frames
