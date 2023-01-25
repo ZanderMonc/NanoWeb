@@ -252,9 +252,6 @@ def main() -> None:
         fname = "data/" + file.name
         experiments = file_handler(fname, quale, experiments, file)
         print(len(experiments))
-        # for exp in experiments:
-        #     for c in exp.haystack:
-        #         c.open()
 
         segment = left_config_segment.selectbox(
             "Segment", (i for i in range(4))
