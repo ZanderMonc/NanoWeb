@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Iterable, Optional, TypeVar, Any, Generic
 
-from errors import AbstractNotImplementedError
+from .errors import AbstractNotImplementedError
 
 TDataSet = TypeVar("TDataSet", bound="AbstractDataSet")
 TDataSetType = TypeVar("TDataSetType", bound="AbstractDataSetType")
@@ -39,6 +39,10 @@ class AbstractDataManager(ABC, Generic[TDataSet]):
 
     @abstractmethod
     def preload(self) -> None:
+        raise AbstractNotImplementedError()
+
+    @abstractmethod
+    def unzip(self) -> None:
         raise AbstractNotImplementedError()
 
     @abstractmethod
