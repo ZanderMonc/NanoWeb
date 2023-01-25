@@ -61,6 +61,9 @@ class NanoDataManager(DataManager[NanoDataSet]):
     def apply_filter(self):
         pass
 
+    def export_to_json(self):
+        final = {}
+
 
 ##################################
 #### Data Sets ###################
