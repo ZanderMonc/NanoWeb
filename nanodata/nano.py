@@ -4,8 +4,8 @@ from typing import Any
 from scipy.optimize import curve_fit
 from scipy.signal import savgol_filter, find_peaks, medfilt
 
-from base import DataManager, NanoDataSet, NanoDataSetType, Segment
-from errors import AbstractNotImplementedError
+from .base import DataManager, NanoDataSet, NanoDataSetType, Segment
+from .errors import AbstractNotImplementedError
 
 # TODO move these
 def Gauss(x, x0, a0, s0) -> float:
@@ -60,6 +60,9 @@ class NanoDataManager(DataManager[NanoDataSet]):
 
     def apply_filter(self):
         pass
+
+    def export_to_json(self):
+        final = {}
 
 
 ##################################
