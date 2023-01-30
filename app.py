@@ -116,8 +116,8 @@ def generate_empty_curve():
     return curve
 
 
-def save_to_json(experiments):
-    ref = experiments[0].haystack[0]
+def save_to_json(experiment_manager):
+    ref = experiment_manager[0].haystack[0]
     curves = []
     fname = "data/test.json"
 
@@ -165,20 +165,18 @@ def layer_charts(data_frames, chart_func):
     return alt.layer(*layers)
 
 
-def file_handler(file_name: str, quale: str, experiments: list, file):
-    # takes a file name, a string indicating the type of file, a list of experiments and a file object
-    # and returns a list of experiments with the new file added
+def file_handler(file_name: str, quale: str, file):
     if file_name.endswith(".zip"):
-        experiments = nano.NanoDataManager("/" + file_name)
-        experiments.preload()
-        print(experiments.path)
+        experiment_manager = nano.NanoDataManager("/" + file_name)
+        experiment_manager.preload()
+        print(experiment_manager.path)
     else:
         dir_name = tempfile.mkdtemp()  # create a temp folder to pass to experiment
-        save_uploaded_file(file, dir_name)  # save the file to the temp folder
-        # experiments.append(get_experiment(dir_name, quale))
-        experiments = nano.NanoDataManager(dir_name)
-        experiments.preload()
-    return experiments
+        save_uploaded_file(file,dir_name)  # save the file to the temp folder
+        # experiment_manager.append(get_experiment(dir_name, quale))
+        experiment_manager = nano.NanoDataManager(dir_name)
+        experiment_manager.preload()
+    return experiment_manager
 
 
 def threshold_filter(experiments: list, threshold: float):
@@ -250,22 +248,20 @@ def main() -> None:
     )
 
     if file is not None:
-        experiments = []
         save_uploaded_file(file, "data")
         fname = "data/" + file.name
-        experiments = file_handler(fname, quale, experiments, file)
-        print(len(experiments))
+        experiment_manager = file_handler(fname, quale, file)
 
         segment = left_config_segment.selectbox(
-            "Segment", (i for i in range(4))
+            "Segment", (i for i in range(len(list(experiment_manager.datasets)[0])))
         )
 
         if save_json_button:
-            save_to_json(experiments)
+            save_to_json(experiment_manager)
             with open('data/test.json') as f:
                 file_select_col.download_button('Download JSON', data=f, file_name='test.json')
 
-        raw_curve = generate_raw_curve(experiments, segment)
+        raw_curve = generate_raw_curve(experiment_manager, segment)
 
         # make a layered altair chart with each curve from raw_curve as a layer
 
@@ -275,14 +271,14 @@ def main() -> None:
 
         #use the right graph to lense in on the left graph, where the cursor hovers on the left graph the right graph shows a zoomed in view
         right_graph.altair_chart(
-            layer_charts(generate_raw_curve(experiments,segment,ratio), base_chart), use_container_width=True
+            layer_charts(generate_raw_curve(experiment_manager,segment,ratio), base_chart), use_container_width=True
         )
 
 
         # Execute filters
         if select_filter == "Threshold":
             threshold = st.text_input("Force Threshold (nN)", 0.0)
-            threshold_filter(experiments, float(threshold))
+            threshold_filter(experiment_manager, float(threshold))
 
 
 if __name__ == "__main__":
