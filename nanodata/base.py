@@ -1,7 +1,7 @@
 import os
 import zipfile
 import numpy as np
-from typing import Iterable, Optional, Any, Generic
+from typing import Iterable, Optional, Any
 from abc import ABC, abstractmethod
 
 
@@ -32,9 +32,17 @@ class DataManager(AbstractDataManager[TDataSet], ABC):
 
     def __init__(self, dir_path: str):
         super().__init__(dir_path)
+        # print current directory
+        self._path = os.getcwd() + dir_path
 
         if os.path.splitext(dir_path)[1] == ".zip":
             self.unzip()
+
+        if not os.path.exists(self._path):
+            raise ValueError(f"Directory '{self._path}' does not exist.")
+
+        if len(os.listdir(self._path)) < 1:
+            raise ValueError(f"Directory '{self._path}' is empty.")
 
     def add_data_set(self, data_set: TDataSet) -> None:
         """Adds a data set to the manager. Raises an error if a data set with the same name already exists."""
@@ -73,12 +81,12 @@ class DataManager(AbstractDataManager[TDataSet], ABC):
                             break
 
     def unzip(self) -> None:
-        zip_file_name = "".join(os.path.splitext(os.path.basename(self._path)))
-        self._path = os.path.dirname(self._path)
-        path_to_zipfile = os.path.join(self._path, zip_file_name)
+        path_to_zipfile = self._path
+        self._path = os.path.splitext(self._path)[0]
+        extract_location = os.path.dirname(self._path)
 
         with zipfile.ZipFile(path_to_zipfile, "r") as zip_ref:
-            zip_ref.extractall(self._path)
+            zip_ref.extractall(extract_location)
 
     def load_data_set(self, name: str) -> None:
         data_set = self.get_data_set(name)
