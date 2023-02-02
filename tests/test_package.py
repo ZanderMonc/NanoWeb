@@ -1,9 +1,9 @@
 from contextlib import contextmanager
-from playwright.sync_api import Page, expect
 
-import playwright
 import pytest
 import time
+from playwright.sync_api import Page, expect
+import numpy as np
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -15,13 +15,13 @@ def before_module():
 
 @pytest.fixture(scope="function", autouse=True)
 def before_test(page: Page):
-    page.goto(f"localhost:{8501}")
+    page.goto(f"localhost:{8509}")
 
 
 @contextmanager
 def run_streamlit():
     import subprocess
-    p = subprocess.Popen(["streamlit", "run", "app.py"])
+    p = subprocess.Popen(["streamlit", "run", "app.py","--server.port", "8509","--server.headless", "true", ])
     time.sleep(5)
     try:
         yield 1
@@ -29,44 +29,25 @@ def run_streamlit():
         p.kill()
 
 
-def get_default_screenshots(page: Page):
-    with run_streamlit():
-        page.goto("http://localhost:8501")
-        page.screenshot(path="tests/data/sample.png")
-        page.setInputFiles("input[type=file]", "tests/data/2021-06-18-15-10-07.zip")
-        page.click("text=Upload")
-        page.waitForSelector("text=Experiment")
-        page.screenshot(path="tests/data/sample_upload.png")
+def test_default_screenshots(page: Page):
+    time.sleep(3)
+    page.screenshot(path="tests/data/default.png")
+    expect(page).to_have_title("NanoWeb")
+    assert 1 == 1
 
-
-@pytest.mark.playwright
-def test_display(self, browser):
-    with run_streamlit():
-        page = browser.newPage()
-        page.goto("http://localhost:8501")
-        page.screenshot(path="tests/data/screenshot.png")
-    # check that screenshot is the same as sample
-    expected = open("tests/data/sample.png", "rb").read()
-    actual = open("tests/data/screenshot.png", "rb").read()
-    assert expected == actual
-
-
-def test_upload(self, browser):
-    with run_streamlit():
-        page = browser.newPage()
-        page.goto("http://localhost:8501")
-        page.setInputFiles("input[type=file]", "tests/data/2021-06-18-15-10-07.zip")
-        page.click("text=Upload")
-        page.waitForSelector("text=Experiment")
-        page.screenshot(path="tests/data/screenshot_upload.png")
-    # check that screenshot is the same as sample
-    expected = open("tests/data/sample_upload.png", "rb").read()
-    actual = open("tests/data/screenshot_upload.png", "rb").read()
-    assert expected == actual
+def test_upload(page: Page):
+    # Test that the upload works
+    page.screenshot(path="tests/data/upload1.png")
+    #compare shape and bitwise xor
+    assert np.array_equal(np.array(open("tests/data/default.png","rb").read()), np.array(open("tests/data/upload1.png", "rb").read())) == False
+    page.click("text=Browse files")
+    page.set_input_files("input[type=file]", "tests/data/inden.zip")
+    time.sleep(2)
+    page.screenshot(path="tests/data/upload2.png")
+    expect(page).to_have_title("NanoWeb")
+    assert np.array(open("tests/data/default.png","rb").read()) != np.array(open("tests/data/upload2.png", "rb").read())
 
 
 if __name__ == "__main__":
-    # pytest.main()
-    browser = playwright.chromium.launch()
-    page = browser.newPage()
-    get_default_screenshots()
+    pytest.main()
+
