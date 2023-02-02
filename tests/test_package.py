@@ -21,33 +21,42 @@ def before_test(page: Page):
 @contextmanager
 def run_streamlit():
     import subprocess
-    p = subprocess.Popen(["streamlit", "run", "app.py","--server.port", "8509","--server.headless", "true", ])
+    p = subprocess.Popen(["streamlit", "run", "app.py", "--server.port", "8509", "--server.headless", "true", ])
     time.sleep(5)
     try:
-        yield 1
+        yield p
     finally:
         p.kill()
 
 
 def test_default_screenshots(page: Page):
     time.sleep(3)
-    page.screenshot(path="tests/data/default.png")
+    # if default screenshot is not taken before test is ran, take it
+    try:
+        open("tests/data/default.png", "rb").read()
+    except FileNotFoundError:
+        page.screenshot(path="tests/data/default.png")
     expect(page).to_have_title("NanoWeb")
     assert 1 == 1
 
+
 def test_upload(page: Page):
     # Test that the upload works
-    page.screenshot(path="tests/data/upload1.png")
-    #compare shape and bitwise xor
-    assert np.array_equal(np.array(open("tests/data/default.png","rb").read()), np.array(open("tests/data/upload1.png", "rb").read())) == False
+    try:
+        open("tests/data/upload1.png", "rb").read()
+    except FileNotFoundError:
+        time.sleep(3)
+        page.screenshot(path="tests/data/upload1.png")
+    # compare shape and bitwise xor
+    assert np.array_equal(np.array(open("tests/data/default.png", "rb").read()),
+                          np.array(open("tests/data/upload1.png", "rb").read()))
     page.click("text=Browse files")
     page.set_input_files("input[type=file]", "tests/data/inden.zip")
     time.sleep(2)
     page.screenshot(path="tests/data/upload2.png")
     expect(page).to_have_title("NanoWeb")
-    assert np.array(open("tests/data/default.png","rb").read()) != np.array(open("tests/data/upload2.png", "rb").read())
+    assert np.array(open("tests/data/default.png", "rb").read()) != np.array(open("tests/data/upload2.png", "rb").read())
 
 
 if __name__ == "__main__":
     pytest.main()
-
