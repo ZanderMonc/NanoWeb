@@ -39,9 +39,7 @@ def test_default_screenshots(page: Page):
     expect(page).to_have_title("NanoWeb")
     assert 1 == 1
 
-
-def test_upload(page: Page):
-    # Test that the upload works
+def test_homepage(page: Page):
     try:
         open("tests/data/upload1.png", "rb").read()
     except FileNotFoundError:
@@ -50,12 +48,30 @@ def test_upload(page: Page):
     # compare shape and bitwise xor
     assert np.array_equal(np.array(open("tests/data/default.png", "rb").read()),
                           np.array(open("tests/data/upload1.png", "rb").read()))
+
+def test_upload_changes(page: Page):
+    page.click("text=Browse files")
+    page.set_input_files("input[type=file]", "tests/data/smallest.zip")
+    time.sleep(2)
+    page.screenshot(path="tests/data/upload2.png")
+    # first assert that the view has changed vew input files
+    assert not np.array_equal(np.array(open("tests/data/upload1.png", "rb").read())
+                              ,np.array(open("tests/data/upload2.png", "rb").read()))
+def test_upload_accuracy(page : Page):
     page.click("text=Browse files")
     page.set_input_files("input[type=file]", "tests/data/inden.zip")
     time.sleep(2)
-    page.screenshot(path="tests/data/upload2.png")
-    expect(page).to_have_title("NanoWeb")
-    assert np.array(open("tests/data/default.png", "rb").read()) != np.array(open("tests/data/upload2.png", "rb").read())
+    try:
+        open("tests/data/upload_expected.png", "rb").read()
+        page.screenshot(path="tests/data/upload2.png")
+    except FileNotFoundError:#if no default screenshot is taken, take it and then when test is reran it will be compared
+        page.screenshot(path="tests/data/upload_expected.png")
+        page.screenshot(path="tests/data/upload2.png")
+
+    # assert that the view is the same as the expected view
+    assert np.array_equal(np.array(open("tests/data/upload_expected.png", "rb").read())
+                          , np.array(open("tests/data/upload2.png", "rb").read()))
+
 
 
 if __name__ == "__main__":
