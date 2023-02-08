@@ -79,12 +79,12 @@ def generate_raw_curve_plt(stack, segment: int):
     return fig
 
 
-def generate_raw_curve(data_man, segment: int, ratio=1):
+def generate_raw_curve(data_man, segment: int, ratio_z_left: float = 1, ratio_z_right: float = 1):
     # takes a list of experiments and returns a list of experiment dataframes for the selected segment
     exp_data_frames = []
 
     for internal in data_man:
-        print("here "+ internal.name)
+        print("here " + internal.name)
         df = pd.DataFrame(
             {
                 "z": internal.segments[segment].z,
@@ -92,10 +92,11 @@ def generate_raw_curve(data_man, segment: int, ratio=1):
                 "exp": internal.path,
             }
         )
-        if ratio != 1:
-            #crop the dataframe to only the z data range
-            df = df[df["z"] < ratio * np.max(df["z"])]
-
+        if ratio_z_left != 1 or ratio_z_right != 1:
+            # crop the dataframe to only the z data range
+            # df = df[df["z"] < ratio * np.max(df["z"])]
+            df = df[df["z"] > ratio_z_left * np.min(df["z"])]
+            df = df[df["z"] < ratio_z_right * np.max(df["z"])]
 
         exp_data_frames.append(df)
 
@@ -172,7 +173,7 @@ def file_handler(file_name: str, quale: str, file):
         print(experiment_manager.path)
     else:
         dir_name = tempfile.mkdtemp()  # create a temp folder to pass to experiment
-        save_uploaded_file(file,dir_name)  # save the file to the temp folder
+        save_uploaded_file(file, dir_name)  # save the file to the temp folder
         # experiment_manager.append(get_experiment(dir_name, quale))
         experiment_manager = nano.NanoDataManager(dir_name)
         experiment_manager.preload()
@@ -208,6 +209,9 @@ def main() -> None:
     left_config_col, right_config_col = config_bar.columns(2)
     left_config_title = left_config_col.empty()
     left_config_segment = left_config_col.empty()
+    right_config_title = right_config_col.empty()
+    right_config_segment = right_config_col.empty()
+    right_config_segment2 = right_config_col.empty()
 
     quale = file_select_col.selectbox(
         "File type",
@@ -237,9 +241,9 @@ def main() -> None:
         ("NA",),
     )
 
-    right_config_col.write("Additional Config")
-    ratio = right_config_col.slider('Zoom level', 0.0, 1.0, 0.5, 0.05)
-
+    right_config_title.write("Additional Config")
+    ratio_z_left = right_config_segment.slider("left z", 0.0, 1.0, 0.5, 0.01)
+    ratio_z_right= right_config_segment2.slider("right z", 0.0, 1.0, 0.5, 0.01)
 
     # Filter GUI elements
     select_filter = st.selectbox(
@@ -269,11 +273,11 @@ def main() -> None:
             layer_charts(raw_curve, base_chart), use_container_width=True
         )
 
-        #use the right graph to lense in on the left graph, where the cursor hovers on the left graph the right graph shows a zoomed in view
+        # use the right graph to lense in on the left graph, where the cursor hovers on the left graph the right graph shows a zoomed in view
         right_graph.altair_chart(
-            layer_charts(generate_raw_curve(experiment_manager,segment,ratio), base_chart), use_container_width=True
+            layer_charts(generate_raw_curve(experiment_manager, segment, ratio_z_left, ratio_z_right), base_chart),
+            use_container_width=True
         )
-
 
         # Execute filters
         if select_filter == "Threshold":
