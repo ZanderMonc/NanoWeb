@@ -62,7 +62,7 @@ def test_upload_accuracy(page : Page):
     page.set_input_files("input[type=file]", "tests/data/inden.zip")
     time.sleep(2)
     try:
-        open("tests/data/upload_expected.png", "rb").read()
+        open("tests/data/upload_expected_accuracy.png", "rb").read()
         page.screenshot(path="tests/data/test_upload_change.png")
     except FileNotFoundError:#if no default screenshot is taken, take it and then when test is reran it will be compared
         page.screenshot(path="tests/data/upload_expected_accuracy.png")
