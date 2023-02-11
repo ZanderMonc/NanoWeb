@@ -242,8 +242,8 @@ def main() -> None:
     )
 
     right_config_title.write("Additional Config")
-    ratio_z_left = right_config_segment.slider("left z", 0.0, 1.0, 0.5, 0.01)
-    ratio_z_right= right_config_segment2.slider("right z", 0.0, 1.0, 0.5, 0.01)
+    ratio_z_left = right_config_segment.slider("crop left", 0.0, 1.0, 0.5, 0.01)
+    ratio_z_right= right_config_segment2.slider("crop right", 0.0, 1.0, 0.5, 0.01)
 
     # Filter GUI elements
     select_filter = st.selectbox(
