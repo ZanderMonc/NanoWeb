@@ -87,6 +87,9 @@ def generate_raw_curve(data_man, segment: int, ratio_z_left: float = 1, ratio_z_
         print("here " + internal.name)
         #check that z and force are not none
         if internal.segments[segment].z is 0 or internal.segments[segment].force is 0:
+            #if segment is dead, do not process it and break;
+            #send a streamlit popup saying "out of threshold"
+            st.warning("Segment is out of threshold")
             break;
 
         df = pd.DataFrame(
@@ -186,18 +189,13 @@ def file_handler(file_name: str, quale: str, file):
 
 
 def threshold_filter(experiment_manager, threshold: float):
-    #threshold = threshold * 1e-9
-
     for internal in experiment_manager:
         for segment in internal.segments:
             if segment.force is not None:
-                #if max force is over threshold, remove segment
+                #if max force is over threshold, set force and z to 0
                 if max(segment.force) < threshold:
                     segment.set_f(0)
                     segment.set_z(0)
-
-                else:
-                    segment.active = True
 
 
 
@@ -291,7 +289,7 @@ def main() -> None:
 
         # Execute filters
         if select_filter == "Threshold":
-            threshold = st.text_input("Force Threshold (nN)", 0.0)
+            threshold = st.text_input("Force Threshold (nN)", -1)
             threshold_filter(experiment_manager, float(threshold))
             # for threshold filter, remove non-active segments from the dataset
             # then re-generate the raw curve
