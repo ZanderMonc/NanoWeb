@@ -85,6 +85,10 @@ def generate_raw_curve(data_man, segment: int, ratio_z_left: float = 1, ratio_z_
 
     for internal in data_man:
         print("here " + internal.name)
+        #check that z and force are not none
+        if internal.segments[segment].z is 0 or internal.segments[segment].force is 0:
+            break;
+
         df = pd.DataFrame(
             {
                 "z": internal.segments[segment].z,
@@ -189,10 +193,8 @@ def threshold_filter(experiment_manager, threshold: float):
             if segment.force is not None:
                 #if max force is over threshold, remove segment
                 if max(segment.force) < threshold:
-                    segment.active = False
-                    print("removing segment " + str(max(segment.force)))
-                    segment.set_f(None)
-                    segment.set_z(None)
+                    segment.set_f(0)
+                    segment.set_z(0)
 
                 else:
                     segment.active = True
@@ -291,11 +293,18 @@ def main() -> None:
         if select_filter == "Threshold":
             threshold = st.text_input("Force Threshold (nN)", 0.0)
             threshold_filter(experiment_manager, float(threshold))
-            for stack in experiment_manager:
-                for segment in stack:
-                    if segment.active:
-                        print(max(segment.force))
             # for threshold filter, remove non-active segments from the dataset
+            # then re-generate the raw curve
+            raw_curve = generate_raw_curve(experiment_manager, segment)
+            # then re-generate the left graph
+            left_graph.altair_chart(
+                layer_charts(raw_curve, base_chart), use_container_width=True
+            )
+            # then re-generate the right graph
+            right_graph.altair_chart(
+                layer_charts(generate_raw_curve(experiment_manager, segment, ratio_z_left, ratio_z_right), base_chart),
+                use_container_width=True
+            )
 
 
 
