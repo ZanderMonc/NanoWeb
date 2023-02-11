@@ -233,7 +233,7 @@ def main() -> None:
     left_graph_title.write("Raw Curve")
 
     right_graph.line_chart()
-    right_graph_title.write("Additional Curve")
+    right_graph_title.write("Cropped Curve")
 
     left_config_title.write("Global Config")
     left_config_segment.selectbox(
