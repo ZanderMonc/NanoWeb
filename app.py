@@ -85,6 +85,12 @@ def generate_raw_curve(data_man, segment: int, ratio_z_left: float = 1, ratio_z_
 
     for internal in data_man:
         print("here " + internal.name)
+        #check that z and force are not none
+        if internal.segments[segment].z is 0 or internal.segments[segment].force is 0:
+            #if segment is dead, do not process it and break;
+            st.warning( "Segment " + str(segment) +" has a curve out of threshold that has been ignored")
+            break
+
         df = pd.DataFrame(
             {
                 "z": internal.segments[segment].z,
@@ -92,6 +98,7 @@ def generate_raw_curve(data_man, segment: int, ratio_z_left: float = 1, ratio_z_
                 "exp": internal.path,
             }
         )
+
         if ratio_z_left != 1 or ratio_z_right != 1:
             # crop the dataframe to only the z data range
             # df = df[df["z"] < ratio * np.max(df["z"])]
@@ -180,15 +187,15 @@ def file_handler(file_name: str, quale: str, file):
     return experiment_manager
 
 
-def threshold_filter(experiment_manager: list, threshold: float):
-    threshold = threshold * 1e-9
+def threshold_filter(experiment_manager, threshold: float):
+    for internal in experiment_manager:
+        for segment in internal.segments:
+            if segment.force is not None:
+                #if max force is over threshold, set force and z to 0
+                if max(segment.force) < threshold:
+                    segment.set_f(0)
+                    segment.set_z(0)
 
-    for stack in experiment_manager[0].haystack:
-        for segment in stack:
-            if np.max(segment.f) < threshold:
-                segment.active = False
-            else:
-                segment.active = True
 
 
 def main() -> None:
@@ -281,8 +288,22 @@ def main() -> None:
 
         # Execute filters
         if select_filter == "Threshold":
-            threshold = st.text_input("Force Threshold (nN)", 0.0)
+            threshold = st.text_input("Force Threshold (nN)", -1)
             threshold_filter(experiment_manager, float(threshold))
+            # for threshold filter, remove non-active segments from the dataset
+            # then re-generate the raw curve
+            raw_curve = generate_raw_curve(experiment_manager, segment)
+            # then re-generate the left graph
+            left_graph.altair_chart(
+                layer_charts(raw_curve, base_chart), use_container_width=True
+            )
+            # then re-generate the right graph
+            right_graph.altair_chart(
+                layer_charts(generate_raw_curve(experiment_manager, segment, ratio_z_left, ratio_z_right), base_chart),
+                use_container_width=True
+            )
+
+
 
 
 if __name__ == "__main__":
