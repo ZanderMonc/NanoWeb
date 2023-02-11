@@ -92,6 +92,7 @@ def generate_raw_curve(data_man, segment: int, ratio_z_left: float = 1, ratio_z_
                 "exp": internal.path,
             }
         )
+
         if ratio_z_left != 1 or ratio_z_right != 1:
             # crop the dataframe to only the z data range
             # df = df[df["z"] < ratio * np.max(df["z"])]
@@ -180,15 +181,22 @@ def file_handler(file_name: str, quale: str, file):
     return experiment_manager
 
 
-def threshold_filter(experiment_manager: list, threshold: float):
-    threshold = threshold * 1e-9
+def threshold_filter(experiment_manager, threshold: float):
+    #threshold = threshold * 1e-9
 
-    for stack in experiment_manager[0].haystack:
-        for segment in stack:
-            if np.max(segment.f) < threshold:
-                segment.active = False
-            else:
-                segment.active = True
+    for internal in experiment_manager:
+        for segment in internal.segments:
+            if segment.force is not None:
+                #if max force is over threshold, remove segment
+                if max(segment.force) < threshold:
+                    segment.active = False
+                    print("removing segment " + str(max(segment.force)))
+                    segment.set_f(None)
+                    segment.set_z(None)
+
+                else:
+                    segment.active = True
+
 
 
 def main() -> None:
@@ -283,6 +291,13 @@ def main() -> None:
         if select_filter == "Threshold":
             threshold = st.text_input("Force Threshold (nN)", 0.0)
             threshold_filter(experiment_manager, float(threshold))
+            for stack in experiment_manager:
+                for segment in stack:
+                    if segment.active:
+                        print(max(segment.force))
+            # for threshold filter, remove non-active segments from the dataset
+
+
 
 
 if __name__ == "__main__":
