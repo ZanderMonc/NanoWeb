@@ -46,8 +46,7 @@ def test_homepage(page: Page):
         time.sleep(3)
         page.screenshot(path="tests/data/test_homepage.png")
     # compare shape and bitwise xor
-    assert np.array_equal(np.array(open("tests/data/default_homepage.png", "rb").read()),
-                          np.array(open("tests/data/test_homepage.png", "rb").read()))
+    assert np.array_equal(np.array(open("tests/data/default_homepage.png", "rb").read()), np.array(open("tests/data/test_homepage.png", "rb").read()))
 
 def test_upload_changes(page: Page):
     page.click("text=Browse files")
@@ -60,17 +59,17 @@ def test_upload_changes(page: Page):
 def test_upload_accuracy(page : Page):
     page.click("text=Browse files")
     page.set_input_files("input[type=file]", "tests/data/inden.zip")
-    time.sleep(2)
+    time.sleep(4)
     try:
         open("tests/data/upload_expected_accuracy.png", "rb").read()
-        page.screenshot(path="tests/data/test_upload_change.png")
+        page.screenshot(path="tests/data/test_upload_change2.png")
     except FileNotFoundError:#if no default screenshot is taken, take it and then when test is reran it will be compared
         page.screenshot(path="tests/data/upload_expected_accuracy.png")
-        page.screenshot(path="tests/data/test_upload_change.png")
+        page.screenshot(path="tests/data/test_upload_change2.png")
 
     # assert that the view is the same as the expected view
     assert np.array_equal(np.array(open("tests/data/upload_expected_accuracy.png", "rb").read())
-                          , np.array(open("tests/data/test_upload_change.png", "rb").read()))
+                          ,np.array(open("tests/data/test_upload_change2.png", "rb").read()))
 
 
 
