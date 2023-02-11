@@ -88,9 +88,8 @@ def generate_raw_curve(data_man, segment: int, ratio_z_left: float = 1, ratio_z_
         #check that z and force are not none
         if internal.segments[segment].z is 0 or internal.segments[segment].force is 0:
             #if segment is dead, do not process it and break;
-            #send a streamlit popup saying "out of threshold"
-            st.warning("Segment is out of threshold")
-            break;
+            st.warning( "Segment " + str(segment) +" has a curve out of threshold that has been ignored")
+            break
 
         df = pd.DataFrame(
             {
