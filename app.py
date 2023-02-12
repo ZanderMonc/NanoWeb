@@ -157,10 +157,11 @@ def base_chart(data_frame):
         alt.Chart(
             data_frame,
         )
-        .mark_line(interpolate="basis")
+        .mark_line(point=True, interpolate="monotone")
         .encode(
             x="z:Q",
             y="f:Q",
+            tooltip=["z:Q", "f:Q", "exp:N"],
         )
     )
     return base
@@ -168,7 +169,7 @@ def base_chart(data_frame):
 
 def layer_charts(data_frames, chart_func):
     # takes a list of pandas dataframes and a chart function and returns a layered chart
-    nearest = alt.selection(type='single', nearest=True, on='mouseover',fields=['f'], empty='none')
+    nearest = alt.selection(type='single', nearest=True, on='mouseover',fields=['z'], empty='none')
     layers = [chart_func(data_frame) for data_frame in data_frames]
     selectors = alt.Chart(data_frames[0]).mark_point().encode(
         x='z:Q',
@@ -176,21 +177,21 @@ def layer_charts(data_frames, chart_func):
     ).add_selection(
         nearest
     )
-    points = layers[0].mark_point().encode(
+    points = [layer.mark_point().encode(
         opacity=alt.condition(nearest, alt.value(1), alt.value(0))
-    )
+    ) for layer in layers]
     #make text white if background is dark
-    text = layers[0].mark_text(align='left', dx=5, dy=-5, color='red').encode(
+    text = [layer.mark_text(align='center', dx=5, dy=-5, color='white').encode(
         #text should show the force value and the displacement value as a tuple (z, f)
-        text = alt.condition(nearest, 'f:Q', alt.value(' '))
-    )
-    rules = alt.Chart(data_frames[0]).mark_rule(color='gray').encode(
+        text=alt.condition(nearest, 'z:Q', alt.value(' '))
+    )for layer in layers]
+    rules = [alt.Chart(data_frame).mark_rule(color='gray').encode(
         x='z:Q',
     ).transform_filter(
         nearest
-    )
-    return alt.layer(*layers, selectors, points, rules, text).interactive()
-
+    ) for data_frame in data_frames]
+    return alt.layer(*layers, selectors, *points, *rules, *text).interactive()
+    #return alt.layer(*layers).interactive()
 
 def file_handler(file_name: str, quale: str, file):
     if file_name.endswith(".zip"):
