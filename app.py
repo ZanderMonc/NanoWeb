@@ -86,7 +86,7 @@ def generate_raw_curve(data_man, segment: int, ratio_z_left: float = 1, ratio_z_
     for internal in data_man:
         print("here " + internal.name)
         #check that z and force are not none
-        if internal.segments[segment].z is 0 or internal.segments[segment].force is 0:
+        if np.any(internal.segments[segment].z == 0) or np.any(internal.segments[segment].force == 0):
             #if segment is dead, do not process it and break;
             st.warning( "Segment " + str(segment) +" has a curve out of threshold that has been ignored")
             break
@@ -157,20 +157,39 @@ def base_chart(data_frame):
         alt.Chart(
             data_frame,
         )
-        .mark_line()
+        .mark_line(interpolate="basis")
         .encode(
             x="z:Q",
             y="f:Q",
         )
-        .interactive()
     )
     return base
 
 
 def layer_charts(data_frames, chart_func):
     # takes a list of pandas dataframes and a chart function and returns a layered chart
+    nearest = alt.selection(type='single', nearest=True, on='mouseover',fields=['f'], empty='none')
     layers = [chart_func(data_frame) for data_frame in data_frames]
-    return alt.layer(*layers)
+    selectors = alt.Chart(data_frames[0]).mark_point().encode(
+        x='z:Q',
+        opacity=alt.value(0),
+    ).add_selection(
+        nearest
+    )
+    points = layers[0].mark_point().encode(
+        opacity=alt.condition(nearest, alt.value(1), alt.value(0))
+    )
+    #make text white if background is dark
+    text = layers[0].mark_text(align='left', dx=5, dy=-5, color='red').encode(
+        #text should show the force value and the displacement value as a tuple (z, f)
+        text = alt.condition(nearest, 'f:Q', alt.value(' '))
+    )
+    rules = alt.Chart(data_frames[0]).mark_rule(color='gray').encode(
+        x='z:Q',
+    ).transform_filter(
+        nearest
+    )
+    return alt.layer(*layers, selectors, points, rules, text).interactive()
 
 
 def file_handler(file_name: str, quale: str, file):
