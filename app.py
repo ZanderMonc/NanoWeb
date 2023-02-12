@@ -157,41 +157,20 @@ def base_chart(data_frame):
         alt.Chart(
             data_frame,
         )
-        .mark_line(point=True, interpolate="monotone")
+        .mark_line(point=True,thickness=1)
         .encode(
             x="z:Q",
             y="f:Q",
             tooltip=["z:Q", "f:Q", "exp:N"],
-        )
+        ).interactive()
     )
     return base
 
 
 def layer_charts(data_frames, chart_func):
     # takes a list of pandas dataframes and a chart function and returns a layered chart
-    nearest = alt.selection(type='single', nearest=True, on='mouseover',fields=['z'], empty='none')
     layers = [chart_func(data_frame) for data_frame in data_frames]
-    selectors = alt.Chart(data_frames[0]).mark_point().encode(
-        x='z:Q',
-        opacity=alt.value(0),
-    ).add_selection(
-        nearest
-    )
-    points = [layer.mark_point().encode(
-        opacity=alt.condition(nearest, alt.value(1), alt.value(0))
-    ) for layer in layers]
-    #make text white if background is dark
-    text = [layer.mark_text(align='center', dx=5, dy=-5, color='white').encode(
-        #text should show the force value and the displacement value as a tuple (z, f)
-        text=alt.condition(nearest, 'z:Q', alt.value(' '))
-    )for layer in layers]
-    rules = [alt.Chart(data_frame).mark_rule(color='gray').encode(
-        x='z:Q',
-    ).transform_filter(
-        nearest
-    ) for data_frame in data_frames]
-    return alt.layer(*layers, selectors, *points, *rules, *text).interactive()
-    #return alt.layer(*layers).interactive()
+    return alt.layer(*layers)
 
 def file_handler(file_name: str, quale: str, file):
     if file_name.endswith(".zip"):
