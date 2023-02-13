@@ -18,6 +18,18 @@ from NanoPrepare import save_uploaded_file
 import nanoanalysisdata.engine as engine
 
 
+def handle_click(i):
+    # TODO fix functionality of checkbox input to mark curves as active or inactive
+    # change to negative of current value
+    engine.haystack[i].active = -engine.haystack[i].active
+
+    # not sure about the functionality of this line, i dont see the boolean value within the curve object but it works
+    if engine.haystack[i].active ==1:
+        print(f"Activated curve from file {engine.haystack[i].filename}")
+    else:
+        print(f"Deactivated curve from file {engine.haystack[i].filename}")
+
+
 def main() -> None:
     st.set_page_config(
         layout="wide", page_title="NanoWeb", page_icon="../images/cellmech.png"
@@ -36,6 +48,7 @@ def main() -> None:
             # Load the JSON file
             f = open("data/" + file.name, "r")
             structure = json.load(f)
+            # st.write(structure)
 
             for cv in structure["curves"]:
                 engine.haystack.append(engine.curve(cv))
@@ -43,15 +56,8 @@ def main() -> None:
             graph_first_col.write("Files")
 
             for i, curve in enumerate(engine.haystack):
-                check = graph_first_col.checkbox(curve.filename, value=True, key=i)
+                graph_first_col.checkbox(curve.filename, value=True, key=i, on_change=handle_click, args=(i,))
 
-                # TODO fix functionality of checkbox input to mark curves as active or inactive
-                if check:
-                    engine.haystack[i].active = True
-                    print(f"Activated curve from file {curve.filename}")
-                if not check:
-                    engine.haystack[i].active = False
-                    print(f"Deactivated curve from file {curve.filename}")
         else:
             st.warning("Only files with the .json extension are supported.")
 
