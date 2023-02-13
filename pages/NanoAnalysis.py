@@ -15,6 +15,7 @@ import altair as alt
 import nanodata
 import nanodata.nano as nano
 from NanoPrepare import save_uploaded_file
+import nanoanalysisdata.engine as engine
 
 
 def main() -> None:
@@ -28,8 +29,18 @@ def main() -> None:
     if file is not None:
         if file.name.endswith(".json"):
             save_uploaded_file(file, "data")
+
+            # Load the JSON file
+            f = open("data/" + file.name, "r")
+            structure = json.load(f)
+            # st.write(structure)
+            for cv in structure["curves"]:
+                engine.haystack.append(engine.curve(cv))
+
+
         else:
             st.warning("Only files with the .json extension are supported.")
+
     
 
 
