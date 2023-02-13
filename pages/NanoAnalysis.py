@@ -19,19 +19,16 @@ import nanoanalysisdata.engine as engine
 
 
 def handle_click(i):
-    # TODO fix functionality of checkbox input to mark curves as active or inactive
-    # activate and deactivate curve in haystack
-    engine.haystack[i].active = not engine.haystack[i].active
-
+    # activate and deactivate curve in haystack on checkbox click
     if engine.haystack[i].active:
-        print(f"Activated curve from file {engine.haystack[i].filename}")
+        engine.haystack[i].active = False
     else:
-        print(f"Deactivated curve from file {engine.haystack[i].filename}")
+        engine.haystack[i].active = True
 
 
 def main() -> None:
     st.set_page_config(
-        layout="wide", page_title="NanoWeb", page_icon="../images/cellmech.png"
+        layout="wide", page_title="NanoWeb", page_icon="/images/cellmech.png"
     )
 
     top_bar = st.container()
@@ -55,9 +52,7 @@ def main() -> None:
             graph_first_col.write("Files")
 
             for i, curve in enumerate(engine.haystack):
-                engine.haystack[i].active = True
                 graph_first_col.checkbox(curve.filename, value=True, key=i, on_change=handle_click, args=(i,))
-
 
         else:
             st.warning("Only files with the .json extension are supported.")
