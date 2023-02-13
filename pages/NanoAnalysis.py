@@ -49,10 +49,17 @@ def main() -> None:
             for cv in structure["curves"]:
                 engine.haystack.append(engine.curve(cv))
 
+            # File selection checkboxes
             graph_first_col.write("Files")
 
             for i, curve in enumerate(engine.haystack):
                 graph_first_col.checkbox(curve.filename, value=True, key=i, on_change=handle_click, args=(i,))
+
+            # Raw curve plots
+            graph_second_col_raw = graph_second_col.container()
+            graph_second_col_raw.write("Raw curves")
+            graph_second_col_current = graph_second_col.container()
+            graph_second_col_current.write("Current curve")
 
         else:
             st.warning("Only files with the .json extension are supported.")
