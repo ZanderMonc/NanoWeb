@@ -26,6 +26,9 @@ def main() -> None:
     top_bar = st.container()
     file = top_bar.file_uploader("Upload a JSON file")
 
+    graph_bar = st.container()
+    graph_first_col, graph_second_col, graph_third_col, graph_fourth_col = graph_bar.columns(4)
+
     if file is not None:
         if file.name.endswith(".json"):
             save_uploaded_file(file, "data")
@@ -33,15 +36,24 @@ def main() -> None:
             # Load the JSON file
             f = open("data/" + file.name, "r")
             structure = json.load(f)
-            # st.write(structure)
+
             for cv in structure["curves"]:
                 engine.haystack.append(engine.curve(cv))
 
+            graph_first_col.write("Files")
 
+            for i, curve in enumerate(engine.haystack):
+                check = graph_first_col.checkbox(curve.filename, value=True, key=i)
+
+                # TODO fix functionality of checkbox input to mark curves as active or inactive
+                if check:
+                    engine.haystack[i].active = True
+                    print(f"Activated curve from file {curve.filename}")
+                if not check:
+                    engine.haystack[i].active = False
+                    print(f"Deactivated curve from file {curve.filename}")
         else:
             st.warning("Only files with the .json extension are supported.")
-
-    
 
 
 if __name__ == "__main__":
