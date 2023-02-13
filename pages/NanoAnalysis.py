@@ -58,8 +58,11 @@ def main() -> None:
             # Raw curve plots
             graph_second_col_raw = graph_second_col.container()
             graph_second_col_raw.write("Raw curves")
+            graph_second_col_raw_plot = graph_second_col_raw.line_chart()
+
             graph_second_col_current = graph_second_col.container()
             graph_second_col_current.write("Current curve")
+            graph_second_col_current_plot = graph_second_col_current.line_chart()
 
         else:
             st.warning("Only files with the .json extension are supported.")
