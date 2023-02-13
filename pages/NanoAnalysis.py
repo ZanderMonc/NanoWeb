@@ -14,15 +14,23 @@ import shutil
 import altair as alt
 import nanodata
 import nanodata.nano as nano
+from NanoPrepare import save_uploaded_file
 
 
 def main() -> None:
     st.set_page_config(
-        layout="wide", page_title="NanoWeb", page_icon="images/cellmech.png"
+        layout="wide", page_title="NanoWeb", page_icon="../images/cellmech.png"
     )
-    # TODO add support for JSON files imported midway
+
     top_bar = st.container()
-    top_bar.file_uploader("Upload a JSON file")
+    file = top_bar.file_uploader("Upload a JSON file")
+
+    if file is not None:
+        if file.name.endswith(".json"):
+            save_uploaded_file(file, "data")
+        else:
+            st.warning("Only files with the .json extension are supported.")
+    
 
 
 if __name__ == "__main__":
