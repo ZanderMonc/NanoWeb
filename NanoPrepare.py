@@ -1,19 +1,15 @@
-import calendar
 import tempfile
 import streamlit as st
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 import os
-import sys
 import mvexperiment.experiment as experiment
 import numpy as np
 import zipfile
 import matplotlib.pyplot as plt
 import pandas as pd
 import json
-import shutil
 import altair as alt
-import nanodata
-import nanodata.nano as nano
+import nanodata.nanodata as nano
 
 
 def get_selection(title: str, options: tuple | list) -> str:
@@ -86,7 +82,7 @@ def generate_raw_curve(data_man, segment: int, ratio_z_left: float = 1, ratio_z_
     for internal in data_man:
         print("here " + internal.name)
         #check that z and force are not none
-        if internal.segments[segment].z is 0 or internal.segments[segment].force is 0:
+        if np.any(internal.segments[segment].z == 0) or np.any(internal.segments[segment].force == 0):
             #if segment is dead, do not process it and break;
             st.warning( "Segment " + str(segment) +" has a curve out of threshold that has been ignored")
             break
@@ -157,12 +153,12 @@ def base_chart(data_frame):
         alt.Chart(
             data_frame,
         )
-        .mark_line()
+        .mark_line(point=True,thickness=1)
         .encode(
             x="z:Q",
             y="f:Q",
-        )
-        .interactive()
+            tooltip=["z:Q", "f:Q", "exp:N"],
+        ).interactive()
     )
     return base
 
@@ -172,18 +168,20 @@ def layer_charts(data_frames, chart_func):
     layers = [chart_func(data_frame) for data_frame in data_frames]
     return alt.layer(*layers)
 
-
 def file_handler(file_name: str, quale: str, file):
     if file_name.endswith(".zip"):
-        experiment_manager = nano.NanoDataManager("/" + file_name)
-        experiment_manager.preload()
+        #unzip the file
+        dir_name = tempfile.mkdtemp()  # create a temp folder to pass to experiment
+        extract_zip(file_name, dir_name)  # save the file to the temp folder
+        experiment_manager = nano.ChiaroDataManager("/"+dir_name)
+        experiment_manager.load()
         print(experiment_manager.path)
     else:
         dir_name = tempfile.mkdtemp()  # create a temp folder to pass to experiment
         save_uploaded_file(file, dir_name)  # save the file to the temp folder
         # experiment_manager.append(get_experiment(dir_name, quale))
-        experiment_manager = nano.NanoDataManager(dir_name)
-        experiment_manager.preload()
+        experiment_manager = nano.ChiaroDataManager(dir_name)
+        experiment_manager.load()
     return experiment_manager
 
 
@@ -193,7 +191,7 @@ def threshold_filter(experiment_manager, threshold: float):
             if segment.force is not None:
                 #if max force is over threshold, set force and z to 0
                 if max(segment.force) < threshold:
-                    segment.set_f(0)
+                    segment.set_force(0)
                     segment.set_z(0)
 
 
