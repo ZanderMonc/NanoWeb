@@ -2,9 +2,21 @@ from abc import ABC, abstractmethod
 from typing import Iterable, Optional, TypeVar, Any, Generic
 
 from nanodata.nanodata.errors import AbstractNotImplementedError
+from . import interfaces
 
 TDataSet = TypeVar("TDataSet", bound="AbstractDataSet")
 TDataSetType = TypeVar("TDataSetType", bound="AbstractDataSetType")
+
+class DataSetExistsError(Exception):
+    pass
+
+
+class DataSetNotFoundError(Exception):
+    pass
+
+
+class DataSetTypeExistsError(Exception):
+    pass
 
 
 class AbstractDataManager(ABC, Generic[TDataSet]):
