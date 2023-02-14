@@ -82,7 +82,7 @@ def generate_raw_curve(data_man, segment: int, ratio_z_left: float = 1, ratio_z_
     for internal in data_man:
         print("here " + internal.name)
         #check that z and force are not none
-        if internal.segments[segment].z is 0 or internal.segments[segment].force is 0:
+        if np.any(internal.segments[segment].z == 0) or np.any(internal.segments[segment].force == 0):
             #if segment is dead, do not process it and break;
             st.warning( "Segment " + str(segment) +" has a curve out of threshold that has been ignored")
             break
@@ -153,12 +153,12 @@ def base_chart(data_frame):
         alt.Chart(
             data_frame,
         )
-        .mark_line()
+        .mark_line(point=True,thickness=1)
         .encode(
             x="z:Q",
             y="f:Q",
-        )
-        .interactive()
+            tooltip=["z:Q", "f:Q", "exp:N"],
+        ).interactive()
     )
     return base
 
@@ -167,7 +167,6 @@ def layer_charts(data_frames, chart_func):
     # takes a list of pandas dataframes and a chart function and returns a layered chart
     layers = [chart_func(data_frame) for data_frame in data_frames]
     return alt.layer(*layers)
-
 
 def file_handler(file_name: str, quale: str, file):
     if file_name.endswith(".zip"):
