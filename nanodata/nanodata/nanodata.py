@@ -71,6 +71,7 @@ class ChiaroDataSet(abstracts.DataSet):
         """
         reading_header: bool = True
         current_line: int = 0
+        self._header['tip_shape'] = 'sphere'
         # TODO figure out where these are relevant
         targets = [
             "Time (s)",
