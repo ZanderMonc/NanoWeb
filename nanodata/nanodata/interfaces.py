@@ -71,3 +71,35 @@ class IDataManager(abc.ABC, Generic[TDataSet, TDataSetType]):
     @abc.abstractmethod
     def __repr__(self) -> str:
         pass
+
+class IDataSet(abc.ABC):
+    @abc.abstractmethod
+    def load(self) -> None:
+        pass
+
+    @property
+    @abc.abstractmethod
+    def name(self) -> str:
+        pass
+
+    @property
+    @abc.abstractmethod
+    def path(self) -> str:
+        pass
+
+    @property
+    @abc.abstractmethod
+    def active(self) -> bool:
+        pass
+
+    @abc.abstractmethod
+    def activate(self) -> None:
+        pass
+
+    @abc.abstractmethod
+    def deactivate(self) -> None:
+        pass
+
+    @abc.abstractmethod
+    def __repr__(self) -> str:
+        pass
