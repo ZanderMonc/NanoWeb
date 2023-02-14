@@ -483,11 +483,10 @@ class NanoSurfDataSetType(abstracts.DataSetType):
 ##################################
 
 
-class NanoSegment(Segment):
+class Segment(abstracts.Segment):
     def __init__(self, data: dict[str, Any]):
-        super().__init__(data)
         # TODO organise instance variables
-        # self._active: bool = True
+        super().__init__(data)
         self._i_contact: int = 0
         self._out_contact: int = 0
         # self._parent = None
@@ -515,13 +514,13 @@ class NanoSegment(Segment):
 
     def has_bilayer(self):
         # TODO
-        if self._elastography is not None and self._elastography.has_bilayer() is True:
+        if self._elastography is not None and self._elastography.has_bilayer():
             return True
         return False
 
     def set_data(self, z: np.ndarray, f: np.ndarray, reorder=False):
         # TODO
-        if reorder is True:
+        if reorder:
             new_z = np.linspace(min(z), max(z), len(z))
             f_int = np.interp(new_z, z, f)
             z = new_z
@@ -569,7 +568,7 @@ class NanoSegment(Segment):
             except RuntimeError:
                 return
         fit = func(xx, *out[0])
-        if refine is True and len(out[0]) == 3:
+        if refine and len(out[0]) == 3:
             # try to refine
             x0, a0, s0 = out[0]
             try:
@@ -673,17 +672,6 @@ class NanoSegment(Segment):
 
         except RuntimeError:
             return False
-        return True
-
-    # def deactivate(self) -> None:
-    #     self._active = False
-
-    # def activate(self) -> None:
-    #     self._active = True
-
-    # @property
-    # def active(self) -> bool:
-    #     return self._active
 
 
 #         _      _      _       _       _       _
