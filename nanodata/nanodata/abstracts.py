@@ -54,6 +54,7 @@ class DataManager(
 
     def load_file(self, file_path: str) -> None:
         file_name, _ = os.path.splitext(file_path)
+        file_name = os.path.basename(file_name)
         for file_type in self._file_types:
             if file_type.is_valid(file_path):
                 data_set = file_type.create_data_set(file_name, file_path)
