@@ -81,7 +81,7 @@ class DataManager(
     def export_to_json(self) -> dict[str, Any]:
         curves = []
         for data_set in self.datasets:
-            f = data_set.force.tolist()
+            force = data_set.force.tolist()
             z = data_set.z.tolist()
             curves.append(
                 {
@@ -97,7 +97,7 @@ class DataManager(
                     "speed": 0.0,
                     "data": [
                         {
-                            "f": f,
+                            "force": force,
                             "z": z,
                         }
                     ],
