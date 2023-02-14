@@ -176,80 +176,38 @@ class DataSetType(interfaces.IDataSetType, abc.ABC):
         return f"{self.__name__}(extensions={self.extensions!r})"
 
 
-class AbstractSegment(ABC):
-    def __init__(self, data: dict[str, Any]):
-        self._data: dict = data
+class Segment(interfaces.ISegment, abc.ABC):
+    def __init__(self, data: np.ndarray):
+        self._data: dict[str, Any] = data
 
-    @abstractmethod
-    def has_bilayer(self):
-        raise AbstractNotImplementedError()
+    @property
+    def time(self) -> np.ndarray:
+        """np.ndarray: Returns the time data of the data set."""
+        return self._data.get("time", np.array([]))
 
-    @abstractmethod
-    def set_data(self):
-        raise AbstractNotImplementedError()
+    @property
+    def force(self) -> np.ndarray:
+        """np.ndarray: Returns the force data of the data set."""
+        return self._data.get("force", np.array([]))
 
-    @abstractmethod
-    def get_n_odd(self):
-        raise AbstractNotImplementedError()
+    @property
+    def deflection(self) -> np.ndarray:
+        """np.ndarray: Returns the deflection data of the data set."""
+        return self._data.get("deflection", np.array([]))
 
-    @abstractmethod
-    def smooth(self):
-        raise AbstractNotImplementedError()
+    @property
+    def z(self) -> np.ndarray:
+        """np.ndarray: Returns the z data of the data set."""
+        return self._data.get("z", np.array([]))
 
-    @abstractmethod
-    def find_out_of_contact_region(self):
-        raise AbstractNotImplementedError()
+    @property
+    def indentation(self) -> np.ndarray:
+        """np.ndarray: Returns the indentation data of the data set."""
+        return self._data.get("indentation", np.array([]))
 
-    @abstractmethod
-    def find_contact_point(self):
-        raise AbstractNotImplementedError()
+    @property
+    def data(self) -> dict[str, Any]:
+        return self._data
 
-    @abstractmethod
-    def create_indentation(self):
-        raise AbstractNotImplementedError()
-
-    @abstractmethod
-    def hertz(self):
-        raise AbstractNotImplementedError()
-
-    @abstractmethod
-    def fit_hertz(self):
-        raise AbstractNotImplementedError()
-
-    @abstractmethod
-    def set_z(self) -> None:
-        raise AbstractNotImplementedError()
-
-    @abstractmethod
-    def set_f(self) -> None:
-        raise AbstractNotImplementedError()
-
-    @abstractmethod
-    def time(self):
-        """Returns the time data of the data set."""
-        raise AbstractNotImplementedError()
-
-    @abstractmethod
-    def force(self):
-        """Returns the force data of the data set."""
-        raise AbstractNotImplementedError()
-
-    @abstractmethod
-    def deflection(self):
-        """Returns the deflection data of the data set."""
-        raise AbstractNotImplementedError()
-
-    @abstractmethod
-    def z(self):
-        """Returns the z data of the data set."""
-        raise AbstractNotImplementedError()
-
-    @abstractmethod
-    def indentation(self):
-        """Returns the indentation data of the data set."""
-        raise AbstractNotImplementedError()
-
-    @abstractmethod
-    def data(self):
-        """Returns the header of the data set."""
-        raise AbstractNotImplementedError()
+    def __repr__(self) -> str:
+        return f"Segment(name={self.name!r}, data={self.data!r})"
