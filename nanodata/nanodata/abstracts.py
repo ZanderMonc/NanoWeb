@@ -95,12 +95,10 @@ class DataManager(
                     "spring_constant": data_set.header.get("cantilever_k"),
                     "segment": "approach",
                     "speed": 0.0,
-                    "data": [
-                        {
+                    "data": {
                             "force": force,
                             "z": z,
-                        }
-                    ],
+                        },
                     "position": [data_set.header.get("x_pos"), data_set.header.get("y_pos")],
                 }
             )
