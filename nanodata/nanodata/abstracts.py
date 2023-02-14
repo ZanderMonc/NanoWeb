@@ -77,6 +77,41 @@ class DataManager(
     def clear(self) -> None:
         self._data_sets.clear()
 
+    def export_to_json(self) -> dict[str, Any]:
+        curves = []
+        for data_set in self.datasets:
+            f = data_set.force.tolist()
+            z = data_set.z.tolist()
+            curves.append(
+                {
+                    "filename": data_set.name,
+                    "date": "TODO",
+                    "device_manufacturer": data_set.header.get("device"),
+                    "tip": {
+                        "geometry": "TODO",
+                        "radius": data_set.header.get("tip_radius"),
+                    },
+                    "spring_constant": data_set.header.get("cantilever_k"),
+                    "segment": "TODO",
+                    "speed": "TODO",
+                    "data": [
+                        {
+                            "f": f,
+                            "z": z,
+                        }
+                    ],
+                    "position": "TODO",
+                }
+            )
+
+        data = {
+            "experiment": {"Description": "This is a test experiment"},
+            "protocol": {},
+            "curves": curves,
+        }
+
+        return data
+
     @property
     def values(self) -> Iterable[interfaces.TDataSet]:
         return self._data_sets.values()
@@ -206,9 +241,12 @@ class Segment(interfaces.ISegment, abc.ABC):
     @property
     def data(self) -> dict[str, Any]:
         return self._data
+
     def set_force(self, force: np.ndarray) -> None:
         self._data["force"] = force
+
     def set_z(self, z: np.ndarray) -> None:
         self._data["z"] = z
+
     def __repr__(self) -> str:
         return f"Segment(data={self.data!r})"
