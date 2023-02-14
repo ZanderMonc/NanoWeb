@@ -13,4 +13,4 @@ test:linting:
 
 test:app_run:
   script:
-    - python3 app.py
+    - python3 NanoPrepare.py
