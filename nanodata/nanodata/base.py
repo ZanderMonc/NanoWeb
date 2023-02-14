@@ -5,7 +5,7 @@ from typing import Iterable, Optional, Any
 from abc import ABC, abstractmethod
 
 
-from .abstract import (
+from nanodata.nanodata.abstract import (
     AbstractDataManager,
     AbstractDataSet,
     AbstractDataSetType,
@@ -14,7 +14,7 @@ from .abstract import (
     TDataSetType,
 )
 
-from .errors import AbstractNotImplementedError
+from nanodata.nanodata.errors import AbstractNotImplementedError
 
 ##################################
 #### Data Managers ###############

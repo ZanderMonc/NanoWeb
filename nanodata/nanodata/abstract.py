@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Iterable, Optional, TypeVar, Any, Generic
 
-from .errors import AbstractNotImplementedError
+from nanodata.nanodata.errors import AbstractNotImplementedError
 
 TDataSet = TypeVar("TDataSet", bound="AbstractDataSet")
 TDataSetType = TypeVar("TDataSetType", bound="AbstractDataSetType")
@@ -21,7 +21,6 @@ class AbstractDataManager(ABC, Generic[TDataSet]):
         self._data_sets: dict[str, TDataSet] = {}
         self._file_types: list[TDataSetType] = []
 
-    @abstractmethod
     def add_data_set(self) -> None:
         raise AbstractNotImplementedError()
 
