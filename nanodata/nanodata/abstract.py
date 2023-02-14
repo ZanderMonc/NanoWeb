@@ -115,29 +115,35 @@ class DataManager(
         return f"{self.__name__}(path={self.path!r}, data_sets={len(self)!r}, file_types={self._file_types!r})"
 
 
-class AbstractDataSet(ABC):
-    """Abstract class for data sets.
-
-    Args:
-        name (str): Name of the data set.
-        path (str): Path to the data set.
-    """
-
+class DataSet(interfaces.IDataSet, abc.ABC):
     def __init__(self, name: str, path: str):
         self._name: str = name
         self._path: str = path
+        self._active: bool = True
 
-    @abstractmethod
     def load(self) -> None:
-        raise AbstractNotImplementedError()
+        pass
 
-    @abstractmethod
+    @property
     def name(self) -> str:
-        raise AbstractNotImplementedError()
+        return self._name
 
-    @abstractmethod
+    @property
     def path(self) -> str:
-        raise AbstractNotImplementedError()
+        return self._path
+
+    @property
+    def active(self) -> bool:
+        return self._active
+
+    def activate(self):
+        self._active = True
+
+    def deactivate(self):
+        self._active = False
+
+    def __repr__(self) -> str:
+        return f"DataSet(name={self.name!r}, path={self.path!r})"
 
 
 class AbstractDataSetType(ABC):
