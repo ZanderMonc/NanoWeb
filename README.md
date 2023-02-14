@@ -4,7 +4,7 @@
 ### Installation
     Requirements listed in requirements.txt in main directory. 
     1. Run pip -r requirements.txt in a terminal window.
-    2. in a terminal window, type "streamlit run app.py".
+    2. in a terminal window, type "streamlit run NanoPrepare.py".
     3. The NanoWeb should open in your default browser.
 ### Uninstallation
     Delete the SH32 main directory in your filesystem.

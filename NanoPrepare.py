@@ -197,6 +197,7 @@ def threshold_filter(experiment_manager, threshold: float):
 
 
 def main() -> None:
+
     st.set_page_config(
         layout="wide", page_title="NanoWeb", page_icon="images/cellmech.png"
     )
