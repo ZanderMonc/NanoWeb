@@ -51,6 +51,10 @@ def main() -> None:
     graph_bar = st.container()
     graph_first_col, graph_second_col, graph_third_col, graph_fourth_col = graph_bar.columns(4)
 
+    filter_bar = st.container()
+    filter_bar.write("Global Config")
+    filter_first_col, filter_second_col, filter_third_col, filter_fourth_col, filter_fifth_col = filter_bar.columns(5)
+
     if file is not None:
         if file.name.endswith(".json"):
             save_uploaded_file(file, "data")
