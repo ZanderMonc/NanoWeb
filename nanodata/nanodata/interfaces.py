@@ -6,6 +6,7 @@ TDataSet = TypeVar("TDataSet", bound="IDataSet")
 TDataSetType = TypeVar("TDataSetType", bound="IDataSetType")
 TSegment = TypeVar("TSegment", bound="ISegment")
 
+
 class IDataManager(abc.ABC, Generic[TDataSet, TDataSetType]):
     @abc.abstractmethod
     def _add_data_set(self, data_set: TDataSet) -> None:
@@ -76,6 +77,7 @@ class IDataManager(abc.ABC, Generic[TDataSet, TDataSetType]):
     def __repr__(self) -> str:
         pass
 
+
 class IDataSet(abc.ABC):
     @abc.abstractmethod
     def load(self) -> None:
@@ -115,7 +117,7 @@ class IDataSetType(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def create_data_set(self, path: str) -> TDataSet:
+    def create_data_set(self, name: str, path: str) -> TDataSet:
         pass
 
     @abc.abstractmethod
