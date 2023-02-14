@@ -92,6 +92,21 @@ def main() -> None:
                 use_container_width=True
             )
 
+            #Hertz analysis
+            hertz_active = graph_third_col.checkbox("Hertz Analysis")
+            if hertz_active:
+                graph_third_col_indent = graph_third_col.container()
+                graph_third_col_indent.write("Indentation curves")
+                graph_third_col_indent.line_chart()
+
+                graph_third_col_f_ind = graph_third_col.container()
+                graph_third_col_f_ind.write("Average F-ind")
+                graph_third_col_f_ind.line_chart()
+
+                graph_third_col_elasticity = graph_third_col.container()
+                graph_third_col_elasticity.write("Elasticity values")
+                graph_third_col_elasticity.line_chart()
+
         else:
             st.warning("Only files with the .json extension are supported.")
 
