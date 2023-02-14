@@ -2,6 +2,10 @@ import abc
 
 from typing import Iterable, TypeVar, Generic, Any
 
+TDataSet = TypeVar("TDataSet", bound="IDataSet")
+TDataSetType = TypeVar("TDataSetType", bound="IDataSetType")
+TSegment = TypeVar("TSegment", bound="ISegment")
+
 class IDataManager(abc.ABC, Generic[TDataSet, TDataSetType]):
     @abc.abstractmethod
     def _add_data_set(self, data_set: TDataSet) -> None:
