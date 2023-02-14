@@ -35,6 +35,10 @@ class IDataManager(abc.ABC, Generic[TDataSet, TDataSetType]):
     def clear(self) -> None:
         pass
 
+    @abc.abstractmethod
+    def export_to_json(self) -> dict[str, Any]:
+        pass
+
     @property
     @abc.abstractmethod
     def values(self) -> Iterable[TDataSet]:

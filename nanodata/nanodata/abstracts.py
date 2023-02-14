@@ -93,15 +93,15 @@ class DataManager(
                         "radius": data_set.header.get("tip_radius"),
                     },
                     "spring_constant": data_set.header.get("cantilever_k"),
-                    "segment": "TODO",
-                    "speed": "TODO",
+                    "segment": "approach",
+                    "speed": 0.0,
                     "data": [
                         {
                             "f": f,
                             "z": z,
                         }
                     ],
-                    "position": "TODO",
+                    "position": [data_set.header.get("x_pos"), data_set.header.get("y_pos")],
                 }
             )
 
