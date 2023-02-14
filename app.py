@@ -192,7 +192,7 @@ def threshold_filter(experiment_manager, threshold: float):
             if segment.force is not None:
                 #if max force is over threshold, set force and z to 0
                 if max(segment.force) < threshold:
-                    segment.set_f(0)
+                    segment.set_force(0)
                     segment.set_z(0)
 
 

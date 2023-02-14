@@ -206,6 +206,9 @@ class Segment(interfaces.ISegment, abc.ABC):
     @property
     def data(self) -> dict[str, Any]:
         return self._data
-
+    def set_force(self, force: np.ndarray) -> None:
+        self._data["force"] = force
+    def set_z(self, z: np.ndarray) -> None:
+        self._data["z"] = z
     def __repr__(self) -> str:
         return f"Segment(data={self.data!r})"
