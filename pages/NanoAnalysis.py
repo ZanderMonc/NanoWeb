@@ -13,7 +13,7 @@ import json
 import shutil
 import altair as alt
 import nanodata
-import nanodata.nano as nano
+import nanodata.nanodata as nano
 from NanoPrepare import save_uploaded_file, base_chart, layer_charts
 import nanoanalysisdata.engine as engine
 
