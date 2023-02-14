@@ -36,7 +36,7 @@ def generate_raw_curves(haystack: list) -> list:
                     "f": curve.data["F"],
                 }
             )
-        all_curves.append(df)
+            all_curves.append(df)
     return all_curves
 
 
@@ -83,7 +83,14 @@ def main() -> None:
             # Current curve plot
             graph_second_col_current = graph_second_col.container()
             graph_second_col_current.write("Current curve")
+            options = [curve.filename for curve in engine.haystack if curve.active]
+            selected_index = options.index(graph_second_col_current.selectbox('Select a curve', options, index=0))
             graph_second_col_current_plot = graph_second_col_current.line_chart()
+
+            graph_second_col_current_plot.altair_chart(
+                base_chart(raw_curves[selected_index]),
+                use_container_width=True
+            )
 
         else:
             st.warning("Only files with the .json extension are supported.")
