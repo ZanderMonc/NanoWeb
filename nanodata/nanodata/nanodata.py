@@ -20,7 +20,7 @@ def GGauss(x, x1, x2, a1, a2, s1, s2) -> float:
     return a1 * np.exp(-(((x - x1) / s1) ** 2)) + a2 * np.exp(-(((x - x2) / s2) ** 2))
 
 
-def cross(x1, x2, th, dth) -> bool:
+def can_be_crossed(x1, x2, th, dth) -> bool:
     th1 = th + dth
     th2 = th - dth
     if np.sign(x1 - th1) != np.sign(x2 - th1):
