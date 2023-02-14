@@ -89,7 +89,7 @@ class DataManager(
                     "date": "TODO",
                     "device_manufacturer": data_set.header.get("device"),
                     "tip": {
-                        "geometry": "TODO",
+                        "geometry": data_set.header.get("tip_shape"),
                         "radius": data_set.header.get("tip_radius"),
                     },
                     "spring_constant": data_set.header.get("cantilever_k"),

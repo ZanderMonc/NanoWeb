@@ -664,6 +664,10 @@ class Segment(abstracts.Segment):
         except RuntimeError:
             return False
 
+    @property
+    def speed(self):
+        return self._speed
+
 
 #         _      _      _       _       _       _
 #      __(.)< __(.)> __(.)=   >(.)__  >(.)__  >(.)__
