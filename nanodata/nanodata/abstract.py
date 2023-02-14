@@ -1,12 +1,9 @@
 import abc
 import os
-from typing import Iterable, Optional, TypeVar, Any, Generic, Iterator
+import numpy as np
+from typing import Iterable, Any, Iterator
 
-from nanodata.nanodata.errors import AbstractNotImplementedError
 from . import interfaces
-
-TDataSet = TypeVar("TDataSet", bound="AbstractDataSet")
-TDataSetType = TypeVar("TDataSetType", bound="AbstractDataSetType")
 
 class DataSetExistsError(Exception):
     pass
