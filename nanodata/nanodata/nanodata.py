@@ -518,16 +518,6 @@ class Segment(abstracts.Segment):
             return True
         return False
 
-    def set_data(self, z: np.ndarray, f: np.ndarray, reorder=False):
-        # TODO
-        if reorder:
-            new_z = np.linspace(min(z), max(z), len(z))
-            f_int = np.interp(new_z, z, f)
-            z = new_z
-            f = f_int
-        self.set_z(z)
-        self.set_f(f)
-
     def get_n_odd(self, fraction, total=None):
         # TODO not sure what purpose of this is
         if total is None:
