@@ -4,8 +4,7 @@ from typing import Any
 from scipy.optimize import curve_fit
 from scipy.signal import savgol_filter, find_peaks, medfilt
 
-from nanodata.nanodata.base import DataManager, NanoDataSet, NanoDataSetType, Segment
-from nanodata.nanodata.errors import AbstractNotImplementedError
+from . import abstracts
 
 # TODO move these
 def Gauss(x, x0, a0, s0) -> float:
@@ -35,10 +34,9 @@ def cross(x1, x2, th, dth) -> bool:
 ##################################
 
 
-class NanoDataManager(DataManager[NanoDataSet]):
-    """Class for managing data sets.
+class ChiaroDataManager(abstracts.DataManager["ChiaroDataSet", "ChiaroDataSetType"]):
+    """Class for managing chiaro/optics 11 data sets.
 
-    Used for CellMechLab related data sets.
     All files types should be registered in the __init__.
 
     Args:
@@ -47,22 +45,7 @@ class NanoDataManager(DataManager[NanoDataSet]):
 
     def __init__(self, dir_path: str):
         super().__init__(dir_path)
-        ##################################
-        #### Register File Types Here ####
-        ##################################
         self.register_file_type(ChiaroDataSetType())
-
-        # ! Below comments are placeholders for DataSetType names, subject to change
-        # self.register_file_type(NanoSurfDataSetType())
-        # self.register_file_type(EasyTsvDataSetType())
-        # self.register_file_type(JpkDataSetType())
-        # self.register_file_type(JpkForceMapDataSetType())
-
-    def apply_filter(self):
-        pass
-
-    def export_to_json(self):
-        final = {}
 
 
 ##################################
