@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import json
 import altair as alt
-import nanodata as nano
+import nanodata.nanodata as nano
 
 
 def get_selection(title: str, options: tuple | list) -> str:
@@ -171,15 +171,18 @@ def layer_charts(data_frames, chart_func):
 
 def file_handler(file_name: str, quale: str, file):
     if file_name.endswith(".zip"):
-        experiment_manager = nano.NanoDataManager("/" + file_name)
-        experiment_manager.preload()
+        #unzip the file
+        dir_name = tempfile.mkdtemp()  # create a temp folder to pass to experiment
+        extract_zip(file_name, dir_name)  # save the file to the temp folder
+        experiment_manager = nano.ChiaroDataManager("/"+dir_name)
+        experiment_manager.load()
         print(experiment_manager.path)
     else:
         dir_name = tempfile.mkdtemp()  # create a temp folder to pass to experiment
         save_uploaded_file(file, dir_name)  # save the file to the temp folder
         # experiment_manager.append(get_experiment(dir_name, quale))
-        experiment_manager = nano.NanoDataManager(dir_name)
-        experiment_manager.preload()
+        experiment_manager = nano.ChiaroDataManager(dir_name)
+        experiment_manager.load()
     return experiment_manager
 
 
