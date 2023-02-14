@@ -208,4 +208,4 @@ class Segment(interfaces.ISegment, abc.ABC):
         return self._data
 
     def __repr__(self) -> str:
-        return f"Segment(name={self.name!r}, data={self.data!r})"
+        return f"Segment(data={self.data!r})"
