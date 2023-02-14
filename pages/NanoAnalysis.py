@@ -96,20 +96,31 @@ def main() -> None:
                 use_container_width=True
             )
 
-            #Hertz analysis
+            # Hertz analysis
             hertz_active = graph_third_col.checkbox("Hertz Analysis")
             if hertz_active:
                 graph_third_col_indent = graph_third_col.container()
                 graph_third_col_indent.write("Indentation curves")
-                graph_third_col_indent.line_chart()
+                graph_third_col_indent_plot = graph_third_col_indent.line_chart()
 
                 graph_third_col_f_ind = graph_third_col.container()
                 graph_third_col_f_ind.write("Average F-ind")
-                graph_third_col_f_ind.line_chart()
+                graph_third_col_f_ind_plot = graph_third_col_f_ind.line_chart()
 
                 graph_third_col_elasticity = graph_third_col.container()
                 graph_third_col_elasticity.write("Elasticity values")
-                graph_third_col_elasticity.line_chart()
+                graph_third_col_elasticity_plot = graph_third_col_elasticity.line_chart()
+
+            # Elasticity Spectra analysis
+            el_spec_active = graph_fourth_col.checkbox("Elasticity Spectra Analysis")
+            if el_spec_active:
+                graph_fourth_col_el_spec = graph_fourth_col.container()
+                graph_fourth_col_el_spec.write("Elasticity Spectra")
+                graph_fourth_col_el_spec_plot = graph_fourth_col_el_spec.line_chart()
+
+                graph_fourth_col_bilayer = graph_fourth_col.container()
+                graph_fourth_col_bilayer.write("Bilayer model")
+                graph_fourth_col_bilayer_plot = graph_fourth_col_bilayer.line_chart()
 
         else:
             st.warning("Only files with the .json extension are supported.")
