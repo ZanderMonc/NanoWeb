@@ -146,42 +146,34 @@ class DataSet(interfaces.IDataSet, abc.ABC):
         return f"DataSet(name={self.name!r}, path={self.path!r})"
 
 
-class AbstractDataSetType(ABC):
-    """Abstract class for all data set types."""
+class DataSetType(interfaces.IDataSetType, abc.ABC):
+    def __init__(
+        self, name: str, extensions: list[str], data_type: type[interfaces.TDataSet]
+    ):
+        self._name: str = name
+        self._extensions: list[str] = extensions
+        self._data_type: type[interfaces.TDataSet] = data_type
 
-    @abstractmethod
+    def create_data_set(self, name: str, path: str) -> interfaces.TDataSet:
+        return self._data_type(name, path)
+
+    def has_valid_extension(self, path: str) -> bool:
+        _, file_extension = os.path.splitext(path)
+        return file_extension in self._extensions
+
     def is_valid(self, path: str) -> bool:
-        """Check if file is valid for self data type.
+        return self.has_valid_extension(path) and self.has_valid_header(path)
 
-        Args:
-            path (str): Path to file.
+    @property
+    def extensions(self) -> Iterable[str]:
+        return self._extensions
 
-        Raises:
-            AbstractNotImplementedError: This method is abstract and needs to be implemented.
-
-        Returns:
-            bool: True if file is valid for self data type.
-        """
-        raise AbstractNotImplementedError()
-
-    @abstractmethod
-    def create_dataset(self) -> AbstractDataSet:
-        """Create data set for self data type.
-
-        Returns:
-            DataSet: Data set for self data type.
-        """
-        raise AbstractNotImplementedError()
-
-    @abstractmethod
-    def extensions(self) -> list[str]:
-        """Get list of file extensions that are associated with this data set type."""
-        raise AbstractNotImplementedError()
-
-    @abstractmethod
+    @property
     def name(self) -> str:
-        """Get name of the data set type."""
-        raise AbstractNotImplementedError()
+        return self._name
+
+    def __repr__(self) -> str:
+        return f"{self.__name__}(extensions={self.extensions!r})"
 
 
 class AbstractSegment(ABC):
