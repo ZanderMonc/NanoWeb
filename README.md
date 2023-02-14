@@ -12,8 +12,8 @@
     accepted files are currently zip directories of any number of .txt experiments
     for instance an optics11 d mode zipped ddirectory containing one file, 
     a ".txt" file, with relevant header to the filetype followed by data.
-### JSON output (not working
-    first click save to json, then download JSON file, JSON as test.json will be downloaded to your downloads folder.
+### JSON output (not working)
+    not working - first click save to json, then download JSON file, JSON as test.json will be downloaded to your downloads folder.
 ### Features of NanoWeb Prepare 
 
 	Users can apply filters from a drop down menu on the bottom left.	
@@ -25,9 +25,9 @@
 	Users can export to JSON for use in NanoWeb Analysis or similar.
 ### Known issues in NanoWeb Prepare
 
-    tooltip hitboxes are too small, making it difficult to hover over a datapoint.
+    Tooltip hitboxes are too small, making it difficult to hover over a datapoint.
 
-    zooming in and out is not smooth.
+    Zooming in and out is not smooth.
     
     Exporting to JSON is not working.
 ### Features of NanoWeb Analysis
@@ -39,10 +39,10 @@
     Users can select a range of files from the JSON file to view.
 ### Known issues in NanoWeb Analysis
 
-    GUI scale and usability is poor to select a range of files.
+    GUI scale and usability is poor.
     
-    Loading time is poor for large number of experiments.
+    Loading time is poor for json files which contain a large number of experiments.
 
-    Analysis tools not implemented.
+    Analysis tools are not implemented.
 
-    Exporting process log not implemented.
+    Exporting a process log is not implemented.
