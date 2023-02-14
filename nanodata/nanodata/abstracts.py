@@ -5,6 +5,7 @@ from typing import Iterable, Any, Iterator
 
 from . import interfaces
 
+
 class DataSetExistsError(Exception):
     pass
 
@@ -174,7 +175,7 @@ class DataSetType(interfaces.IDataSetType, abc.ABC):
 
 
 class Segment(interfaces.ISegment, abc.ABC):
-    def __init__(self, data: np.ndarray):
+    def __init__(self, data: dict[str, Any]):
         self._data: dict[str, Any] = data
 
     @property
