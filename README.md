@@ -24,7 +24,25 @@
 
 	Users can export to JSON for use in NanoWeb Analysis or similar.
 ### Known issues in NanoWeb Prepare
+
     tooltip hitboxes are too small, making it difficult to hover over a datapoint.
 
     zooming in and out is not smooth.
     
+    Exporting to JSON is not working.
+### Features of NanoWeb Analysis
+
+    Users can upload a JSON file from NanoWeb Prepare or similar.
+
+    Users can select a file from the JSON file to view.
+
+    Users can select a range of files from the JSON file to view.
+### Known issues in NanoWeb Analysis
+
+    GUI scale and usability is poor to select a range of files.
+    
+    Loading time is poor for large number of experiments.
+
+    Analysis tools not implemented.
+
+    Exporting process log not implemented.
