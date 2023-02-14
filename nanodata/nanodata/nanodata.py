@@ -455,11 +455,11 @@ class ChiaroDataSetType(abstracts.DataSetType):
         return False
 
 
-class NanoSurfDataSetType(NanoDataSetType):
+class NanoSurfDataSetType(abstracts.DataSetType):
     def __init__(self):
         super().__init__("NanoSurf", [".txt"], NanoSurfDataSet)
 
-    def is_valid(self, path: str) -> bool:
+    def has_valid_header(self, path: str) -> bool:
         with open(path) as file:
             signature = file.readline()
 
