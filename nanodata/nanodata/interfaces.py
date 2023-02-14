@@ -103,3 +103,30 @@ class IDataSet(abc.ABC):
     @abc.abstractmethod
     def __repr__(self) -> str:
         pass
+
+    class IDataSetType(abc.ABC):
+        @abc.abstractmethod
+        def is_valid(self, path: str) -> bool:
+            pass
+
+        @abc.abstractmethod
+        def create_data_set(self, path: str) -> TDataSet:
+            pass
+
+        @abc.abstractmethod
+        def has_valid_extension(self, path: str) -> bool:
+            pass
+
+        @abc.abstractmethod
+        def has_valid_header(self, path: str) -> bool:
+            pass
+
+        @property
+        @abc.abstractmethod
+        def extensions(self) -> Iterable[str]:
+            pass
+
+        @property
+        @abc.abstractmethod
+        def name(self) -> str:
+            pass
