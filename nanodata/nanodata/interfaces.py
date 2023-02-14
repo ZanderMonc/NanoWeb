@@ -130,3 +130,13 @@ class IDataSet(abc.ABC):
         @abc.abstractmethod
         def name(self) -> str:
             pass
+
+    class ISegment(abc.ABC):
+        @property
+        @abc.abstractmethod
+        def data(self) -> dict[str, Any]:
+            pass
+
+        @abc.abstractmethod
+        def __repr__(self) -> str:
+            pass
