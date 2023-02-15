@@ -21,6 +21,15 @@ class DataSetTypeExistsError(Exception):
 class DataManager(
     interfaces.IDataManager[interfaces.TDataSet, interfaces.TDataSetType], abc.ABC
 ):
+    _active_data_managers: dict[str, interfaces.IDataManager] = {}
+
+    def __new__(cls, data_manager_name: str):
+        if data_manager_name not in cls._active_data_managers:
+            cls._active_data_managers[data_manager_name] = super().__new__(cls)
+        else:
+            print(f"DataManager with name '{data_manager_name}' already exists.")
+        return cls._active_data_managers[data_manager_name]
+
     def __init__(self, path: str):
         self._path: str = path
         self._data_sets: dict[str, interfaces.TDataSet] = {}
