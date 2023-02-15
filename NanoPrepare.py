@@ -1,7 +1,8 @@
+from __future__ import annotations
 import tempfile
 import streamlit as st
 from streamlit.runtime.uploaded_file_manager import UploadedFile
-from __future__ import annotations
+
 import os
 import mvexperiment.experiment as experiment
 import numpy as np
