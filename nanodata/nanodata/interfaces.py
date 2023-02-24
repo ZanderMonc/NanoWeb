@@ -9,6 +9,10 @@ TSegment = TypeVar("TSegment", bound="ISegment")
 
 class IDataManager(abc.ABC, Generic[TDataSet, TDataSetType]):
     @abc.abstractmethod
+    def set_root_directory(self, path: str) -> None:
+        pass
+
+    @abc.abstractmethod
     def _add_data_set(self, data_set: TDataSet) -> None:
         pass
 

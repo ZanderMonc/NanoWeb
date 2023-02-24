@@ -29,10 +29,16 @@ class DataManager(
             cls._active_data_managers[identifier] = super().__new__(cls)
         return cls._active_data_managers[identifier]
 
-    def __init__(self, path: str):
-        self._path: str = path
+    def __init__(self, path: str = None):
+        if path is not None:
+            self.set_root_directory(path)
+        else:
+            self._path = None
         self._data_sets: dict[str, interfaces.TDataSet] = {}
         self._file_types: list[interfaces.TDataSetType] = []
+
+    def set_root_directory(self, path: str) -> None:
+        self._path = path
 
     def _add_data_set(self, data_set: interfaces.TDataSet) -> None:
         if data_set.name in self._data_sets:
