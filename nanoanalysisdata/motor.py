@@ -6,6 +6,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit
 from scipy.signal import find_peaks, savgol_filter
+import nanoanalysisdata.engine as engine
 
 PEN_GREEN = pg.mkPen(pg.QtGui.QColor(0, 255, 0, 255), width=2)
 ST_RED = 1
@@ -25,6 +26,8 @@ def sames(ar1, ar2):
         return True
     return False
 
+def check_global():
+    print(engine.hertz_status)
 
 def hertz(x, E, R, poisson=0.5):
     return (4.0 / 3.0) * (E / (1 - poisson ** 2)) * np.sqrt(R * x ** 3)
@@ -359,8 +362,8 @@ class Nanoment():
         #     self.Ex = np.array(Ex)
         #     self.Ey = np.array(Ey)
 
-    def set_indentation(self, check_active):
-        if not check_active:
+    def set_indentation(self, ):
+        if not engine.hertz_status:
             return
         if self.k is None:
             return
@@ -425,7 +428,8 @@ class Nanoment():
         #     return
         # if recalculate_cp is True:
         #     self.calculate_contactpoint()
-        self.set_indentation(check_active)
+
+        self.set_indentation()
         # self.update_view()
 
     def filter_prominence(self, pro=0.2, winperc=1, threshold=25):
@@ -484,8 +488,8 @@ class Nanoment():
         x = x + y/self.k
         return x, y
 
-    def fitHertz(self, check_active=False):
-        if check_active is False:
+    def fitHertz(self):
+        if engine.hertz_status is False:
             return
         if self.ind is None or self.touch is None or (len(self.ind) != len(self.touch)):
             return
@@ -499,7 +503,7 @@ class Nanoment():
                 # Eeff = E*1.0e9 #to convert E in GPa to keep consistency with the units nm and nN
                 return (4.0 / 3.0) * (E / (1 - poisson ** 2)) * np.sqrt(R * x ** 3)
 
-            indmax = float(self._ui.fit_indentation.value())
+            indmax = float(engine.max_indentation)
             jj = np.argmin((self.ind-indmax)**2)
             if jj < 5:
                 return

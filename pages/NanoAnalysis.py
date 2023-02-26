@@ -19,6 +19,7 @@ from NanoPrepare import save_uploaded_file, base_chart, layer_charts
 import nanoanalysisdata.engine as engine
 import nanoanalysisdata.motor as motor
 
+
 def refill(collection):
     for i in range(len(collection)):
         c = engine.haystack[i]
@@ -28,6 +29,13 @@ def refill(collection):
             print("IndexError")
     # filter method
     # self.fmethod_changed()
+
+
+hertz_status = False
+
+
+def change_hertz_status(is_active: bool) -> None:
+    engine.hertz_status = is_active
 
 
 def numbers():
@@ -65,132 +73,7 @@ def numbers():
     bins = 'auto'
     y, x = np.histogram(eall, bins=bins, density=True)
     print("y ", y)
-    # if len(y) >= 3:
-    #     try:
-    #         x0, w, A, nx, ny = motor.gauss_fit(x, y)
-    #         x, y, z = motor.calc_hertz(x0, self.collection[0].R, self.collection[0].k, float(
-    #             self.ui.fit_indentation.value()))
-    #         self.indentation_fit.setData(x, y)
-    #         self.indentation_fit_avg.setData(x, y)
-    #         self.fdistance_fit.setData(z, y)
-    #     except:
-    #         self.indentation_fit.setData(None)
-    #         self.fdistance_fit.setData(None)
-    #         self.indentation_fit_avg.setData(None)
-    #     try:
-    #         x_hertz, y_hertz, er_hertz = motor.getMedCurve(
-    #             ind_data, F_data, error=True)
-    #         self.hertz_average_error = er_hertz
-    #     except TypeError:
-    #         return
-    #     except ValueError:
-    #         return
-    #     # Setting average hertz data
-    #     if self.ui.analysis.isChecked() is True:
-    #         print("************")
-    #         indmax = float(self.ui.fit_indentation.value())
-    #         self.x_hertz_average = x_hertz
-    #         self.y_hertz_average = y_hertz
-    #         self.hertz_average.setData(x_hertz, y_hertz)
-    #         # jmax_hertz = np.argmin((x_hertz-indmax)**2)
-    #         self.hertz_average.setData(x_hertz, y_hertz)
-    #         self.hertz_average_top.setData(x_hertz, (y_hertz + er_hertz / 2))
-    #         self.hertz_average_bottom.setData(
-    #             x_hertz, (y_hertz - er_hertz / 2))
-    #     else:
-    #         self.hertz_average.setData(None)
-    #         self.hertz_average_top.setData(None)
-    #         self.hertz_average_bottom.setData(None)
 
-    # Elasticity Spectra
-    # if self.ui.es_analysis.isChecked() is True:
-    #     E_data_x = []
-    #     E_data_y = []
-    #     Radius = []
-    #     for c in self.collection:
-    #         if c.active is True and c.E is not None:
-    #             # Elasticity Spectra
-    #             Radius.append(c.R)
-    #             E_data_x.append(c.Ex)  # contact radius
-    #             E_data_y.append(c.Ey)
-    #     try:
-    #         x, y, er = motor.getMedCurve(E_data_x, E_data_y, error=True)
-    #         self.es_average_error = er * 1e9
-    #     except TypeError:
-    #         return
-    #     except ValueError:
-    #         return
-    #
-    #
-    #     x = x ** 2 / np.average(Radius)  # ind
-    #     self.es_average.setData(x, y * 1e9)  # E vs ind
-    #     self.ES_array_x = x
-    #     self.ES_array_y = y * 1e9
-    #     indmax = float(self.ui.fit_indentation.value())
-    #     # rmax = np.sqrt(indmax * np.average(Radius))
-    #     jmax = np.argmin((x - indmax) ** 2)
-    #
-    #     # Setting average elasticity spectra data
-    #     self.es_top.setData(x[:jmax], (y[:jmax] + er[:jmax] / 2) * 1e9)
-    #     self.es_bottom.setData(x[:jmax], (y[:jmax] - er[:jmax] / 2) * 1e9)
-    #     self.es_averageZoom.setData(x[:jmax], y[:jmax] * 1e9)
-    #     all = motor.fitExpSimple(np.sqrt(x[:jmax] * np.average(Radius)), y[:jmax], er[:jmax])
-    #     if all is not None:
-    #         self.es_averageFit.setData(
-    #             x[:jmax], motor.TheExp(np.sqrt(x[:jmax] * np.average(Radius)), *all[0]) * 1e9)
-    #         val = str(int((all[0][0] * 1e9) / 10) / 100.0)
-    #         try:
-    #             err = str(int((all[1][0] * 1e9) / 10) / 100.0)
-    #             self.ui.decay_e0.setText(
-    #                 '<span>{}&plusmn;{}</span>'.format(val, err))
-    #         except OverflowError:
-    #             err = 0
-    #             self.ui.decay_e0.setText(
-    #                 '<span>{}&plusmn;{}</span>'.format(val, 'XXX'))
-    #         self.E0 = str(int(all[0][0] * 1e9))
-    #         self.E0_std = str(int(all[1][0] * 1e9))
-    #         val = str(int((all[0][1] * 1e9)))
-    #         try:
-    #             err = str(int((all[1][1] * 1e9)))
-    #             self.ui.decay_eb.setText(
-    #                 '<span>{}&plusmn;{}</span>'.format(val, err))
-    #         except OverflowError:
-    #             err = 0
-    #             self.ui.decay_eb.setText(
-    #                 '<span>{}&plusmn;{}</span>'.format(val, 'XXX'))
-    #         self.Eb = str(int(all[0][1] * 1e9))
-    #         self.Eb_std = str(int(all[1][1] * 1e9))
-    #         val = str(int((all[0][2])))
-    #         try:
-    #             err = str(int((all[1][2])))
-    #             self.ui.decay_d0.setText(
-    #                 '<span>{}&plusmn;{}</span>'.format(val, err))
-    #         except OverflowError:
-    #             self.ui.decay_d0.setText(
-    #                 '<span>{}&plusmn;{}</span>'.format(val, 'XXX'))
-    #         self.d0 = str(int(all[0][2]))
-    #         self.d0_std = str(int(all[1][2]))
-    #
-    #     eall = y[:jmax]
-    #     val = str(int(np.average(eall * 1e9) / 10) / 100.0)
-    #     err = str(int(np.std(eall * 1e9) / 10) / 100.0)
-    #     self.ui.data_std.setText('<span>{}&plusmn;{}</span>'.format(val, err))
-    #     self.ESav = str(int(np.average(eall * 1e9)))
-    #     self.ESav_std = str(int(np.std(eall * 1e9)))
-    # else:
-    #     try:
-    #         self.es_top.setData(None)
-    #         self.es_bottom.setData(None)
-    #         self.es_averageZoom.setData(None)
-    #         self.es_averageFit.setData(None)
-    #         self.es_average.setData(None)
-    #         self.ui.data_std.setText('0.00')
-    #         self.ui.decay_e0.setText('0.00')
-    #         self.ui.decay_d0.setText('0.00')
-    #         self.ui.decay_eb.setText('0.00')
-    #
-    #     except:
-    #         pass
 
 def count():
     Ne = 0
@@ -209,10 +92,12 @@ def count():
     # self.Na = str(Na)
     numbers()
 
+
 def hertz_changed():
     for c in motor.collection:
-        c.filter_all(False, check_active=True)  # False does not re-compute contact point
+        c.filter_all(False)  # False does not re-compute contact point
     count()
+
 
 def handle_click(i: int) -> None:
     # activate and deactivate curve in haystack on checkbox click
@@ -220,6 +105,7 @@ def handle_click(i: int) -> None:
         engine.haystack[i].active = False
     else:
         engine.haystack[i].active = True
+
 
 def generate_raw_curves(haystack: list) -> list:
     all_curves = []
@@ -235,11 +121,11 @@ def generate_raw_curves(haystack: list) -> list:
     return all_curves
 
 
-
 def main() -> None:
     st.set_page_config(
         layout="wide", page_title="NanoWeb", page_icon="/images/cellmech.png"
     )
+
     top_bar = st.container()
     file = top_bar.file_uploader("Upload a JSON file")
     curve_expander = st.expander("Curve selection")
@@ -273,8 +159,8 @@ def main() -> None:
             #     collection.append(node)
 
             # File selection checkboxes
-            #graph_first_col.write("Files")
-            #create a checkbox for each file in the haystack
+            # graph_first_col.write("Files")
+            # create a checkbox for each file in the haystack
             for i, curve in enumerate(engine.haystack):
                 curve_expander.checkbox(curve.filename, key=i, on_change=handle_click, args=(i,))
 
@@ -302,9 +188,10 @@ def main() -> None:
             )
 
             # Hertz analysis
-            hertz_active = graph_third_col.checkbox("Hertz Analysis")
 
+            hertz_active = graph_third_col.checkbox("Hertz Analysis")
             if hertz_active:
+                change_hertz_status(True)
                 hertz_changed()
             #     graph_third_col_indent = graph_third_col.container()
             #     graph_third_col_indent.write("Indentation curves")
@@ -335,7 +222,6 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
 
 # figure out why its not working
 # make it work
