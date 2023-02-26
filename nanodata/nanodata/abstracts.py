@@ -151,6 +151,9 @@ class DataSetType(interfaces.IDataSetType):
         _, file_extension = os.path.splitext(path)
         return file_extension in self._extensions
 
+    def has_valid_header(self, path: str) -> bool:
+        raise NotImplementedError()
+
     def is_valid(self, path: str) -> bool:
         return self.has_valid_extension(path) and self.has_valid_header(path)
 
