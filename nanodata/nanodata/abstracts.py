@@ -1,4 +1,3 @@
-import abc
 import os
 import numpy as np
 from typing import Iterable, Any, Iterator
@@ -19,16 +18,8 @@ class DataSetTypeExistsError(Exception):
 
 
 class DataManager(
-    interfaces.IDataManager[interfaces.TDataSet, interfaces.TDataSetType], abc.ABC
+    interfaces.IDataManager[interfaces.TDataSet, interfaces.TDataSetType],
 ):
-    _active_data_managers: dict[str, interfaces.IDataManager] = {}
-
-    def __new__(cls, data_manager_path: str):
-        identifier: str = f"({cls.__name__})({data_manager_path})"
-        if identifier not in cls._active_data_managers:
-            cls._active_data_managers[identifier] = super().__new__(cls)
-        return cls._active_data_managers[identifier]
-
     def __init__(self, path: str):
         self._path = path
         self._data_sets: dict[str, interfaces.TDataSet] = {}
@@ -123,7 +114,7 @@ class DataManager(
         return f"{self.__name__}(path={self.path!r}, data_sets={len(self)!r}, file_types={self._file_types!r})"
 
 
-class DataSet(interfaces.IDataSet, abc.ABC):
+class DataSet(interfaces.IDataSet):
     def __init__(self, name: str, path: str):
         self._name: str = name
         self._path: str = path
@@ -154,7 +145,7 @@ class DataSet(interfaces.IDataSet, abc.ABC):
         return f"DataSet(name={self.name!r}, path={self.path!r})"
 
 
-class DataSetType(interfaces.IDataSetType, abc.ABC):
+class DataSetType(interfaces.IDataSetType):
     def __init__(
         self, name: str, extensions: list[str], data_type: type[interfaces.TDataSet]
     ):
@@ -184,7 +175,7 @@ class DataSetType(interfaces.IDataSetType, abc.ABC):
         return f"{self.__name__}(extensions={self.extensions!r})"
 
 
-class Segment(interfaces.ISegment, abc.ABC):
+class Segment(interfaces.ISegment):
     def __init__(self, data: dict[str, Any]):
         self._data: dict[str, Any] = data
 

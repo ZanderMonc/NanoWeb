@@ -7,7 +7,22 @@ TDataSetType = TypeVar("TDataSetType", bound="IDataSetType")
 TSegment = TypeVar("TSegment", bound="ISegment")
 
 
-class IDataManager(abc.ABC, Generic[TDataSet, TDataSetType]):
+class Singleton(type):
+    _instances: dict[type, Any] = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+class AbstractSingleton(Singleton, abc.ABCMeta):
+    pass
+
+
+class IDataManager(
+    abc.ABC, Generic[TDataSet, TDataSetType], metaclass=AbstractSingleton
+):
     @abc.abstractmethod
     def _add_data_set(self, data_set: TDataSet) -> None:
         pass

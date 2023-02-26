@@ -12,8 +12,8 @@ import pandas as pd
 import json
 import shutil
 import altair as alt
-import nanodata
 import nanodata.nanodata as nano
+import NanoPrepare
 from NanoPrepare import save_uploaded_file, base_chart, layer_charts
 import nanoanalysisdata.engine as engine
 
@@ -45,15 +45,29 @@ def main() -> None:
         layout="wide", page_title="NanoWeb", page_icon="/images/cellmech.png"
     )
 
+    experiment_manager = nano.ChiaroDataManager._active_data_managers
+    print(experiment_manager)
+
     top_bar = st.container()
     file = top_bar.file_uploader("Upload a JSON file")
 
     graph_bar = st.container()
-    graph_first_col, graph_second_col, graph_third_col, graph_fourth_col = graph_bar.columns(4)
+    (
+        graph_first_col,
+        graph_second_col,
+        graph_third_col,
+        graph_fourth_col,
+    ) = graph_bar.columns(4)
 
     filter_bar = st.container()
     filter_bar.write("Global Config")
-    filter_first_col, filter_second_col, filter_third_col, filter_fourth_col, filter_fifth_col = filter_bar.columns(5)
+    (
+        filter_first_col,
+        filter_second_col,
+        filter_third_col,
+        filter_fourth_col,
+        filter_fifth_col,
+    ) = filter_bar.columns(5)
 
     if file is not None:
         if file.name.endswith(".json"):
@@ -71,7 +85,9 @@ def main() -> None:
             graph_first_col.write("Files")
 
             for i, curve in enumerate(engine.haystack):
-                graph_first_col.checkbox(curve.filename, value=True, key=i, on_change=handle_click, args=(i,))
+                graph_first_col.checkbox(
+                    curve.filename, value=True, key=i, on_change=handle_click, args=(i,)
+                )
 
             # Raw curve plot
             graph_second_col_raw = graph_second_col.container()
@@ -80,20 +96,20 @@ def main() -> None:
             raw_curves = generate_raw_curves(engine.haystack)
 
             graph_second_col_raw_plot.altair_chart(
-                layer_charts(raw_curves, base_chart),
-                use_container_width=True
+                layer_charts(raw_curves, base_chart), use_container_width=True
             )
 
             # Current curve plot
             graph_second_col_current = graph_second_col.container()
             graph_second_col_current.write("Current curve")
             options = [curve.filename for curve in engine.haystack if curve.active]
-            selected_index = options.index(graph_second_col_current.selectbox('Select a curve', options, index=0))
+            selected_index = options.index(
+                graph_second_col_current.selectbox("Select a curve", options, index=0)
+            )
             graph_second_col_current_plot = graph_second_col_current.line_chart()
 
             graph_second_col_current_plot.altair_chart(
-                base_chart(raw_curves[selected_index]),
-                use_container_width=True
+                base_chart(raw_curves[selected_index]), use_container_width=True
             )
 
             # Hertz analysis
@@ -109,7 +125,9 @@ def main() -> None:
 
                 graph_third_col_elasticity = graph_third_col.container()
                 graph_third_col_elasticity.write("Elasticity values")
-                graph_third_col_elasticity_plot = graph_third_col_elasticity.line_chart()
+                graph_third_col_elasticity_plot = (
+                    graph_third_col_elasticity.line_chart()
+                )
 
             # Elasticity Spectra analysis
             el_spec_active = graph_fourth_col.checkbox("Elasticity Spectra Analysis")

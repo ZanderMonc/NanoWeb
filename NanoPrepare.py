@@ -191,6 +191,7 @@ def file_handler(file_name: str, quale: str, file):
         # experiment_manager.append(get_experiment(dir_name, quale))
         experiment_manager = nano.ChiaroDataManager(dir_name)
         experiment_manager.load()
+        print(experiment_manager.path)
     return experiment_manager
 
 
