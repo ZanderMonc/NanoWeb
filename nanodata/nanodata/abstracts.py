@@ -178,35 +178,52 @@ class Segment(interfaces.ISegment):
         """np.ndarray: Returns the time data of the data set."""
         return self._data.get("time", np.array([]))
 
+    @time.setter
+    def time(self, value: np.ndarray):
+        self._data["time"] = value
+
     @property
     def force(self) -> np.ndarray:
         """np.ndarray: Returns the force data of the data set."""
         return self._data.get("force", np.array([]))
+
+    @force.setter
+    def force(self, value: np.ndarray):
+        self._data["force"] = value
 
     @property
     def deflection(self) -> np.ndarray:
         """np.ndarray: Returns the deflection data of the data set."""
         return self._data.get("deflection", np.array([]))
 
+    @deflection.setter
+    def deflection(self, value: np.ndarray):
+        self._data["deflection"] = value
+
     @property
     def z(self) -> np.ndarray:
         """np.ndarray: Returns the z data of the data set."""
         return self._data.get("z", np.array([]))
+
+    @z.setter
+    def z(self, value: np.ndarray):
+        self._data["z"] = value
 
     @property
     def indentation(self) -> np.ndarray:
         """np.ndarray: Returns the indentation data of the data set."""
         return self._data.get("indentation", np.array([]))
 
+    @indentation.setter
+    def indentation(self, value: np.ndarray):
+        self._data["indentation"] = value
+
     @property
     def data(self) -> dict[str, Any]:
         return self._data
 
-    def set_force(self, force: np.ndarray) -> None:
-        self._data["force"] = force
-
-    def set_z(self, z: np.ndarray) -> None:
-        self._data["z"] = z
+    def __getitem__(self, key: str) -> Any:
+        return self._data.get(key, None)
 
     def __repr__(self) -> str:
         return f"Segment(data={self.data!r})"
