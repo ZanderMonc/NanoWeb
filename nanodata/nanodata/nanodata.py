@@ -532,19 +532,19 @@ class Segment(abstracts.Segment):
         N = self.get_n_odd(self._filterLength)
         if method == "sg":
             try:
-                y = savgol_filter(self.f, N, 6, 0)
-                self.f = y
+                y = savgol_filter(self.force, N, 6, 0)
+                self.force = y
             except:
                 method = "basic"
         if method == "basic":
-            self.f = medfilt(self.f, N)
+            self.force = medfilt(self.f, N)
 
     # Spots the segments where sample arm is not touching the sample
     # We were told this works as it is (partially) and that it is rather complicated (we don't have to fix this)
     # Dependencies : numpy, scipy (curve_fit)
     def find_out_of_contact_region(self, weight=20.0, refine=False):
         # TODO
-        yy, xx = np.histogram(self.f, bins="auto")
+        yy, xx = np.histogram(self.force, bins="auto")
         xx = (xx[1:] + xx[:-1]) / 2.0
         try:
             func = Gauss
@@ -581,7 +581,7 @@ class Segment(abstracts.Segment):
         # TODO
         if self.outContact == 0:
             return
-        pcoe = np.polyfit(self.z[: self.outContact], self.f[: self.outContact], 1)
+        pcoe = np.polyfit(self.z[: self.outContact], self.force[: self.outContact], 1)
         ypoly = np.polyval(pcoe, self.z)
         if self.f[self.outContact] < ypoly[self.outContact]:
             self.iContact = self.outContact
@@ -598,7 +598,7 @@ class Segment(abstracts.Segment):
         # TODO
         if self.iContact == 0:
             return
-        offsetY = np.average(self.f[: self.iContact])
+        offsetY = np.average(self.force[: self.iContact])
         offsetX = self.z[self.iContact]
         Yf = self.f[self.iContact :] - offsetY
         Xf = self.z[self.iContact :] - offsetX
