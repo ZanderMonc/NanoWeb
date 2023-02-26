@@ -1,4 +1,5 @@
 import abc
+import numpy as np
 
 from typing import Iterable, TypeVar, Generic, Any
 
@@ -155,6 +156,56 @@ class IDataSetType(abc.ABC):
 
 
 class ISegment(abc.ABC):
+    @property
+    @abc.abstractmethod
+    def time(self) -> np.ndarray:
+        pass
+
+    @time.setter
+    @abc.abstractmethod
+    def time(self, value: np.ndarray):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def force(self) -> np.ndarray:
+        pass
+
+    @force.setter
+    @abc.abstractmethod
+    def force(self, value: np.ndarray):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def deflection(self) -> np.ndarray:
+        pass
+
+    @deflection.setter
+    @abc.abstractmethod
+    def deflection(self, value: np.ndarray):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def z(self) -> np.ndarray:
+        pass
+
+    @z.setter
+    @abc.abstractmethod
+    def z(self, value: np.ndarray):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def indentation(self) -> np.ndarray:
+        pass
+
+    @indentation.setter
+    @abc.abstractmethod
+    def indentation(self, value: np.ndarray):
+        pass
+
     @property
     @abc.abstractmethod
     def data(self) -> dict[str, Any]:
