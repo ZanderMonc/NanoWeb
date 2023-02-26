@@ -3,18 +3,7 @@ import numpy as np
 from typing import Iterable, Any, Iterator
 
 from . import interfaces
-
-
-class DataSetExistsError(Exception):
-    pass
-
-
-class DataSetNotFoundError(Exception):
-    pass
-
-
-class DataSetTypeExistsError(Exception):
-    pass
+from . import errors
 
 
 class DataManager(
@@ -27,7 +16,7 @@ class DataManager(
 
     def _add_data_set(self, data_set: interfaces.TDataSet) -> None:
         if data_set.name in self._data_sets:
-            raise DataSetExistsError(
+            raise errors.DataSetExistsError(
                 f"Data set with name '{data_set.name}' already exists."
             )
         self._data_sets[data_set.name] = data_set
@@ -36,13 +25,15 @@ class DataManager(
         if name in self._data_sets:
             del self._data_sets[name]
         else:
-            raise DataSetNotFoundError(f"Data set with name '{name}' not found.")
+            raise errors.DataSetNotFoundError(f"Data set with name '{name}' not found.")
 
     def register_file_type(self, file_type: interfaces.TDataSetType) -> None:
         if file_type not in self._file_types:
             self._file_types.append(file_type)
         else:
-            raise DataSetTypeExistsError(f"Data set type '{file_type}' already exists.")
+            raise errors.DataSetTypeExistsError(
+                f"Data set type '{file_type}' already exists."
+            )
 
     def load(self) -> None:
         if not os.path.exists(self.path):
@@ -67,7 +58,7 @@ class DataManager(
         if name in self._data_sets:
             self._data_sets[name].load()
         else:
-            raise DataSetNotFoundError(f"Data set with name '{name}' not found.")
+            raise errors.DataSetNotFoundError(f"Data set with name '{name}' not found.")
 
     def apply_filter(self):
         # TODO IMPLEMENT
@@ -102,7 +93,7 @@ class DataManager(
         if name in self._data_sets:
             return self._data_sets[name]
         else:
-            raise DataSetNotFoundError(f"Data set with name '{name}' not found.")
+            raise errors.DataSetNotFoundError(f"Data set with name '{name}' not found.")
 
     def __len__(self) -> int:
         return len(self._data_sets)
