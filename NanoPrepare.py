@@ -47,7 +47,7 @@ def get_experiment(dir_name: str, file_type: str):
         raise KeyError("Invalid experiment type")
 
 
-@st.cache
+@st.cache(suppress_st_warning=True)
 def save_uploaded_file(uploaded_file: UploadedFile, path: str) -> None:
     try:
         file_name: str = uploaded_file.name
@@ -80,11 +80,10 @@ def generate_raw_curve(data_man, segment: int, ratio_z_left: float = 1, ratio_z_
     exp_data_frames = []
 
     for internal in data_man:
-        print("here " + internal.name)
-        #check that z and force are not none
+        # check that z and force are not none
         if np.any(internal.segments[segment].z == 0) or np.any(internal.segments[segment].force == 0):
-            #if segment is dead, do not process it and break;
-            st.warning( "Segment " + str(segment) +" has a curve out of threshold that has been ignored")
+            # if segment is dead, do not process it and break;
+            st.warning("Segment " + str(segment) + " has a curve out of threshold that has been ignored")
             break
 
         df = pd.DataFrame(
@@ -121,31 +120,28 @@ def generate_empty_curve():
 
 
 def save_to_json(experiment_manager):
-    ref = experiment_manager[0].haystack[0]
-    curves = []
-    fname = "data/test.json"
-
-    geometry = ref.tip_shape
-    radius = ref.tip_radius
-    spring = ref.cantilever_k
-
-    for segment in ref:
-        if segment.active:
-            cv = generate_empty_curve()
-            # cv["filename"] = segment.basename
-            cv["tip"]["radius"] = radius * 1e-9
-            cv["tip"]["geometry"] = geometry
-            cv["spring_constant"] = spring
-            # cv["position"] = (segment.xpos, segment.ypos)
-            cv["data"]["Z"] = list(segment.z * 1e-9)
-            cv["data"]["F"] = list(segment.f * 1e-9)
-            curves.append(cv)
-
-    exp = {"Description": "Optics11 data"}
-    pro = {}
-
-    json.dump({"experiment": exp, "protocol": pro, "curves": curves}, open(fname, "w"))
-
+    for ref in experiment_manager:
+        curves = []
+        fname = "data/test.json"
+        radius = ref.tip_radius
+        spring = ref.cantilever_k
+        exp = {"Description": "optics11"}
+        pro = {"Radius": radius, "Spring": spring
+               }
+        for data in ref.segments:
+            curve = generate_empty_curve()
+            curve["filename"] = ref.path
+            curve["spring_constant"] = ref.cantilever_k
+            curve["data"]["F"] = data.force.tolist()
+            curve["data"]["Z"] = data.z.tolist()
+            curves.append(curve)
+        json.dump({"experiment": exp, "protocol": pro, "curves": curves}, open(fname, "w"))
+        if "JSON" not in st.session_state:
+            # get contents of JSON and save it to session state
+            st.session_state.JSON = open(fname, "r").read()
+        else:
+            # if JSON already exists, append to it
+            st.session_state.JSON += open(fname, "r").read()
 
 def base_chart(data_frame):
     # produces a chart to be used as a layer in a layered chart
@@ -153,7 +149,7 @@ def base_chart(data_frame):
         alt.Chart(
             data_frame,
         )
-        .mark_line(point=True,thickness=1)
+        .mark_line(point=True, thickness=1)
         .encode(
             x="z:Q",
             y="f:Q",
@@ -168,12 +164,13 @@ def layer_charts(data_frames, chart_func):
     layers = [chart_func(data_frame) for data_frame in data_frames]
     return alt.layer(*layers)
 
+@st.cache(suppress_st_warning=True)
 def file_handler(file_name: str, quale: str, file):
     if file_name.endswith(".zip"):
-        #unzip the file
+        # unzip the file
         dir_name = tempfile.mkdtemp()  # create a temp folder to pass to experiment
         extract_zip(file_name, dir_name)  # save the file to the temp folder
-        experiment_manager = nano.ChiaroDataManager("/"+dir_name)
+        experiment_manager = nano.ChiaroDataManager("/" + dir_name)
         experiment_manager.load()
         print(experiment_manager.path)
     else:
@@ -184,20 +181,17 @@ def file_handler(file_name: str, quale: str, file):
         experiment_manager.load()
     return experiment_manager
 
-
 def threshold_filter(experiment_manager, threshold: float):
     for internal in experiment_manager:
         for segment in internal.segments:
             if segment.force is not None:
-                #if max force is over threshold, set force and z to 0
+                # if max force is over threshold, set force and z to 0
                 if max(segment.force) < threshold:
                     segment.set_force(0)
                     segment.set_z(0)
 
 
-
 def main() -> None:
-
     st.set_page_config(
         layout="wide", page_title="NanoWeb", page_icon="images/cellmech.png"
     )
@@ -249,7 +243,7 @@ def main() -> None:
 
     right_config_title.write("Additional Config")
     ratio_z_left = right_config_segment.slider("crop left", 0.0, 1.0, 0.5, 0.01)
-    ratio_z_right= right_config_segment2.slider("crop right", 0.0, 1.0, 0.5, 0.01)
+    ratio_z_right = right_config_segment2.slider("crop right", 0.0, 1.0, 0.5, 0.01)
 
     # Filter GUI elements
     select_filter = st.selectbox(
@@ -301,8 +295,6 @@ def main() -> None:
                 layer_charts(generate_raw_curve(experiment_manager, segment, ratio_z_left, ratio_z_right), base_chart),
                 use_container_width=True
             )
-
-
 
 
 if __name__ == "__main__":
