@@ -146,6 +146,7 @@ def save_to_json(experiment_manager):
             st.session_state.JSON += open(fname, "r").read()
 
 
+@st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def base_chart(data_frame):
     # produces a chart to be used as a layer in a layered chart
     base = (
@@ -162,13 +163,14 @@ def base_chart(data_frame):
     return base
 
 
+@st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def layer_charts(data_frames, chart_func):
     # takes a list of pandas dataframes and a chart function and returns a layered chart
     layers = [chart_func(data_frame) for data_frame in data_frames]
     return alt.layer(*layers)
 
 
-@st.cache(suppress_st_warning=True)
+@st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def file_handler(file_name: str, quale: str, file):
     if file_name.endswith(".zip"):
         # unzip the file
