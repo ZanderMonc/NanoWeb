@@ -19,6 +19,7 @@ def get_selection(title: str, options: tuple | list) -> str:
     )
 
 
+@st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def get_experiment(dir_name: str, file_type: str):
     if file_type == "Optics11":
         exp = experiment.Chiaro(dir_name)
@@ -47,7 +48,7 @@ def get_experiment(dir_name: str, file_type: str):
         raise KeyError("Invalid experiment type")
 
 
-@st.cache(suppress_st_warning=True)
+@st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def save_uploaded_file(uploaded_file: UploadedFile, path: str) -> None:
     try:
         file_name: str = uploaded_file.name
@@ -75,6 +76,7 @@ def generate_raw_curve_plt(stack, segment: int):
     return fig
 
 
+@st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def generate_raw_curve(data_man, segment: int, ratio_z_left: float = 1, ratio_z_right: float = 1):
     # takes a list of experiments and returns a list of experiment dataframes for the selected segment
     exp_data_frames = []
@@ -143,6 +145,7 @@ def save_to_json(experiment_manager):
             # if JSON already exists, append to it
             st.session_state.JSON += open(fname, "r").read()
 
+
 def base_chart(data_frame):
     # produces a chart to be used as a layer in a layered chart
     base = (
@@ -164,6 +167,7 @@ def layer_charts(data_frames, chart_func):
     layers = [chart_func(data_frame) for data_frame in data_frames]
     return alt.layer(*layers)
 
+
 @st.cache(suppress_st_warning=True)
 def file_handler(file_name: str, quale: str, file):
     if file_name.endswith(".zip"):
@@ -180,6 +184,7 @@ def file_handler(file_name: str, quale: str, file):
         experiment_manager = nano.ChiaroDataManager(dir_name)
         experiment_manager.load()
     return experiment_manager
+
 
 def threshold_filter(experiment_manager, threshold: float):
     for internal in experiment_manager:
