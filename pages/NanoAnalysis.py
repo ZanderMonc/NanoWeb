@@ -20,7 +20,6 @@ import nanoanalysisdata.engine as engine
 import nanoanalysisdata.motor as motor
 
 
-
 def refill(collection):
     for i in range(len(collection)):
         c = engine.haystack[i]
@@ -31,11 +30,14 @@ def refill(collection):
     # filter method
     # self.fmethod_changed()
 
+
 def change_hertz_status(is_active: bool) -> None:
     engine.hertz_status = is_active
 
 
 indentation_curves = None
+
+
 def numbers():
     E_array = []
     F_data = []
@@ -156,12 +158,15 @@ def generate_raw_curves(haystack: list) -> list:
             all_curves.append(df)
     return all_curves
 
+
 def generate_indentation_curves(x_fit, y_fit, x_fit_avg, y_fit_avg, x_f_distance, y_f_distance) -> list:
     indenation_curves = []
     indenation_curves.append(generate_curve(x_fit, y_fit))
     indenation_curves.append(generate_curve(x_fit_avg, y_fit_avg))
     indenation_curves.append(generate_curve(x_f_distance, y_f_distance))
     return indenation_curves
+
+
 def generate_curve(x, y):
     df = pd.DataFrame(
         {
