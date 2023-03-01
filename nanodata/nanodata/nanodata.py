@@ -1,3 +1,4 @@
+import afmformats
 import numpy as np
 import os
 
@@ -415,6 +416,8 @@ class NanoSurfDataSet(abstracts.DataSet):
 
     def _load_header(self, lines: list[str]) -> int:
         # TODO implement header loading from experiment.py NanoSurf
+        #afmformats
+
         pass
 
     def _load_body(self, lines: list[str], line_num: int = 0) -> None:
@@ -431,9 +434,21 @@ class NanoSurfDataSet(abstracts.DataSet):
 
 # TODO Jpk
 # * experiment.py shows that afmformats is used in this file and there is no load header, will need working out
+class JPKDataSet(abstracts.DataSet):
+    def __init__(self, name: str, path: str):
+        super().__init__(name, path)
+    def load(self, path: str) -> None:
+        return afmformats.load_data(path)
+
 
 # TODO JpkForceMap
 # * experiment.py shows that afmformats is used in this file and there is no load header or body, will need working out
+class JPKForceMapDataSet(abstracts.DataSet):
+    def __init__(self, name: str, path: str):
+        super().__init__(name, path)
+    def load(self, path: str) -> None:
+        return afmformats.load_data(path)
+
 
 ##################################
 #### Data Set Types ##############
