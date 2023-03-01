@@ -74,7 +74,7 @@ class IDataManager(
 
     @property
     @abc.abstractmethod
-    def datasets(self) -> Iterable[TDataSet]:
+    def data_sets(self) -> Iterable[TDataSet]:
         pass
 
     @abc.abstractmethod

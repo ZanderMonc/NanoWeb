@@ -272,7 +272,7 @@ def main() -> None:
         experiment_manager = file_handler(fname, quale, file)
 
         segment = left_config_segment.selectbox(
-            "Segment", (i for i in range(len(list(experiment_manager.datasets)[0])))
+            "Segment", (i for i in range(len(list(experiment_manager.data_sets)[0])))
         )
 
         if save_json_button:

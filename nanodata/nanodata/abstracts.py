@@ -49,7 +49,6 @@ class DataManager(
         for file_type in self._file_types:
             if file_type.is_valid(file_path):
                 data_set = file_type.create_data_set(file_name, file_path)
-                # TODO move load to separate method
                 data_set.load()
                 self._add_data_set(data_set)
                 break
@@ -86,7 +85,7 @@ class DataManager(
         return self._path
 
     @property
-    def datasets(self) -> Iterable[interfaces.TDataSet]:
+    def data_sets(self) -> Iterable[interfaces.TDataSet]:
         return self._data_sets.values()
 
     def __getitem__(self, name: str) -> interfaces.TDataSet:
@@ -113,6 +112,19 @@ class DataSet(interfaces.IDataSet):
 
     def load(self) -> None:
         pass
+
+    @staticmethod
+    def _get_fraction(data: np.ndarray, percent: float) -> np.ndarray:
+        """Returns a fraction of the data.
+
+        Args:
+            data (np.ndarray): The ndarray data to get the fraction from.
+            percent (float): The percentage of the data to return.
+
+        Returns:
+            np.ndarray: The reduced data.
+        """
+        return data[:: int(100 / percent)]
 
     @property
     def name(self) -> str:

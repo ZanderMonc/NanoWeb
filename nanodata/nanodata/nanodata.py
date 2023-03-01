@@ -304,18 +304,6 @@ class ChiaroDataSet(abstracts.DataSet):
         self._load_body(lines, line_num)
         # self._create_segments()
 
-    def _get_fraction(self, data: np.ndarray, percent: float) -> np.ndarray:
-        """Returns a fraction of the data.
-
-        Args:
-            data (np.ndarray): The ndarray data to get the fraction from.
-            percent (float): The percentage of the data to return.
-
-        Returns:
-            np.ndarray: The reduced data.
-        """
-        return data[:: int(100 / percent)]
-
     def get_time_fraction(self, percent: float) -> np.ndarray:
         """Returns a fraction of the time data."""
         return self._get_fraction(self.time, percent)
