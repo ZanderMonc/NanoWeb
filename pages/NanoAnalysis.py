@@ -20,6 +20,7 @@ import nanoanalysisdata.engine as engine
 import nanoanalysisdata.motor as motor
 
 
+
 def refill(collection):
     for i in range(len(collection)):
         c = engine.haystack[i]
@@ -30,14 +31,11 @@ def refill(collection):
     # filter method
     # self.fmethod_changed()
 
-
-hertz_status = False
-
-
 def change_hertz_status(is_active: bool) -> None:
     engine.hertz_status = is_active
 
 
+indentation_curves = None
 def numbers():
     E_array = []
     F_data = []
@@ -61,6 +59,7 @@ def numbers():
     #     return
 
     eall = np.array(E_array)
+    print("E_array, ", E_array)
     val = str(int(np.average(eall) / 10) / 100.0)
     try:
         err = str(int(np.std(eall) / 10) / 100.0)
@@ -73,6 +72,43 @@ def numbers():
     bins = 'auto'
     y, x = np.histogram(eall, bins=bins, density=True)
     print("y ", y)
+
+    if len(y) >= 3:
+        try:
+            x0, w, A, nx, ny = motor.gauss_fit(x, y)
+
+            x, y, z = motor.calc_hertz(x0, motor.collection[0].R, motor.collection[0].k, float(
+                engine.max_indentation))
+            global indentation_curves
+            indentation_curves = generate_indentation_curves(x, y, x, y, z, y)
+
+
+        except:
+            indentation_curves = None
+            # self.histo_fit.setData(None)
+    #     try:
+    #         x_hertz, y_hertz, er_hertz = motor.getMedCurve(
+    #             ind_data, F_data, error=True)
+    #         self.hertz_average_error = er_hertz
+    #     except TypeError:
+    #         return
+    #     except ValueError:
+    #         return
+    #     # Setting average hertz data
+    #     # if self.ui.analysis.isChecked() is True:
+    #     #     indmax = float(self.ui.fit_indentation.value())
+    #     #     self.x_hertz_average = x_hertz
+    #     #     self.y_hertz_average = y_hertz
+    #     #     self.hertz_average.setData(x_hertz, y_hertz)
+    #     #     # jmax_hertz = np.argmin((x_hertz-indmax)**2)
+    #     #     self.hertz_average.setData(x_hertz, y_hertz)
+    #     #     self.hertz_average_top.setData(x_hertz, (y_hertz + er_hertz / 2))
+    #     #     self.hertz_average_bottom.setData(
+    #     #         x_hertz, (y_hertz - er_hertz / 2))
+    #     # else:
+    #     #     self.hertz_average.setData(None)
+    #     #     self.hertz_average_top.setData(None)
+    #     #     self.hertz_average_bottom.setData(None)
 
 
 def count():
@@ -119,6 +155,21 @@ def generate_raw_curves(haystack: list) -> list:
             )
             all_curves.append(df)
     return all_curves
+
+def generate_indentation_curves(x_fit, y_fit, x_fit_avg, y_fit_avg, x_f_distance, y_f_distance) -> list:
+    indenation_curves = []
+    indenation_curves.append(generate_curve(x_fit, y_fit))
+    indenation_curves.append(generate_curve(x_fit_avg, y_fit_avg))
+    indenation_curves.append(generate_curve(x_f_distance, y_f_distance))
+    return indenation_curves
+def generate_curve(x, y):
+    df = pd.DataFrame(
+        {
+            "z": x,
+            "f": y,
+        }
+    )
+    return df
 
 
 def main() -> None:
@@ -193,10 +244,13 @@ def main() -> None:
             if hertz_active:
                 change_hertz_status(True)
                 hertz_changed()
-            #     graph_third_col_indent = graph_third_col.container()
-            #     graph_third_col_indent.write("Indentation curves")
-            #     graph_third_col_indent_plot = graph_third_col_indent.line_chart()
-            #
+                graph_third_col_indent = graph_third_col.container()
+                graph_third_col_indent.write("Indentation curves")
+                graph_third_col_indent_plot = graph_third_col_indent.line_chart()
+                graph_third_col_indent_plot.altair_chart(
+                    layer_charts(indentation_curves, base_chart),
+                    use_container_width=True
+                )
             #     graph_third_col_f_ind = graph_third_col.container()
             #     graph_third_col_f_ind.write("Average F-ind")
             #     graph_third_col_f_ind_plot = graph_third_col_f_ind.line_chart()
@@ -206,6 +260,9 @@ def main() -> None:
             #     graph_third_col_elasticity_plot = graph_third_col_elasticity.line_chart()
 
             # Elasticity Spectra analysis
+            # else:
+            #     change_hertz_status(False)
+            #     hertz_changed()
             el_spec_active = graph_fourth_col.checkbox("Elasticity Spectra Analysis")
             if el_spec_active:
                 graph_fourth_col_el_spec = graph_fourth_col.container()

@@ -26,8 +26,6 @@ def sames(ar1, ar2):
         return True
     return False
 
-def check_global():
-    print(engine.hertz_status)
 
 def hertz(x, E, R, poisson=0.5):
     return (4.0 / 3.0) * (E / (1 - poisson ** 2)) * np.sqrt(R * x ** 3)
