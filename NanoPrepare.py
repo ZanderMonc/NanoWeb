@@ -85,7 +85,6 @@ def generate_raw_curve(data_man, segment: int, ratio_z_left: float = 1, ratio_z_
         # check that z and force are not none
         if np.any(internal.segments[segment].z == 0) or np.any(internal.segments[segment].force == 0):
             # if segment is dead, do not process it and break;
-            st.warning("Segment " + str(segment) + " has a curve out of threshold that has been ignored")
             break
 
         df = pd.DataFrame(
@@ -170,7 +169,7 @@ def layer_charts(data_frames, chart_func):
     return alt.layer(*layers)
 
 
-@st.cache(suppress_st_warning=True, allow_output_mutation=True)
+#@st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def file_handler(file_name: str, quale: str, file):
     if file_name.endswith(".zip"):
         # unzip the file
@@ -194,8 +193,16 @@ def threshold_filter(experiment_manager, threshold: float):
             if segment.force is not None:
                 # if max force is over threshold, set force and z to 0
                 if max(segment.force) < threshold:
+                    st.warning("Segment " + str(st.session_state.segment) + " of" +str(internal.path) +"  has been ignored")
                     segment.set_force(0)
                     segment.set_z(0)
+
+
+def save_to_log(string):
+    if "log" not in st.session_state:
+        st.session_state.log = string + ","
+    else:
+        st.session_state.log += string + ","
 
 
 def main() -> None:
@@ -264,7 +271,7 @@ def main() -> None:
         experiment_manager = file_handler(fname, quale, file)
 
         segment = left_config_segment.selectbox(
-            "Segment", (i for i in range(len(list(experiment_manager.datasets)[0])))
+            "Segment", (i for i in range(len(list(experiment_manager.datasets)[0]))), key="segment"
         )
 
         if save_json_button:
@@ -290,6 +297,7 @@ def main() -> None:
         if select_filter == "Threshold":
             threshold = st.text_input("Force Threshold (nN)", -1)
             threshold_filter(experiment_manager, float(threshold))
+            save_to_log("Threshold of " + str(threshold) + "nN" + " applied to " + str(experiment_manager.path))
             # for threshold filter, remove non-active segments from the dataset
             # then re-generate the raw curve
             raw_curve = generate_raw_curve(experiment_manager, segment)
@@ -302,6 +310,7 @@ def main() -> None:
                 layer_charts(generate_raw_curve(experiment_manager, segment, ratio_z_left, ratio_z_right), base_chart),
                 use_container_width=True
             )
+            print(st.session_state.log)
 
 
 if __name__ == "__main__":
