@@ -169,7 +169,6 @@ def layer_charts(data_frames, chart_func):
     return alt.layer(*layers)
 
 
-#@st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def file_handler(file_name: str, quale: str, file):
     if file_name.endswith(".zip"):
         # unzip the file
@@ -193,7 +192,8 @@ def threshold_filter(experiment_manager, threshold: float):
             if segment.force is not None:
                 # if max force is over threshold, set force and z to 0
                 if max(segment.force) < threshold:
-                    st.warning("Segment " + str(st.session_state.segment) + " of" +str(internal.path) +"  has been ignored")
+                    st.warning("Segment " + str(st.session_state.segment) + " of " + str(
+                        internal.path.split("/")[-1]) + "  has been ignored")
                     segment.set_force(0)
                     segment.set_z(0)
 
