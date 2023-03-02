@@ -66,6 +66,11 @@ def getStructure(file: UploadedFile) -> dict:
             st.warning("Only files with the .json extension are supported.")
     return structure
 
+@st.cache()
+def layer_charts(data_frames, chart_func):
+    # takes a list of pandas dataframes and a chart function and returns a layered chart
+    layers = [chart_func(data_frame) for data_frame in data_frames]
+    return alt.layer(*layers)
 
 def main() -> None:
     st.set_page_config(
@@ -86,7 +91,7 @@ def main() -> None:
         if file is not None:
             structure = getStructure(file)
         else:
-            if st.session_state.get("JSON") is not None:
+            if file is None and st.session_state.get("JSON") is not None:
                 structure = getStructure(st.session_state.get("JSON"))
             else:
                 st.warning("Please upload a file.")
