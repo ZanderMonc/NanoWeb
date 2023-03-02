@@ -157,7 +157,7 @@ def base_chart(data_frame):
             x="z:Q",
             y="f:Q",
             tooltip=["z:Q", "f:Q", "exp:N"],
-        ).interactive()
+        )
     )
     return base
 
@@ -166,8 +166,7 @@ def base_chart(data_frame):
 def layer_charts(data_frames, chart_func):
     # takes a list of pandas dataframes and a chart function and returns a layered chart
     layers = [chart_func(data_frame) for data_frame in data_frames]
-    return alt.layer(*layers)
-
+    return alt.layer(*layers).interactive()
 
 def file_handler(file_name: str, quale: str, file):
     if file_name.endswith(".zip"):
@@ -241,6 +240,7 @@ def main() -> None:
     )
 
     save_json_button = file_select_col.button("Save to JSON")
+    st.session_state.json = None
     file = file_upload_col.file_uploader("Choose a zip file")
 
     left_graph.line_chart()
