@@ -58,6 +58,7 @@ def getStructure(file: UploadedFile) -> dict:
             structure = JSONload(file)
         else:
             st.warning("Please upload a file.")
+            return None
     elif file is not None:
         if file.name.endswith(".json"):
             structure = JSONload(file)
@@ -85,7 +86,11 @@ def main() -> None:
         if file is not None:
             structure = getStructure(file)
         else:
-            structure = getStructure(st.session_state.get("JSON"))
+            if st.session_state.get("JSON") is not None:
+                structure = getStructure(st.session_state.get("JSON"))
+            else:
+                st.warning("Please upload a file.")
+                return None
         # st.write(structure)
 
         for cv in structure["curves"]:
