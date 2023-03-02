@@ -56,7 +56,7 @@ def getStructure(file: UploadedFile) -> dict:
     return structure
 
 
-@st.cache()
+
 def base_chart_analysis(data_frame):
     # produces a chart to be used as a layer in a layered chart
     base = (
@@ -73,7 +73,7 @@ def base_chart_analysis(data_frame):
     return base
 
 
-@st.cache()
+
 def layer_charts_analysis(data_frames, chart_func):
     # takes a list of pandas dataframes and a chart function and returns a layered chart
     layers = [chart_func(data_frame) for data_frame in data_frames]
@@ -97,12 +97,12 @@ def main() -> None:
     filter_bar.write("Global Config")
     filter_first_col, filter_second_col, filter_third_col, filter_fourth_col, filter_fifth_col = filter_bar.columns(5)
     # wait until file is uploaded
-    while st.session_state.get("JSON") is not None or file is not None:
+    if st.session_state.get("JSON") is not None or file is not None:
         if file is not None:
             structure = getStructure(file)
         else:
             structure = JSONload(st.session_state.get("JSON"))
-        while structure is not None:
+        if structure is not None:
             # st.write(structure)
 
             for cv in structure["curves"]:
@@ -112,6 +112,7 @@ def main() -> None:
             # graph_first_col.write("Files")
             # create a checkbox for each file in the haystack
             for i, curve in enumerate(engine.haystack):
+                print(i)
                 curve_expander.checkbox(curve.filename, key=i, on_change=handle_click, args=(i,))
 
             # Raw curve plot
