@@ -19,6 +19,7 @@ def get_selection(title: str, options: tuple | list) -> str:
     )
 
 
+@st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def get_experiment(dir_name: str, file_type: str):
     if file_type == "Optics11":
         exp = experiment.Chiaro(dir_name)
@@ -75,6 +76,7 @@ def generate_raw_curve_plt(stack, segment: int):
     return fig
 
 
+@st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def generate_raw_curve(data_man, segment: int, ratio_z_left: float = 1, ratio_z_right: float = 1):
     # takes a list of experiments and returns a list of experiment dataframes for the selected segment
     exp_data_frames = []
@@ -120,33 +122,31 @@ def generate_empty_curve():
 
 
 def save_to_json(experiment_manager):
-    ref = experiment_manager[0].haystack[0]
-    curves = []
-    fname = "data/test.json"
-
-    geometry = ref.tip_shape
-    radius = ref.tip_radius
-    spring = ref.cantilever_k
-
-    for segment in ref:
-        if segment.active:
-            cv = generate_empty_curve()
-            # cv["filename"] = segment.basename
-            cv["tip"]["radius"] = radius * 1e-9
-            cv["tip"]["geometry"] = geometry
-            cv["spring_constant"] = spring
-            # cv["position"] = (segment.xpos, segment.ypos)
-            cv["data"]["Z"] = list(segment.z * 1e-9)
-            cv["data"]["F"] = list(segment.f * 1e-9)
-            curves.append(cv)
-
-    exp = {"Description": "Optics11 data"}
-    pro = {}
-
-    json.dump({"experiment": exp, "protocol": pro, "curves": curves}, open(fname, "w"))
+    for ref in experiment_manager:
+        curves = []
+        fname = "data/test.json"
+        radius = ref.tip_radius
+        spring = ref.cantilever_k
+        exp = {"Description": "optics11"}
+        pro = {"Radius": radius, "Spring": spring
+               }
+        for data in ref.segments:
+            curve = generate_empty_curve()
+            curve["filename"] = ref.path
+            curve["spring_constant"] = ref.cantilever_k
+            curve["data"]["F"] = data.force.tolist()
+            curve["data"]["Z"] = data.z.tolist()
+            curves.append(curve)
+        json.dump({"experiment": exp, "protocol": pro, "curves": curves}, open(fname, "w"))
+        if "JSON" not in st.session_state:
+            # get contents of JSON and save it to session state
+            st.session_state.JSON = open(fname, "r").read()
+        else:
+            # if JSON already exists, append to it
+            st.session_state.JSON += open(fname, "r").read()
 
 
-@st.cache(allow_output_mutation=True)
+@st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def base_chart(data_frame):
     # produces a chart to be used as a layer in a layered chart
     base = (
@@ -158,16 +158,16 @@ def base_chart(data_frame):
             x="z:Q",
             y="f:Q",
             tooltip=["z:Q", "f:Q", "exp:N"],
-        ).interactive()
+        )
     )
     return base
 
 
-@st.cache(allow_output_mutation=True)
+@st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def layer_charts(data_frames, chart_func):
     # takes a list of pandas dataframes and a chart function and returns a layered chart
     layers = [chart_func(data_frame) for data_frame in data_frames]
-    return alt.layer(*layers)
+    return alt.layer(*layers).interactive()
 
 
 def file_handler(file_name: str, quale: str, file):
@@ -195,6 +195,12 @@ def threshold_filter(experiment_manager, threshold: float, segment_number: int):
             # if max force is over threshold, set force and z to 0
             if max(segment.force) < threshold:
                 internal.deactivate()
+
+def save_to_log(string):
+    if "log" not in st.session_state:
+        st.session_state.log = string + ","
+    else:
+        st.session_state.log += string + ","
 
 
 def main() -> None:
@@ -233,6 +239,7 @@ def main() -> None:
     )
 
     save_json_button = file_select_col.button("Save to JSON")
+    st.session_state.json = None
     file = file_upload_col.file_uploader("Choose a zip file")
 
     left_graph.line_chart()
@@ -263,7 +270,7 @@ def main() -> None:
         experiment_manager = file_handler(fname, quale, file)
 
         segment = left_config_segment.selectbox(
-            "Segment", (i for i in range(len(list(experiment_manager.datasets)[0])))
+            "Segment", (i for i in range(len(list(experiment_manager.datasets)[0]))), key="segment"
         )
 
         if save_json_button:

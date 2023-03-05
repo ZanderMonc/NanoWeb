@@ -26,7 +26,8 @@ def handle_click(i: int) -> None:
         engine.haystack[i].active = True
 
 
-def generate_raw_curves(haystack: list) -> list:
+@st.cache(suppress_st_warning=True, allow_output_mutation=True)
+def generate_raw_curves_analysis(haystack: list) -> list:
     all_curves = []
     for curve in haystack:
         if curve.active:
@@ -38,6 +39,47 @@ def generate_raw_curves(haystack: list) -> list:
             )
             all_curves.append(df)
     return all_curves
+
+
+@st.cache(suppress_st_warning=True, allow_output_mutation=True)
+def JSONload(file: UploadedFile) -> dict:
+    save_uploaded_file(file, "data")
+    # Load the JSON file
+    f = open("data/" + file.name, "r")
+    structure = json.load(f)
+    return structure
+
+
+@st.cache(suppress_st_warning=True, allow_output_mutation=True)
+def getStructure(file: UploadedFile) -> dict:
+    structure = JSONload(file)
+    return structure
+
+
+
+def base_chart_analysis(data_frame):
+    # produces a chart to be used as a layer in a layered chart
+    base = (
+        alt.Chart(
+            data_frame,
+        )
+        .mark_line(point=True, thickness=1)
+        .encode(
+            x="z:Q",
+            y="f:Q",
+            # tooltip=["z:Q", "f:Q", "exp:N"],
+        )
+    )
+    return base
+
+
+
+def layer_charts_analysis(data_frames, chart_func):
+    # takes a list of pandas dataframes and a chart function and returns a layered chart
+    layers = [chart_func(data_frame) for data_frame in data_frames]
+    return alt.layer(*layers)
+
+
 
 
 def main() -> None:
@@ -54,33 +96,33 @@ def main() -> None:
     filter_bar = st.container()
     filter_bar.write("Global Config")
     filter_first_col, filter_second_col, filter_third_col, filter_fourth_col, filter_fifth_col = filter_bar.columns(5)
-
-    if file is not None:
-        if file.name.endswith(".json"):
-            save_uploaded_file(file, "data")
-
-            # Load the JSON file
-            f = open("data/" + file.name, "r")
-            structure = json.load(f)
+    # wait until file is uploaded
+    if st.session_state.get("JSON") is not None or file is not None:
+        if file is not None:
+            structure = getStructure(file)
+        else:
+            structure = JSONload(st.session_state.get("JSON"))
+        if structure is not None:
             # st.write(structure)
 
             for cv in structure["curves"]:
                 engine.haystack.append(engine.curve(cv))
 
             # File selection checkboxes
-            #graph_first_col.write("Files")
-            #create a checkbox for each file in the haystack
+            # graph_first_col.write("Files")
+            # create a checkbox for each file in the haystack
             for i, curve in enumerate(engine.haystack):
+                print(i)
                 curve_expander.checkbox(curve.filename, key=i, on_change=handle_click, args=(i,))
 
             # Raw curve plot
             graph_first_col_raw = graph_first_col.container()
             graph_first_col_raw.write("Raw curves")
             graph_first_col_raw_plot = graph_first_col_raw.line_chart()
-            raw_curves = generate_raw_curves(engine.haystack)
+            raw_curves = generate_raw_curves_analysis(engine.haystack)
 
             graph_first_col_raw_plot.altair_chart(
-                layer_charts(raw_curves, base_chart),
+                layer_charts_analysis(raw_curves, base_chart_analysis),
                 use_container_width=True
             )
 
@@ -121,9 +163,6 @@ def main() -> None:
                 graph_fourth_col_bilayer = graph_fourth_col.container()
                 graph_fourth_col_bilayer.write("Bilayer model")
                 graph_fourth_col_bilayer_plot = graph_fourth_col_bilayer.line_chart()
-
-        else:
-            st.warning("Only files with the .json extension are supported.")
 
 
 if __name__ == "__main__":
