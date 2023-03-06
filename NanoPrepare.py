@@ -158,7 +158,7 @@ def base_chart(data_frame):
             x="z:Q",
             y="f:Q",
             tooltip=["z:Q", "f:Q", "exp:N"],
-        )
+        ).interactive()
     )
     return base
 
@@ -167,7 +167,8 @@ def base_chart(data_frame):
 def layer_charts(data_frames, chart_func):
     # takes a list of pandas dataframes and a chart function and returns a layered chart
     layers = [chart_func(data_frame) for data_frame in data_frames]
-    return alt.layer(*layers).interactive()
+    return alt.layer(*layers)
+
 
 
 def file_handler(file_name: str, quale: str, file):
@@ -188,6 +189,7 @@ def file_handler(file_name: str, quale: str, file):
 
 
 def threshold_filter(experiment_manager, threshold: float, segment_number: int):
+    save_to_log("Threshold of " + str(threshold) + "nN" + " applied to " + str(experiment_manager.path))
     for internal in experiment_manager:
         internal.activate()
         segment = internal.segments[segment_number]
@@ -309,6 +311,7 @@ def main() -> None:
                 use_container_width=True
             )
         if select_filter == "--select--":
+            print(st.session_state.log)
             for internal in experiment_manager:
                 internal.activate()
 
