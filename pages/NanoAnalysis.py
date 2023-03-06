@@ -56,7 +56,6 @@ def getStructure(file: UploadedFile) -> dict:
     return structure
 
 
-
 def base_chart_analysis(data_frame):
     # produces a chart to be used as a layer in a layered chart
     base = (
@@ -73,13 +72,10 @@ def base_chart_analysis(data_frame):
     return base
 
 
-
 def layer_charts_analysis(data_frames, chart_func):
     # takes a list of pandas dataframes and a chart function and returns a layered chart
     layers = [chart_func(data_frame) for data_frame in data_frames]
     return alt.layer(*layers)
-
-
 
 
 def main() -> None:
@@ -113,7 +109,7 @@ def main() -> None:
             # create a checkbox for each file in the haystack
             for i, curve in enumerate(engine.haystack):
                 print(i)
-                curve_expander.checkbox(curve.filename, key=i, on_change=handle_click, args=(i,))
+                curve_expander.checkbox(curve.filename, value=True, key=i, on_change=handle_click, args=(i,))
 
             # Raw curve plot
             graph_first_col_raw = graph_first_col.container()
