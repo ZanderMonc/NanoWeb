@@ -171,7 +171,8 @@ def layer_charts(data_frames, chart_func):
 
 
 
-def file_handler(file_name: str, quale: str, file):
+def file_handler(file_name: str, file):
+    save_to_log("File " + file_name + " uploaded")
     if file_name.endswith(".zip"):
         # unzip the file
         dir_name = tempfile.mkdtemp()  # create a temp folder to pass to experiment
