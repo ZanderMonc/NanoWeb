@@ -61,12 +61,6 @@ class DataManager(
         else:
             raise errors.DataSetNotFoundError(f"Data set with name '{name}' not found.")
 
-    def apply_filter(self):
-        # TODO IMPLEMENT
-        # ? Passing entire data set object probably not efficient
-        # ? Should get filter params and match those to instance vars of data set
-        pass
-
     def clear(self) -> None:
         self._data_sets.clear()
 

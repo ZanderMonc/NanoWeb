@@ -45,10 +45,6 @@ class IDataManager(
         ...
 
     @abc.abstractmethod
-    def apply_filter(self):
-        ...
-
-    @abc.abstractmethod
     def clear(self) -> None:
         ...
 
