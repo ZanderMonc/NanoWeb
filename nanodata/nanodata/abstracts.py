@@ -16,8 +16,8 @@ class DataManager(
 
     def _add_data_set(self, data_set: interfaces.TDataSet) -> None:
         if data_set.name in self._data_sets:
-            raise errors.DataSetExistsError(
-                f"Data set with name '{data_set.name}' already exists."
+            print(
+                f"Data set with name '{data_set.name}' already exists. Using existing data set."
             )
         self._data_sets[data_set.name] = data_set
 
