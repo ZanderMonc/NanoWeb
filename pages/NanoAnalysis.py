@@ -19,6 +19,10 @@ from NanoPrepare import save_uploaded_file, base_chart, layer_charts
 import nanoanalysisdata.engine as engine
 import nanoanalysisdata.motor as motor
 
+#Global variables
+indentation_curves = None
+elasticity_curves = None
+es_average_error = 0
 
 def refill(collection):
     for i in range(len(collection)):
@@ -34,8 +38,8 @@ def refill(collection):
 def change_hertz_status(is_active: bool) -> None:
     engine.hertz_status = is_active
 
-
-indentation_curves = None
+def change_elasticity_status(is_active: bool) -> None:
+    engine.elasticity_status = is_active
 
 
 def numbers():
@@ -112,6 +116,29 @@ def numbers():
     #     #     self.hertz_average_top.setData(None)
     #     #     self.hertz_average_bottom.setData(None)
 
+    #Elasticity
+    E_data_x = []
+    E_data_y = []
+    Radius = []
+    for c in motor.collection:
+        if c.active is True and c.E is not None:
+            # Elasticity Spectra
+            Radius.append(c.R)
+            E_data_x.append(c.Ex)  # contact radius
+            E_data_y.append(c.Ey)
+    try:
+        x, y, er = motor.getMedCurve(E_data_x, E_data_y, error=True)
+        global es_average_error
+        es_average_error = er * 1e9
+    except TypeError:
+        return
+    except ValueError:
+        return
+
+    #Averaging results: Average E from ES of each curve
+    x = x ** 2 / np.average(Radius)
+    elasticity_curves.append(generate_curve(x, y*1e9))
+
 
 def count():
     Ne = 0
@@ -131,11 +158,10 @@ def count():
     numbers()
 
 
-def hertz_changed():
+def analysis_changed():
     for c in motor.collection:
         c.filter_all(False)  # False does not re-compute contact point
     count()
-
 
 def handle_click(i: int) -> None:
     # activate and deactivate curve in haystack on checkbox click
@@ -166,7 +192,7 @@ def generate_indentation_curves(x_fit, y_fit, x_fit_avg, y_fit_avg, x_f_distance
     indenation_curves.append(generate_curve(x_f_distance, y_f_distance))
     return indenation_curves
 
-
+#TODO: add a way to set labels for x and y axes
 def generate_curve(x, y):
     df = pd.DataFrame(
         {
@@ -207,6 +233,7 @@ def main() -> None:
 
             refill(motor.collection)
 
+            # ??
             # for c in engine.haystack:
             #     node = motor.Nanoment(c)
             #     # node.setCPFunction(self.contactPoint.calculate)
@@ -248,7 +275,7 @@ def main() -> None:
             hertz_active = graph_third_col.checkbox("Hertz Analysis")
             if hertz_active:
                 change_hertz_status(True)
-                hertz_changed()
+                analysis_changed()
                 graph_third_col_indent = graph_third_col.container()
                 graph_third_col_indent.write("Indentation curves")
                 graph_third_col_indent_plot = graph_third_col_indent.line_chart()
@@ -264,19 +291,30 @@ def main() -> None:
             #     graph_third_col_elasticity.write("Elasticity values")
             #     graph_third_col_elasticity_plot = graph_third_col_elasticity.line_chart()
 
-            # Elasticity Spectra analysis
             # else:
             #     change_hertz_status(False)
             #     hertz_changed()
+
+            # Elasticity Spectra analysis
             el_spec_active = graph_fourth_col.checkbox("Elasticity Spectra Analysis")
+
             if el_spec_active:
+                change_elasticity_status(True)
+                analysis_changed()
                 graph_fourth_col_el_spec = graph_fourth_col.container()
                 graph_fourth_col_el_spec.write("Elasticity Spectra")
                 graph_fourth_col_el_spec_plot = graph_fourth_col_el_spec.line_chart()
+                graph_fourth_col_el_spec_plot.altair_chart(
+                    base_chart(elasticity_curves[0]),
+                    use_container_width=True
+                )
 
                 graph_fourth_col_bilayer = graph_fourth_col.container()
                 graph_fourth_col_bilayer.write("Bilayer model")
                 graph_fourth_col_bilayer_plot = graph_fourth_col_bilayer.line_chart()
+            else:
+                change_elasticity_status(False)
+
 
         else:
             st.warning("Only files with the .json extension are supported.")

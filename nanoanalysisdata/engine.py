@@ -5,6 +5,7 @@ from scipy.signal import savgol_filter
 # global variables
 haystack = []
 hertz_status = False
+elasticity_status = False
 max_indentation = 800 # fit_indentation in the original code
 
 def reorganise(stack, n):
