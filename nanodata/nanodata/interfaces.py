@@ -105,19 +105,6 @@ class IDataSet(abc.ABC):
     def path(self) -> str:
         ...
 
-    @property
-    @abc.abstractmethod
-    def active(self) -> bool:
-        ...
-
-    @abc.abstractmethod
-    def activate(self) -> None:
-        ...
-
-    @abc.abstractmethod
-    def deactivate(self) -> None:
-        ...
-
     @abc.abstractmethod
     def __repr__(self) -> str:
         ...

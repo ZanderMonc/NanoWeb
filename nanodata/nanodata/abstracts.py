@@ -104,7 +104,7 @@ class DataSet(interfaces.IDataSet):
     def __init__(self, name: str, path: str):
         self._name: str = name
         self._path: str = path
-        self._active: bool = True
+        self._segments: list[Segment] = []
 
     def load(self) -> None:
         pass
@@ -131,14 +131,34 @@ class DataSet(interfaces.IDataSet):
         return self._path
 
     @property
-    def active(self) -> bool:
-        return self._active
+    def time(self) -> np.ndarray:
+        """np.ndarray: Returns the combined time data of all the segments."""
+        return np.concatenate([segment.time for segment in self._segments])
 
-    def activate(self):
-        self._active = True
+    @property
+    def force(self) -> np.ndarray:
+        """np.ndarray: Returns the combined force data of all the segments"""
+        return np.concatenate([segment.force for segment in self._segments])
 
-    def deactivate(self):
-        self._active = False
+    @property
+    def deflection(self) -> np.ndarray:
+        """np.ndarray: Returns the combined deflection data of all the segments"""
+        return np.concatenate([segment.deflection for segment in self._segments])
+
+    @property
+    def z(self) -> np.ndarray:
+        """np.ndarray: Returns the combined z data of all the segments"""
+        return np.concatenate([segment.z for segment in self._segments])
+
+    @property
+    def indentation(self) -> np.ndarray:
+        """np.ndarray: Returns the combined indentation data of all the segments"""
+        return np.concatenate([segment.indentation for segment in self._segments])
+
+    @property
+    def segments(self) -> list["Segment"]:
+        """list[Segment]: Returns the segments of the data set."""
+        return self._segments
 
     def __repr__(self) -> str:
         return f"DataSet(name={self.name!r}, path={self.path!r})"

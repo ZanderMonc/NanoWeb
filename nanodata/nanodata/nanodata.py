@@ -58,7 +58,6 @@ class ChiaroDataSet(abstracts.DataSet):
     def __init__(self, name: str, path: str):
         super().__init__(name, path)
         self._header: dict[str, float | str] = {"version": "old"}
-        self._segments: list[abstracts.Segment] = []
 
     def _load_header(self, lines: list[str]) -> int:
         """Loads the header of the chiaro data set.
@@ -340,40 +339,11 @@ class ChiaroDataSet(abstracts.DataSet):
         """dict[str, float | str]: Returns the header of the data set."""
         return self._header
 
-    @property
-    def segments(self) -> list["Segment"]:
-        """list[Segment]: Returns the segments of the data set."""
-        return self._segments
 
     @property
     def protocol(self) -> np.ndarray:
         """np.ndarray: Returns the tip commands."""
         return self.header.get("protocol", np.empty((0, 2)))
-
-    @property
-    def time(self) -> np.ndarray:
-        """np.ndarray: Returns the combined time data of all the segments."""
-        return np.concatenate([segment.time for segment in self._segments])
-
-    @property
-    def force(self) -> np.ndarray:
-        """np.ndarray: Returns the combined force data of all the segments"""
-        return np.concatenate([segment.force for segment in self._segments])
-
-    @property
-    def deflection(self) -> np.ndarray:
-        """np.ndarray: Returns the combined deflection data of all the segments"""
-        return np.concatenate([segment.deflection for segment in self._segments])
-
-    @property
-    def z(self) -> np.ndarray:
-        """np.ndarray: Returns the combined z data of all the segments"""
-        return np.concatenate([segment.z for segment in self._segments])
-
-    @property
-    def indentation(self) -> np.ndarray:
-        """np.ndarray: Returns the combined indentation data of all the segments"""
-        return np.concatenate([segment.indentation for segment in self._segments])
 
     @property
     def tip_radius(self) -> float:
@@ -384,11 +354,6 @@ class ChiaroDataSet(abstracts.DataSet):
     def cantilever_k(self) -> float:
         """float: Returns the cantilever spring constant of the data set."""
         return self._header.get("cantilever_k", 0.0)
-
-    @property
-    def active(self) -> bool:
-        """bool: Returns whether the data set is active."""
-        return self._active
 
     def __len__(self) -> int:
         return len(self.segments)
