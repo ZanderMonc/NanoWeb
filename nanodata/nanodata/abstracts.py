@@ -48,13 +48,10 @@ class DataManager(
         file_name, _ = os.path.splitext(file_path)
         for file_type in self._file_types:
             if file_type.is_valid(file_path):
-                data_set = file_type.create_data_set(file_name, file_path)
-                if data_set.name in self._data_sets.keys():
-                    print(
-                        f"Data set with name '{data_set.name}' already exists. Not loading new data set."
-                    )
-                    del data_set
+                if file_name in self._data_sets.keys():
+                    # Data set already exists, delete object and continue
                     continue
+                data_set = file_type.create_data_set(file_name, file_path)
                 data_set.load()
                 self._add_data_set(data_set)
                 break
