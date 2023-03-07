@@ -1,9 +1,7 @@
 from typing import Any, TYPE_CHECKING
 import abc
 import numpy as np
-
-if TYPE_CHECKING:
-    from . import abstracts
+from . import abstracts
 
 
 class FilterMeta(abc.ABCMeta, type):
