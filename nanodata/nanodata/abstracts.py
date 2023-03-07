@@ -49,7 +49,6 @@ class DataManager(
         for file_type in self._file_types:
             if file_type.is_valid(file_path):
                 if file_name in self._data_sets.keys():
-                    # Data set already exists, delete object and continue
                     continue
                 data_set = file_type.create_data_set(file_name, file_path)
                 data_set.load()
