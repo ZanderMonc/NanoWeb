@@ -1,19 +1,16 @@
 """Functionality corresponding to GUI widgets."""
 
 import numpy as np
-#import pyqtgraph as pg
-#from PyQt5 import QtCore, QtGui, QtWidgets
 from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit
 from scipy.signal import find_peaks, savgol_filter
 import nanoanalysisdata.engine as engine
 
-#PEN_GREEN = pg.mkPen(pg.QtGui.QColor(0, 255, 0, 255), width=2)
+collection = []
 ST_RED = 1
 ST_BLU = 2
 ST_BLK = 3
 
-collection = []
 
 def sames(ar1, ar2):
     if (ar1 is None) or (ar2 is None):
@@ -244,7 +241,6 @@ class Nanoment():
         #Elasticity
         if not engine.elasticity_status:
             return
-
         self.set_elasticityspectra()
 
     def reset_E(self):

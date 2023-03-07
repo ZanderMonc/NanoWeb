@@ -291,9 +291,8 @@ def main() -> None:
             #     graph_third_col_elasticity.write("Elasticity values")
             #     graph_third_col_elasticity_plot = graph_third_col_elasticity.line_chart()
 
-            # else:
-            #     change_hertz_status(False)
-            #     hertz_changed()
+            else:
+                 change_hertz_status(False)
 
             # Elasticity Spectra analysis
             el_spec_active = graph_fourth_col.checkbox("Elasticity Spectra Analysis")
