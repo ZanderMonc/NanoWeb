@@ -14,7 +14,7 @@ import shutil
 import altair as alt
 import nanodata
 import nanodata.nanodata as nano
-from NanoPrepare import save_uploaded_file, base_chart, layer_charts
+from NanoPrepare import save_uploaded_file, base_chart, layer_charts,save_to_log
 import nanoanalysisdata.engine as engine
 
 
@@ -137,6 +137,7 @@ def main() -> None:
             # Hertz analysis
             hertz_active = graph_third_col.checkbox("Hertz Analysis")
             if hertz_active:
+                save_to_log("Hertz Analysis started")
                 graph_third_col_indent = graph_third_col.container()
                 graph_third_col_indent.write("Indentation curves")
                 graph_third_col_indent_plot = graph_third_col_indent.line_chart()
@@ -152,6 +153,7 @@ def main() -> None:
             # Elasticity Spectra analysis
             el_spec_active = graph_fourth_col.checkbox("Elasticity Spectra Analysis")
             if el_spec_active:
+                save_to_log("Elasticity Spectra Analysis started")
                 graph_fourth_col_el_spec = graph_fourth_col.container()
                 graph_fourth_col_el_spec.write("Elasticity Spectra")
                 graph_fourth_col_el_spec_plot = graph_fourth_col_el_spec.line_chart()
