@@ -1,14 +1,14 @@
 """Functionality corresponding to GUI widgets."""
 
 import numpy as np
-import pyqtgraph as pg
-from PyQt5 import QtCore, QtGui, QtWidgets
+#import pyqtgraph as pg
+#from PyQt5 import QtCore, QtGui, QtWidgets
 from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit
 from scipy.signal import find_peaks, savgol_filter
 import nanoanalysisdata.engine as engine
 
-PEN_GREEN = pg.mkPen(pg.QtGui.QColor(0, 255, 0, 255), width=2)
+#PEN_GREEN = pg.mkPen(pg.QtGui.QColor(0, 255, 0, 255), width=2)
 ST_RED = 1
 ST_BLU = 2
 ST_BLK = 3
@@ -90,46 +90,6 @@ class Nanoment():
             # self.xposition = curve.xpos
 
     # Methods
-    def connect(self, nanowin, node=False):
-        self._ui = nanowin.ui
-        # Plot F(z)
-        self._g_fdistance = pg.PlotCurveItem(clickable=True)
-        nanowin.ui.g_fdistance.plotItem.addItem(self._g_fdistance)
-        self._g_fdistance.sigClicked.connect(nanowin.curve_clicked)
-        self._g_fdistance.nano = self
-        # Plot F(delta)
-        self._g_indentation = pg.PlotCurveItem(clickable=True)
-        nanowin.ui.g_indentation.plotItem.addItem(self._g_indentation)
-        self._g_indentation.sigClicked.connect(nanowin.curve_clicked)
-        self._g_indentation.nano = self
-        # Plot E(delta)
-        self._g_es = pg.PlotCurveItem(clickable=True)
-        nanowin.ui.g_es.plotItem.addItem(self._g_es)
-        self._g_es.sigClicked.connect(nanowin.curve_clicked)
-        self._g_es.nano = self
-        # Plot E
-        self._g_scatter = pg.PlotDataItem(
-            clickable=True, pen=None, symbol='o', symbolPen=None, symbolBrush=None)
-        self._Eindex = len(nanowin.ui.g_scatter.plotItem.items)
-        self._g_scatter.setSymbolPen(None)
-        self._g_scatter.setSymbolBrush(None)
-        nanowin.ui.g_scatter.plotItem.addItem(self._g_scatter)
-        self._g_scatter.sigClicked.connect(nanowin.curve_clicked)
-        self._g_scatter.nano = self
-
-        self._curve_single = nanowin.curve_single
-        self._curve_raw = nanowin.curve_raw
-        self._curve_fit = nanowin.curve_fit
-
-        if node is not False:
-            self._tree = node
-        else:
-            myself = QtWidgets.QTreeWidgetItem(nanowin.ui.mainlist)
-            myself.setText(0, self.basename)
-            myself.curve = self
-            myself.setFlags(
-                myself.flags() | QtCore.Qt.ItemIsTristate | QtCore.Qt.ItemIsUserCheckable)
-            myself.setCheckState(0, QtCore.Qt.Checked)
 
     def disconnect(self):
         self._g_fdistance = None
@@ -145,103 +105,6 @@ class Nanoment():
         self._curve_fit = None
         self._cpfunction = None
 
-    def update_view(self):
-        if self._g_fdistance is not None:
-            if self.z is not None and self.force is not None:
-                if len(self.z) == len(self.force):
-                    self._g_fdistance.setData(self.z, self.force)
-                    if self.selected is True:
-                        self._curve_raw.setData(self.z_raw, self.f_raw)
-                        self._curve_single.setData(self.z, self.force)
-                        if self.E is not None:
-                            ex, ey = self.getFitted()
-                            self._curve_fit.setData(ex, ey)
-                        else:
-                            self._curve_fit.setData(None)
-            self._g_fdistance.setPen(self.getPen('dist'))
-
-        if self._g_indentation is not None:
-            if self.ind is not None and self.touch is not None:
-                if len(self.ind) == len(self.touch):
-                    self._g_indentation.setData(self.ind, self.touch)
-            self._g_indentation.setPen(self.getPen('ind'))
-
-        if self._g_es is not None:
-            if self.Ex is not None and self.Ey is not None:
-                if len(self.Ex) == len(self.Ey):
-                    self._g_es.setData(self.Ex**2/self.R, self.Ey*1e9)
-                    self._g_es.setPen(self.getPen('es'))
-
-            else:
-                self._g_es.setPen(None)
-
-        if self._g_scatter is not None:
-            if self.active is True and self.E is not None:
-                self._g_scatter.setData(x=[self._Eindex], y=[self.E])
-                self._g_scatter.setSymbolPen('b')
-                self._g_scatter.setSymbolBrush(pg.QtGui.QColor(0, 0, 255, 50))
-            else:
-                self._g_scatter.setSymbolPen(None)
-                self._g_scatter.setSymbolBrush(None)
-
-        if self.selected is True:
-            self._ui.stats_R.setText(str(self.R))
-            self._ui.stats_k.setText(str(self.k))
-            if self.active is True:
-                self._ui.toggle_activated.setChecked(True)
-                if self.E is not None:
-                    self._g_scatter.setSymbolPen(PEN_GREEN)
-            elif self.included is False:
-                self._ui.toggle_excluded.setChecked(True)
-            else:
-                self._ui.toggle_included.setChecked(True)
-
-    def getPen(self, curve='ind'):
-        PEN_BLACK = pg.mkPen(pg.QtGui.QColor(0, 0, 0, self.alpha), width=1)
-        PEN_RED = pg.mkPen(pg.QtGui.QColor(255, 0, 0, self.alpha), width=1)
-        PEN_BLUE = pg.mkPen(pg.QtGui.QColor(0, 0, 255, self.alpha), width=1)
-
-        if curve == 'ind':
-            if self.ind is None or self.touch is None:
-                return None
-            if len(self.ind) != len(self.touch):
-                return None
-            if self.active is False:
-                return None
-            pen = PEN_BLACK
-        elif curve == 'es':
-            if self.Ex is None or self.Ey is None:
-                return None
-            if len(self.Ex) != len(self.Ey):
-                return None
-            if self.active is False:
-                return None
-            if self._ui.es_analysis.isChecked() is False:
-                return None
-            pen = PEN_BLACK
-        else:
-            if self.z is None or self.force is None:
-                return None
-            if len(self.z) != len(self.force):
-                return None
-            if self.active is True:
-                pen = PEN_BLACK
-            else:
-                if self.included is True:
-                    pen = PEN_BLUE
-                else:
-                    pen = PEN_RED
-        if self._ui.view_all.isChecked() is False and self.active is False:
-            if self._ui.view_active.isChecked() is True:
-                if self.active is False:
-                    pen = None
-            else:
-                if self.included is False:
-                    pen = None
-        if self.selected is True:
-            pen = PEN_GREEN
-        return pen
-
     def setFilterFunction(self, cf):
         self._filter = cf
 
@@ -249,7 +112,7 @@ class Nanoment():
         self._cpfunction = cf
 
     def set_elasticityspectra(self):
-        if self._ui.es_analysis.isChecked() is False:
+        if not engine.elasticity_status:
             return
         if self.k is None:
             return
@@ -273,8 +136,8 @@ class Nanoment():
 
             if(len(x)) < 1:  # check on length of ind
                 return
-
-            interp = self._ui.es_interpolate.isChecked()
+            #TODO: filter functionality for interpolate
+            interp = False
             if interp is True:
                 yi = interp1d(x, y)
                 max_x = np.max(x)
@@ -299,7 +162,8 @@ class Nanoment():
                 win += 1
             if len(yy) <= win:
                 return None, None
-            order = int(self._ui.es_order.value())
+            #TODO: filter functionality for order
+            order = 3
             deriv = savgol_filter(yy, win, order, delta=ddt, deriv=1)
             Ey = coeff * deriv
             dwin = int(win - 1)
@@ -361,6 +225,7 @@ class Nanoment():
         #     self.Ey = np.array(Ey)
 
     def set_indentation(self, ):
+        #Hertz
         if not engine.hertz_status:
             return
         if self.k is None:
@@ -376,9 +241,11 @@ class Nanoment():
         self.ind = Xf - Yf / self.k
         self.touch = Yf
 
-        # if self._ui.es_analysis.isChecked() is False:
-        #     return
-        # self.set_elasticityspectra()  # calling set_elasticityspectra()
+        #Elasticity
+        if not engine.elasticity_status:
+            return
+
+        self.set_elasticityspectra()
 
     def reset_E(self):
         self._E = None
@@ -550,8 +417,6 @@ class Nanoment():
             if self._state == ST_BLK:
                 return
             self._state = ST_BLK
-            self._tree.setCheckState(0, QtCore.Qt.Checked)
-        self.update_view()
 
     @ property
     def included(self):
@@ -564,13 +429,13 @@ class Nanoment():
                 return
             else:
                 self._state = ST_RED
-                self._tree.setCheckState(0, QtCore.Qt.Unchecked)
+
         else:
             if self._state > ST_RED:
                 return
             self._state = ST_BLK
-            self._tree.setCheckState(0, QtCore.Qt.Checked)
-        self.update_view()
+
+
 
     @ property
     def E(self):
@@ -583,7 +448,7 @@ class Nanoment():
         if self._E == x:
             return
         self._E = x
-        self.update_view()
+
 
     @ property
     def x_contact_point(self):
@@ -679,7 +544,7 @@ class Nanoment():
             if x is not None:
                 x = np.array(x)
             self._ex = x
-            self.update_view()
+
 
     @ property
     def Ey(self):
@@ -691,7 +556,7 @@ class Nanoment():
             if x is not None:
                 x = np.array(x)
             self._ey = x
-            self.update_view()
+
 
     @ property
     def ind(self):
@@ -703,7 +568,7 @@ class Nanoment():
             if x is not None:
                 x = np.array(x)
             self._ind = x
-            # self.update_view()
+
 
     @ property
     def touch(self):
@@ -715,7 +580,7 @@ class Nanoment():
             if x is not None:
                 x = np.array(x)
             self._touch = x
-            # self.update_view()
+
 
 
 def getMedCurve(xar, yar, loose=True, threshold=3, error=False):
