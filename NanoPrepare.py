@@ -75,16 +75,23 @@ def generate_raw_curve_plt(stack, segment: int):
     return fig
 
 
-def generate_raw_curve(data_man, segment: int, ratio_z_left: float = 1, ratio_z_right: float = 1):
+def generate_raw_curve(
+    data_man, segment: int, ratio_z_left: float = 1, ratio_z_right: float = 1
+):
     # takes a list of experiments and returns a list of experiment dataframes for the selected segment
     exp_data_frames = []
 
     for internal in data_man:
-        print("here " + internal.name)
-        #check that z and force are not none
-        if np.any(internal.segments[segment].z == 0) or np.any(internal.segments[segment].force == 0):
-            #if segment is dead, do not process it and break;
-            st.warning( "Segment " + str(segment) +" has a curve out of threshold that has been ignored")
+        # check that z and force are not none
+        if np.any(internal.segments[segment].z == 0) or np.any(
+            internal.segments[segment].force == 0
+        ):
+            # if segment is dead, do not process it and break;
+            st.warning(
+                "Segment "
+                + str(segment)
+                + " has a curve out of threshold that has been ignored"
+            )
             break
 
         df = pd.DataFrame(
@@ -153,12 +160,13 @@ def base_chart(data_frame):
         alt.Chart(
             data_frame,
         )
-        .mark_line(point=True,thickness=1)
+        .mark_line(point=True, thickness=1)
         .encode(
             x="z:Q",
             y="f:Q",
             tooltip=["z:Q", "f:Q", "exp:N"],
-        ).interactive()
+        )
+        .interactive()
     )
     return base
 
@@ -168,12 +176,13 @@ def layer_charts(data_frames, chart_func):
     layers = [chart_func(data_frame) for data_frame in data_frames]
     return alt.layer(*layers)
 
+
 def file_handler(file_name: str, quale: str, file):
     if file_name.endswith(".zip"):
-        #unzip the file
+        # unzip the file
         dir_name = tempfile.mkdtemp()  # create a temp folder to pass to experiment
         extract_zip(file_name, dir_name)  # save the file to the temp folder
-        experiment_manager = nano.ChiaroDataManager("/"+dir_name)
+        experiment_manager = nano.ChiaroDataManager(dir_name)
         experiment_manager.load()
         print(experiment_manager.path)
     else:
@@ -182,6 +191,7 @@ def file_handler(file_name: str, quale: str, file):
         # experiment_manager.append(get_experiment(dir_name, quale))
         experiment_manager = nano.ChiaroDataManager(dir_name)
         experiment_manager.load()
+        print(experiment_manager.path)
     return experiment_manager
 
 
@@ -189,11 +199,10 @@ def threshold_filter(experiment_manager, threshold: float):
     for internal in experiment_manager:
         for segment in internal.segments:
             if segment.force is not None:
-                #if max force is over threshold, set force and z to 0
+                # if max force is over threshold, set force and z to 0
                 if max(segment.force) < threshold:
                     segment.set_force(0)
                     segment.set_z(0)
-
 
 
 def main() -> None:
@@ -249,7 +258,7 @@ def main() -> None:
 
     right_config_title.write("Additional Config")
     ratio_z_left = right_config_segment.slider("crop left", 0.0, 1.0, 0.5, 0.01)
-    ratio_z_right= right_config_segment2.slider("crop right", 0.0, 1.0, 0.5, 0.01)
+    ratio_z_right = right_config_segment2.slider("crop right", 0.0, 1.0, 0.5, 0.01)
 
     # Filter GUI elements
     select_filter = st.selectbox(
@@ -263,13 +272,15 @@ def main() -> None:
         experiment_manager = file_handler(fname, quale, file)
 
         segment = left_config_segment.selectbox(
-            "Segment", (i for i in range(len(list(experiment_manager.datasets)[0])))
+            "Segment", (i for i in range(len(list(experiment_manager.data_sets)[0])))
         )
 
         if save_json_button:
             save_to_json(experiment_manager)
-            with open('data/test.json') as f:
-                file_select_col.download_button('Download JSON', data=f, file_name='test.json')
+            with open("data/test.json") as f:
+                file_select_col.download_button(
+                    "Download JSON", data=f, file_name="test.json"
+                )
 
         raw_curve = generate_raw_curve(experiment_manager, segment)
 
@@ -281,8 +292,13 @@ def main() -> None:
 
         # use the right graph to lense in on the left graph, where the cursor hovers on the left graph the right graph shows a zoomed in view
         right_graph.altair_chart(
-            layer_charts(generate_raw_curve(experiment_manager, segment, ratio_z_left, ratio_z_right), base_chart),
-            use_container_width=True
+            layer_charts(
+                generate_raw_curve(
+                    experiment_manager, segment, ratio_z_left, ratio_z_right
+                ),
+                base_chart,
+            ),
+            use_container_width=True,
         )
 
         # Execute filters
@@ -298,11 +314,14 @@ def main() -> None:
             )
             # then re-generate the right graph
             right_graph.altair_chart(
-                layer_charts(generate_raw_curve(experiment_manager, segment, ratio_z_left, ratio_z_right), base_chart),
-                use_container_width=True
+                layer_charts(
+                    generate_raw_curve(
+                        experiment_manager, segment, ratio_z_left, ratio_z_right
+                    ),
+                    base_chart,
+                ),
+                use_container_width=True,
             )
-
-
 
 
 if __name__ == "__main__":

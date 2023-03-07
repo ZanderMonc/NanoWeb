@@ -12,8 +12,8 @@ import pandas as pd
 import json
 import shutil
 import altair as alt
-import nanodata
 import nanodata.nanodata as nano
+import NanoPrepare
 from NanoPrepare import save_uploaded_file, base_chart, layer_charts
 import nanoanalysisdata.engine as engine
 
@@ -45,6 +45,9 @@ def main() -> None:
         layout="wide", page_title="NanoWeb", page_icon="/images/cellmech.png"
     )
 
+    experiment_manager = nano.ChiaroDataManager._active_data_managers
+    print(experiment_manager)
+
     top_bar = st.container()
     file = top_bar.file_uploader("Upload a JSON file")
     curve_expander = st.expander("Curve selection")
@@ -53,7 +56,13 @@ def main() -> None:
 
     filter_bar = st.container()
     filter_bar.write("Global Config")
-    filter_first_col, filter_second_col, filter_third_col, filter_fourth_col, filter_fifth_col = filter_bar.columns(5)
+    (
+        filter_first_col,
+        filter_second_col,
+        filter_third_col,
+        filter_fourth_col,
+        filter_fifth_col,
+    ) = filter_bar.columns(5)
 
     if file is not None:
         if file.name.endswith(".json"):
@@ -109,7 +118,9 @@ def main() -> None:
 
                 graph_third_col_elasticity = graph_third_col.container()
                 graph_third_col_elasticity.write("Elasticity values")
-                graph_third_col_elasticity_plot = graph_third_col_elasticity.line_chart()
+                graph_third_col_elasticity_plot = (
+                    graph_third_col_elasticity.line_chart()
+                )
 
             # Elasticity Spectra analysis
             el_spec_active = graph_fourth_col.checkbox("Elasticity Spectra Analysis")

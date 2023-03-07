@@ -58,7 +58,6 @@ class ChiaroDataSet(abstracts.DataSet):
     def __init__(self, name: str, path: str):
         super().__init__(name, path)
         self._header: dict[str, float | str] = {"version": "old"}
-        self._segments: list[abstracts.Segment] = []
 
     def _load_header(self, lines: list[str]) -> int:
         """Loads the header of the chiaro data set.
@@ -304,18 +303,6 @@ class ChiaroDataSet(abstracts.DataSet):
         self._load_body(lines, line_num)
         # self._create_segments()
 
-    def _get_fraction(self, data: np.ndarray, percent: float) -> np.ndarray:
-        """Returns a fraction of the data.
-
-        Args:
-            data (np.ndarray): The ndarray data to get the fraction from.
-            percent (float): The percentage of the data to return.
-
-        Returns:
-            np.ndarray: The reduced data.
-        """
-        return data[:: int(100 / percent)]
-
     def get_time_fraction(self, percent: float) -> np.ndarray:
         """Returns a fraction of the time data."""
         return self._get_fraction(self.time, percent)
@@ -352,40 +339,11 @@ class ChiaroDataSet(abstracts.DataSet):
         """dict[str, float | str]: Returns the header of the data set."""
         return self._header
 
-    @property
-    def segments(self) -> list["Segment"]:
-        """list[Segment]: Returns the segments of the data set."""
-        return self._segments
 
     @property
     def protocol(self) -> np.ndarray:
         """np.ndarray: Returns the tip commands."""
         return self.header.get("protocol", np.empty((0, 2)))
-
-    @property
-    def time(self) -> np.ndarray:
-        """np.ndarray: Returns the combined time data of all the segments."""
-        return np.concatenate([segment.time for segment in self._segments])
-
-    @property
-    def force(self) -> np.ndarray:
-        """np.ndarray: Returns the combined force data of all the segments"""
-        return np.concatenate([segment.force for segment in self._segments])
-
-    @property
-    def deflection(self) -> np.ndarray:
-        """np.ndarray: Returns the combined deflection data of all the segments"""
-        return np.concatenate([segment.deflection for segment in self._segments])
-
-    @property
-    def z(self) -> np.ndarray:
-        """np.ndarray: Returns the combined z data of all the segments"""
-        return np.concatenate([segment.z for segment in self._segments])
-
-    @property
-    def indentation(self) -> np.ndarray:
-        """np.ndarray: Returns the combined indentation data of all the segments"""
-        return np.concatenate([segment.indentation for segment in self._segments])
 
     @property
     def tip_radius(self) -> float:
@@ -396,11 +354,6 @@ class ChiaroDataSet(abstracts.DataSet):
     def cantilever_k(self) -> float:
         """float: Returns the cantilever spring constant of the data set."""
         return self._header.get("cantilever_k", 0.0)
-
-    @property
-    def active(self) -> bool:
-        """bool: Returns whether the data set is active."""
-        return self._active
 
     def __len__(self) -> int:
         return len(self.segments)
@@ -532,19 +485,19 @@ class Segment(abstracts.Segment):
         N = self.get_n_odd(self._filterLength)
         if method == "sg":
             try:
-                y = savgol_filter(self.f, N, 6, 0)
-                self.f = y
+                y = savgol_filter(self.force, N, 6, 0)
+                self.force = y
             except:
                 method = "basic"
         if method == "basic":
-            self.f = medfilt(self.f, N)
+            self.force = medfilt(self.f, N)
 
     # Spots the segments where sample arm is not touching the sample
     # We were told this works as it is (partially) and that it is rather complicated (we don't have to fix this)
     # Dependencies : numpy, scipy (curve_fit)
     def find_out_of_contact_region(self, weight=20.0, refine=False):
         # TODO
-        yy, xx = np.histogram(self.f, bins="auto")
+        yy, xx = np.histogram(self.force, bins="auto")
         xx = (xx[1:] + xx[:-1]) / 2.0
         try:
             func = Gauss
@@ -581,7 +534,7 @@ class Segment(abstracts.Segment):
         # TODO
         if self.outContact == 0:
             return
-        pcoe = np.polyfit(self.z[: self.outContact], self.f[: self.outContact], 1)
+        pcoe = np.polyfit(self.z[: self.outContact], self.force[: self.outContact], 1)
         ypoly = np.polyval(pcoe, self.z)
         if self.f[self.outContact] < ypoly[self.outContact]:
             self.iContact = self.outContact
@@ -598,7 +551,7 @@ class Segment(abstracts.Segment):
         # TODO
         if self.iContact == 0:
             return
-        offsetY = np.average(self.f[: self.iContact])
+        offsetY = np.average(self.force[: self.iContact])
         offsetX = self.z[self.iContact]
         Yf = self.f[self.iContact :] - offsetY
         Xf = self.z[self.iContact :] - offsetX
