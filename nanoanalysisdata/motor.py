@@ -340,7 +340,6 @@ class Nanoment():
         # res[1] = 0.0  # sets force to zero at CP
         self._contactpoint = res
         self.set_indentation()
-        self.update_view()
 
     def getFitted(self):
         if self._ui.analysis.isChecked() is False:
