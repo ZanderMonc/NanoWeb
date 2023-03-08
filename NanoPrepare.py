@@ -106,7 +106,7 @@ def generate_raw_curve(experiment_manager: iter, segment: int, ratio_z_left: flo
     return exp_data_frames
 
 
-def generate_empty_curve():
+def generate_JSON_template():
     curve = {
         "filename": "noname",
         "date": "2021-12-02",
@@ -131,7 +131,7 @@ def save_to_json(experiment_manager):
 
     for segment in ref:
         if segment.active:
-            cv = generate_empty_curve()
+            cv = generate_JSON_template()
             # cv["filename"] = segment.basename
             cv["tip"]["radius"] = radius * 1e-9
             cv["tip"]["geometry"] = geometry
