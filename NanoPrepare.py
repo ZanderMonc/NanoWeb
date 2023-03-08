@@ -34,8 +34,6 @@ def save_uploaded_file(uploaded_file: UploadedFile, path: str) -> None:
             uploaded_file (UploadedFile): File uploaded using the streamlit file uploader
             path (str): The path to the directory where the file will be saved
 
-        Returns:
-            None
     """
     try:
         file_name: str = uploaded_file.name
@@ -53,8 +51,6 @@ def extract_zip(file_name: str, dir_name: str) -> None:
             file_name (str): Name of the zip file
             dir_name (str): The path to the directory where the file will be extracted
 
-        Returns:
-            None
     """
     try:
         with zipfile.ZipFile(file_name, "r") as zip_ref:
@@ -63,9 +59,7 @@ def extract_zip(file_name: str, dir_name: str) -> None:
         print(e)
 
 
-def generate_raw_curve(
-    data_man, segment: int, ratio_z_left: float = 1, ratio_z_right: float = 1
-):
+def generate_raw_curve(data_man, segment: int, ratio_z_left: float = 1, ratio_z_right: float = 1):
     # takes a list of experiments and returns a list of experiment dataframes for the selected segment
     exp_data_frames = []
 
