@@ -16,6 +16,11 @@ class FilterMeta(abc.ABCMeta, type):
 
         return new_cls
 
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._filters:
+            cls._filters[cls] = super().__call__(*args, **kwargs)
+        return cls._filters[cls]
+
     @staticmethod
     def filters() -> list["Filter"]:
         return list(FilterMeta._filters.values())
@@ -111,3 +116,6 @@ class ForceFilter(Filter):
             return np.max(data_set.force) != force_threshold
 
         return np.max(data_set.force) > force_threshold
+
+
+filters = Filter.filters()
