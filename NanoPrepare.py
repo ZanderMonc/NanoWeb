@@ -126,6 +126,12 @@ def generate_json_template():
 
 
 def save_to_json(experiment_manager):
+    """Saves the data stored in experiment manager to a JSON file.
+
+            Args:
+                experiment_manager (iter): iterable DataManager object
+    """
+    # TODO fix functionality
     ref = experiment_manager[0].haystack[0]
     curves = []
     fname = "data/test.json"
