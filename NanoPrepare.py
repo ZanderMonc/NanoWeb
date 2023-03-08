@@ -82,11 +82,11 @@ def generate_raw_curve(data_man, segment: int, ratio_z_left: float = 1, ratio_z_
     exp_data_frames = []
 
     for internal in data_man:
-
-        if not internal.active:
-            st.info("Experiment " + internal.name + " has been ignored")
-
-            continue
+        #
+        # if not internal.active:
+        #     st.info("Experiment " + internal.name + " has been ignored")
+        #
+        #     continue
 
         df = pd.DataFrame(
             {
@@ -171,7 +171,7 @@ def layer_charts(data_frames, chart_func):
 
 
 
-def file_handler(file_name: str, file):
+def file_handler(file_name: str, quale, file):
     save_to_log("File " + file_name + " uploaded")
     if file_name.endswith(".zip"):
         #unzip the file
@@ -327,8 +327,8 @@ def main() -> None:
             )
         if select_filter == "--select--":
             print(st.session_state.log)
-            for internal in experiment_manager:
-                internal.activate()
+            # for internal in experiment_manager:
+            #     internal.activate()
 
 
 if __name__ == "__main__":

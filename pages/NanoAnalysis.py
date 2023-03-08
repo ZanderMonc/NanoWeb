@@ -26,7 +26,7 @@ def handle_click(i: int) -> None:
         engine.haystack[i].active = True
 
 
-def generate_raw_curves(haystack: list) -> list:
+def generate_raw_curves_analysis(haystack: list) -> list:
     all_curves = []
     for curve in haystack:
         if curve.active:
