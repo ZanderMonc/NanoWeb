@@ -59,11 +59,22 @@ def extract_zip(file_name: str, dir_name: str) -> None:
         print(e)
 
 
-def generate_raw_curve(data_man, segment: int, ratio_z_left: float = 1, ratio_z_right: float = 1):
-    # takes a list of experiments and returns a list of experiment dataframes for the selected segment
+def generate_raw_curve(experiment_manager: iter, segment: int, ratio_z_left: float = 1, ratio_z_right: float = 1):
+    """Creates DataFrame objects for experiment data in a given segment and returns them in a list
+
+        Args:
+            experiment_manager (iter): iterable DataManager object
+            segment (int): Number corresponding to a certain segment
+            ratio_z_left (float): Left-hand side limit for specifying a certain range of z values
+            ratio_z_right (float): Right-hand side limit for specifying a certain range of z values
+
+        Returns:
+            exp_data_frames (list[DataFrame]): list of DataFrame objects
+    """
+
     exp_data_frames = []
 
-    for internal in data_man:
+    for internal in experiment_manager:
         # check that z and force are not none
         if np.any(internal.segments[segment].z == 0) or np.any(
             internal.segments[segment].force == 0
