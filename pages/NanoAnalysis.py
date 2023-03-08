@@ -14,7 +14,7 @@ import shutil
 import altair as alt
 import nanodata
 import nanodata.nanodata as nano
-from NanoPrepare import save_uploaded_file, base_chart, layer_charts,save_to_log
+from NanoPrepare import save_uploaded_file,base_chart,layer_charts,save_to_log
 import nanoanalysisdata.engine as engine
 
 
@@ -26,8 +26,7 @@ def handle_click(i: int) -> None:
         engine.haystack[i].active = True
 
 
-@st.cache(suppress_st_warning=True, allow_output_mutation=True)
-def generate_raw_curves_analysis(haystack: list) -> list:
+def generate_raw_curves(haystack: list) -> list:
     all_curves = []
     for curve in haystack:
         if curve.active:
@@ -91,7 +90,14 @@ def main() -> None:
 
     filter_bar = st.container()
     filter_bar.write("Global Config")
-    filter_first_col, filter_second_col, filter_third_col, filter_fourth_col, filter_fifth_col = filter_bar.columns(5)
+    (
+        filter_first_col,
+        filter_second_col,
+        filter_third_col,
+        filter_fourth_col,
+        filter_fifth_col,
+    ) = filter_bar.columns(5)
+
     # wait until file is uploaded
     if st.session_state.get("JSON") is not None or file is not None:
         if file is not None:
@@ -108,8 +114,9 @@ def main() -> None:
             # graph_first_col.write("Files")
             # create a checkbox for each file in the haystack
             for i, curve in enumerate(engine.haystack):
-                print(i)
-                curve_expander.checkbox(curve.filename, value=True, key=i, on_change=handle_click, args=(i,))
+                curve_expander.checkbox(
+                    curve.filename, key=i, on_change=handle_click, args=(i,)
+                )
 
             # Raw curve plot
             graph_first_col_raw = graph_first_col.container()
@@ -126,12 +133,13 @@ def main() -> None:
             graph_first_col_current = graph_first_col.container()
             graph_first_col_current.write("Current curve")
             options = [curve.filename for curve in engine.haystack if curve.active]
-            selected_index = options.index(graph_first_col_current.selectbox('Select a curve', options, index=0))
+            selected_index = options.index(
+                graph_first_col_current.selectbox("Select a curve", options, index=0)
+            )
             graph_first_current_plot = graph_first_col_current.line_chart()
 
             graph_first_current_plot.altair_chart(
-                base_chart(raw_curves[selected_index]),
-                use_container_width=True
+                base_chart(raw_curves[selected_index]), use_container_width=True
             )
 
             # Hertz analysis
@@ -148,7 +156,9 @@ def main() -> None:
 
                 graph_third_col_elasticity = graph_third_col.container()
                 graph_third_col_elasticity.write("Elasticity values")
-                graph_third_col_elasticity_plot = graph_third_col_elasticity.line_chart()
+                graph_third_col_elasticity_plot = (
+                    graph_third_col_elasticity.line_chart()
+                )
 
             # Elasticity Spectra analysis
             el_spec_active = graph_fourth_col.checkbox("Elasticity Spectra Analysis")
@@ -161,6 +171,9 @@ def main() -> None:
                 graph_fourth_col_bilayer = graph_fourth_col.container()
                 graph_fourth_col_bilayer.write("Bilayer model")
                 graph_fourth_col_bilayer_plot = graph_fourth_col_bilayer.line_chart()
+
+        else:
+            st.warning("Only files with the .json extension are supported.")
 
 
 if __name__ == "__main__":

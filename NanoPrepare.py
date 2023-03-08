@@ -174,10 +174,10 @@ def layer_charts(data_frames, chart_func):
 def file_handler(file_name: str, file):
     save_to_log("File " + file_name + " uploaded")
     if file_name.endswith(".zip"):
-        # unzip the file
+        #unzip the file
         dir_name = tempfile.mkdtemp()  # create a temp folder to pass to experiment
         extract_zip(file_name, dir_name)  # save the file to the temp folder
-        experiment_manager = nano.ChiaroDataManager("/" + dir_name)
+        experiment_manager = nano.ChiaroDataManager(dir_name)
         experiment_manager.load()
         print(experiment_manager.path)
     else:
@@ -186,6 +186,7 @@ def file_handler(file_name: str, file):
         # experiment_manager.append(get_experiment(dir_name, quale))
         experiment_manager = nano.ChiaroDataManager(dir_name)
         experiment_manager.load()
+        print(experiment_manager.path)
     return experiment_manager
 
 
@@ -207,6 +208,7 @@ def save_to_log(string):
 
 
 def main() -> None:
+
     st.set_page_config(
         layout="wide", page_title="NanoWeb", page_icon="images/cellmech.png"
     )
@@ -273,13 +275,15 @@ def main() -> None:
         experiment_manager = file_handler(fname, quale, file)
 
         segment = left_config_segment.selectbox(
-            "Segment", (i for i in range(len(list(experiment_manager.datasets)[0]))), key="segment"
+            "Segment", (i for i in range(len(list(experiment_manager.data_sets)[0])))
         )
 
         if save_json_button:
             save_to_json(experiment_manager)
-            with open('data/test.json') as f:
-                file_select_col.download_button('Download JSON', data=f, file_name='test.json')
+            with open("data/test.json") as f:
+                file_select_col.download_button(
+                    "Download JSON", data=f, file_name="test.json"
+                )
 
         raw_curve = generate_raw_curve(experiment_manager, segment)
 
@@ -291,13 +295,18 @@ def main() -> None:
 
         # use the right graph to lense in on the left graph, where the cursor hovers on the left graph the right graph shows a zoomed in view
         right_graph.altair_chart(
-            layer_charts(generate_raw_curve(experiment_manager, segment, ratio_z_left, ratio_z_right), base_chart),
-            use_container_width=True
+            layer_charts(
+                generate_raw_curve(
+                    experiment_manager, segment, ratio_z_left, ratio_z_right
+                ),
+                base_chart,
+            ),
+            use_container_width=True,
         )
 
         # Execute filters
         if select_filter == "Threshold":
-            threshold = st.number_input("Threshold", value=-1.0)
+            threshold = st.number_input("Force Threshold (nN)", value=-1.0)
             threshold_filter(experiment_manager, float(threshold), segment)
             # for threshold filter, remove non-active segments from the dataset
             # then re-generate the raw curve
@@ -308,8 +317,13 @@ def main() -> None:
             )
             # then re-generate the right graph
             right_graph.altair_chart(
-                layer_charts(generate_raw_curve(experiment_manager, segment, ratio_z_left, ratio_z_right), base_chart),
-                use_container_width=True
+                layer_charts(
+                    generate_raw_curve(
+                        experiment_manager, segment, ratio_z_left, ratio_z_right
+                    ),
+                    base_chart,
+                ),
+                use_container_width=True,
             )
         if select_filter == "--select--":
             print(st.session_state.log)
