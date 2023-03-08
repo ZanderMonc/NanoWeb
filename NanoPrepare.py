@@ -161,13 +161,12 @@ def save_to_json(experiment_manager):
 def base_chart(data_frame):
     """Creates a base layer for a layered chart from a given DataFrame object
 
-                Args:
-                    data_frame: DataFrame object
+            Args:
+                data_frame: DataFrame object
 
-                Returns:
-                    base: Chart object corresponding to the base layer
+            Returns:
+                base: Chart object corresponding to the base layer
     """
-    # produces a chart to be used as a layer in a layered chart
     base = (
         alt.Chart(
             data_frame,
@@ -183,10 +182,19 @@ def base_chart(data_frame):
     return base
 
 
-def layer_charts(data_frames, chart_func):
-    # takes a list of pandas dataframes and a chart function and returns a layered chart
+def layer_charts(data_frames: list, chart_func):
+    """Layers individual charts created from DataFrame objects in a given list
+
+            Args:
+                data_frames (list): list of DataFrame objects
+                chart_func: Function creating a single layer of the layered chart
+
+            Returns:
+                layered_charts: A layered chart
+    """
     layers = [chart_func(data_frame) for data_frame in data_frames]
-    return alt.layer(*layers)
+    layered_charts = alt.layer(*layers)
+    return layered_charts
 
 
 def file_handler(file_name: str, quale: str, file):
