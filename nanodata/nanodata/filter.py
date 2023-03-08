@@ -35,6 +35,15 @@ class FilterParameter:
 
 
 class Filter(abc.ABC, metaclass=FilterMeta):
+    """Class for creating filters to filter data sets.
+
+    This is the base class to be used in all filter implementations.
+    super() should be called with a description of your filter.
+    After, the add_parameter method should be called for each parameter you wish to add.
+
+    Args:
+        description (str): human-readable description of the filter
+    """
     def __init__(self, description: str):
         self.name = self.__create_name()
         self.description = description
@@ -43,6 +52,14 @@ class Filter(abc.ABC, metaclass=FilterMeta):
     def add_parameter(
         self, name: str, data_type: type, description: str, default_value: Any
     ):
+        """Adds a parameter to the filter.
+
+        Args:
+            name (str): name of the parameter
+            data_type (type): type of the parameter (e.g. int, float, str, list)
+            description (str): human-readable description of the parameter
+            default_value (Any): default value of the parameter to be displayed initially in UI
+        """
         self.parameters.append(
             FilterParameter(name, data_type, description, default_value)
         )
@@ -52,6 +69,15 @@ class Filter(abc.ABC, metaclass=FilterMeta):
 
     @abc.abstractmethod
     def is_valid(self, parameters: dict[str, Any], data_set: abstracts.DataSet) -> bool:
+        """Checks if a data set is valid for the filter.
+
+        Args:
+            parameters (dict): dictionary of parameters to be used to determine if the data set is valid
+            data_set (DataSet): data set to be checked
+
+        Returns:
+            bool: true if the data set is valid, False otherwise
+        """
         ...
 
     @staticmethod
