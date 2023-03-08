@@ -13,6 +13,14 @@ import nanodata.nanodata as nano
 
 
 def get_selection(title: str, options: tuple | list) -> str:
+    """Creates a selection box element in the GUI with a given title and options
+        Args:
+            title (str): title of selection box
+            options (tuple[any] or list[any]): options for the selection
+
+        Returns:
+            any: option selected from the selection inputted to GUI
+    """
     return st.selectbox(
         title,
         options,
