@@ -63,15 +63,6 @@ def extract_zip(file_name: str, dir_name: str) -> None:
         print(e)
 
 
-def generate_raw_curve_plt(stack, segment: int):
-    fig, ax = plt.subplots()
-    ax.plot(stack[segment].z, stack[segment].f)
-    ax.set(xlabel="z (nm)", ylabel="Force (nN)", title="Force vs Z")
-    ax.grid()
-    fig.set_size_inches(8, 5)
-    return fig
-
-
 def generate_raw_curve(
     data_man, segment: int, ratio_z_left: float = 1, ratio_z_right: float = 1
 ):
