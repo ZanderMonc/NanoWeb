@@ -28,6 +28,15 @@ def get_selection(title: str, options: tuple | list) -> str:
 
 @st.cache
 def save_uploaded_file(uploaded_file: UploadedFile, path: str) -> None:
+    """Saves the contents of an uploaded file to a given path.
+
+        Args:
+            uploaded_file (UploadedFile): File uploaded using the streamlit file uploader
+            path (str): The path to the directory where the file will be saved
+
+        Returns:
+            None
+    """
     try:
         file_name: str = uploaded_file.name
         with open(os.path.join(path, file_name), "wb") as f:
