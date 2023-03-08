@@ -2,6 +2,7 @@ from typing import Any
 import abc
 import numpy as np
 from . import abstracts
+import re
 
 
 class FilterMeta(abc.ABCMeta, type):
@@ -19,6 +20,9 @@ class FilterMeta(abc.ABCMeta, type):
     def filters() -> list["FilterMeta"]:
         return list(FilterMeta._filters.values())
 
+    def __repr__(self):
+        return f"{self.__name__}"
+
 
 class FilterParameter:
     def __init__(
@@ -31,8 +35,8 @@ class FilterParameter:
 
 
 class Filter(abc.ABC, metaclass=FilterMeta):
-    def __init__(self, name: str, description: str):
-        self.name = name
+    def __init__(self, description: str):
+        self.name = self.__create_name()
         self.description = description
         self.parameters: list[FilterParameter] = []
 
@@ -42,6 +46,9 @@ class Filter(abc.ABC, metaclass=FilterMeta):
         self.parameters.append(
             FilterParameter(name, data_type, description, default_value)
         )
+
+    def __create_name(self) -> str:
+        return " ".join(re.findall("[A-Z][^A-Z]*", type(self).__name__))
 
     @abc.abstractmethod
     def is_valid(self, parameters: dict[str, Any], data_set: abstracts.DataSet) -> bool:
@@ -54,7 +61,7 @@ class Filter(abc.ABC, metaclass=FilterMeta):
 
 class ForceFilter(Filter):
     def __init__(self):
-        super().__init__("Force Filter", "Filters data sets depending on force limit")
+        super().__init__("Filters data sets depending on force limit")
         self.add_parameter("force", float, "Force limit", 1)
         self.add_parameter(
             "comparison", list, "Comparison", ["<", ">", "<=", ">=", "==", "!="]
