@@ -52,9 +52,9 @@ class Filter(abc.ABC, metaclass=FilterMeta):
         return FilterMeta.filters()
 
 
-class ComparisonForceFilter(Filter):
+class ForceFilter(Filter):
     def __init__(self):
-        super().__init__("Force", "Filters data sets depending on force limit")
+        super().__init__("Force Filter", "Filters data sets depending on force limit")
         self.add_parameter("force", float, "Force limit", 1)
         self.add_parameter(
             "comparison", list, "Comparison", ["<", ">", "<=", ">=", "==", "!="]
