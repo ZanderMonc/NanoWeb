@@ -69,7 +69,7 @@ def generate_raw_curve(experiment_manager: iter, segment: int, ratio_z_left: flo
             ratio_z_right (float): Right-hand side limit for specifying a certain range of z values
 
         Returns:
-            exp_data_frames (list[DataFrame]): list of DataFrame objects
+            exp_data_frames (list): list of DataFrame objects
     """
 
     exp_data_frames = []
