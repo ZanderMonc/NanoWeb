@@ -47,6 +47,15 @@ def save_uploaded_file(uploaded_file: UploadedFile, path: str) -> None:
 
 
 def extract_zip(file_name: str, dir_name: str) -> None:
+    """Extracts the contents of the zip file to a given directory.
+
+        Args:
+            file_name (str): Name of the zip file
+            dir_name (str): The path to the directory where the file will be extracted
+
+        Returns:
+            None
+    """
     try:
         with zipfile.ZipFile(file_name, "r") as zip_ref:
             zip_ref.extractall(dir_name)
