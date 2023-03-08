@@ -65,8 +65,6 @@ class ComparisonForceFilter(Filter):
         comparison = parameters["comparison"]
         if comparison == "<":
             return np.max(data_set.force) < force_threshold
-        elif comparison == ">":
-            return np.max(data_set.force) > force_threshold
         elif comparison == "<=":
             return np.max(data_set.force) <= force_threshold
         elif comparison == ">=":
