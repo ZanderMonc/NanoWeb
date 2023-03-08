@@ -225,6 +225,7 @@ def file_handler(file_name: str, quale: str, file: UploadedFile):
 
 
 def threshold_filter(experiment_manager, threshold: float):
+    # TODO will be removed after integration with the new backend
     for internal in experiment_manager:
         for segment in internal.segments:
             if segment.force is not None:
