@@ -197,7 +197,16 @@ def layer_charts(data_frames: list, chart_func):
     return layered_charts
 
 
-def file_handler(file_name: str, quale: str, file):
+def file_handler(file_name: str, quale: str, file: UploadedFile):
+    """Decides how to handle the uploaded file and creates an experiment manager storing its data
+
+            Args:
+                file_name (str): Name of the file to be handled
+                file (UploadedFile): File uploaded using the streamlit file uploader
+
+            Returns:
+                experiment_manager (iter): iterable DataManager object
+    """
     if file_name.endswith(".zip"):
         # unzip the file
         dir_name = tempfile.mkdtemp()  # create a temp folder to pass to experiment
