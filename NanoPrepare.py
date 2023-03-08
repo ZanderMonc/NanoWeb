@@ -159,6 +159,14 @@ def save_to_json(experiment_manager):
 
 
 def base_chart(data_frame):
+    """Creates a base layer for a layered chart from a given DataFrame object
+
+                Args:
+                    data_frame: DataFrame object
+
+                Returns:
+                    base: Chart object corresponding to the base layer
+    """
     # produces a chart to be used as a layer in a layered chart
     base = (
         alt.Chart(
