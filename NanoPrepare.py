@@ -106,7 +106,12 @@ def generate_raw_curve(experiment_manager: iter, segment: int, ratio_z_left: flo
     return exp_data_frames
 
 
-def generate_JSON_template():
+def generate_json_template():
+    """Generates a JSON formatting template corresponding to the data of a sample curve
+
+        Returns:
+            curve (dict): A dictionary formatted for JSON filetype for a sample curve
+    """
     curve = {
         "filename": "noname",
         "date": "2021-12-02",
@@ -131,7 +136,7 @@ def save_to_json(experiment_manager):
 
     for segment in ref:
         if segment.active:
-            cv = generate_JSON_template()
+            cv = generate_json_template()
             # cv["filename"] = segment.basename
             cv["tip"]["radius"] = radius * 1e-9
             cv["tip"]["geometry"] = geometry
