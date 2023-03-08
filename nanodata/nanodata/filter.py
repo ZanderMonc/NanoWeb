@@ -1,4 +1,4 @@
-from typing import Any, TYPE_CHECKING
+from typing import Any
 import abc
 import numpy as np
 from . import abstracts
