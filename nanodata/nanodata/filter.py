@@ -6,22 +6,19 @@ import re
 
 
 class FilterMeta(abc.ABCMeta, type):
-    _filters: dict[type, "FilterMeta"] = {}
+    _filters: dict[type, "Filter"] = {}
 
     def __new__(mcs, name, bases, namespace, **kwargs):
         new_cls = super().__new__(mcs, name, bases, namespace, **kwargs)
 
         if abc.ABC not in bases:
-            mcs._filters[new_cls] = new_cls
+            mcs._filters[new_cls] = new_cls()
 
         return new_cls
 
     @staticmethod
-    def filters() -> list["FilterMeta"]:
+    def filters() -> list["Filter"]:
         return list(FilterMeta._filters.values())
-
-    def __repr__(self):
-        return f"{self.__name__}"
 
 
 class FilterParameter:
@@ -32,6 +29,9 @@ class FilterParameter:
         self.data_type = data_type
         self.description = description
         self.default_value = default_value
+
+    def __repr__(self):
+        return f"FilterParameter({self.name}, {self.data_type.__name__}, {self.description}, {self.default_value})"
 
 
 class Filter(abc.ABC, metaclass=FilterMeta):
@@ -55,8 +55,11 @@ class Filter(abc.ABC, metaclass=FilterMeta):
         ...
 
     @staticmethod
-    def filters() -> list[FilterMeta]:
+    def filters() -> list["Filter"]:
         return FilterMeta.filters()
+
+    def __repr__(self):
+        return f"{type(self).__name__}({self.name}, {self.description}, {self.parameters})"
 
 
 class ForceFilter(Filter):
