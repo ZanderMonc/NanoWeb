@@ -26,35 +26,6 @@ def get_selection(title: str, options: tuple | list) -> str:
         options,
     )
 
-
-def get_experiment(dir_name: str, file_type: str):
-    if file_type == "Optics11":
-        exp = experiment.Chiaro(dir_name)
-    elif file_type == "Optics11_2019":
-        exp = experiment.Chiaro2019(dir_name)
-    elif file_type == "Optics11_OLD":
-        exp = experiment.ChiaroGenova(dir_name)
-    elif file_type == "Nanosurf":
-        exp = experiment.NanoSurf(dir_name)
-    elif file_type == "TSV":
-        exp = experiment.Easytsv(dir_name)
-    elif file_type == "jpk-force":
-        exp = experiment.Jpk(dir_name)
-    elif file_type == "jpk-fmap":
-        exp = experiment.JpkForceMap(dir_name)
-    else:
-        exp = None
-
-    if exp is not None:
-        exp.browse()
-
-        if not len(exp):
-            raise FileNotFoundError("No files found")
-        return exp
-    else:
-        raise KeyError("Invalid experiment type")
-
-
 @st.cache
 def save_uploaded_file(uploaded_file: UploadedFile, path: str) -> None:
     try:
