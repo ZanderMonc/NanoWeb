@@ -52,16 +52,6 @@ class Filter(abc.ABC, metaclass=FilterMeta):
         return FilterMeta.filters()
 
 
-class ForceFilter(Filter):
-    def __init__(self):
-        super().__init__("Force", "Filters data sets depending on force limit")
-        self.add_parameter("force", float, "Force limit", 1)
-
-    def is_valid(self, parameters: dict[str, Any], data_set: abstracts.DataSet) -> bool:
-        force_threshold = parameters["force"] * 1e-9
-        return np.max(data_set.force) > force_threshold
-
-
 class ComparisonForceFilter(Filter):
     def __init__(self):
         super().__init__("Force", "Filters data sets depending on force limit")
