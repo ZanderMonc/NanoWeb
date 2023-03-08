@@ -45,9 +45,6 @@ def main() -> None:
         layout="wide", page_title="NanoWeb", page_icon="/images/cellmech.png"
     )
 
-    experiment_manager = nano.ChiaroDataManager._active_data_managers
-    print(experiment_manager)
-
     top_bar = st.container()
     file = top_bar.file_uploader("Upload a JSON file")
     curve_expander = st.expander("Curve selection")
@@ -77,10 +74,12 @@ def main() -> None:
                 engine.haystack.append(engine.curve(cv))
 
             # File selection checkboxes
-            #graph_first_col.write("Files")
-            #create a checkbox for each file in the haystack
+            # graph_first_col.write("Files")
+            # create a checkbox for each file in the haystack
             for i, curve in enumerate(engine.haystack):
-                curve_expander.checkbox(curve.filename, key=i, on_change=handle_click, args=(i,))
+                curve_expander.checkbox(
+                    curve.filename, key=i, on_change=handle_click, args=(i,)
+                )
 
             # Raw curve plot
             graph_first_col_raw = graph_first_col.container()
@@ -89,20 +88,20 @@ def main() -> None:
             raw_curves = generate_raw_curves(engine.haystack)
 
             graph_first_col_raw_plot.altair_chart(
-                layer_charts(raw_curves, base_chart),
-                use_container_width=True
+                layer_charts(raw_curves, base_chart), use_container_width=True
             )
 
             # Current curve plot
             graph_first_col_current = graph_first_col.container()
             graph_first_col_current.write("Current curve")
             options = [curve.filename for curve in engine.haystack if curve.active]
-            selected_index = options.index(graph_first_col_current.selectbox('Select a curve', options, index=0))
+            selected_index = options.index(
+                graph_first_col_current.selectbox("Select a curve", options, index=0)
+            )
             graph_first_current_plot = graph_first_col_current.line_chart()
 
             graph_first_current_plot.altair_chart(
-                base_chart(raw_curves[selected_index]),
-                use_container_width=True
+                base_chart(raw_curves[selected_index]), use_container_width=True
             )
 
             # Hertz analysis
