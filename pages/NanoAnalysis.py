@@ -1,19 +1,6 @@
-import calendar
-import tempfile
 import streamlit as st
-from streamlit.runtime.uploaded_file_manager import UploadedFile
-import os
-import sys
-import mvexperiment.experiment as experiment
-import numpy as np
-import zipfile
-import matplotlib.pyplot as plt
 import pandas as pd
 import json
-import shutil
-import altair as alt
-import nanodata.nanodata as nano
-import NanoPrepare
 from NanoPrepare import save_uploaded_file, base_chart, layer_charts
 import nanoanalysisdata.engine as engine
 
@@ -38,6 +25,15 @@ def generate_raw_curves(haystack: list) -> list:
             )
             all_curves.append(df)
     return all_curves
+def file_upload_checker(file):
+    if file is not None:
+        if file.name.endswith(".json"):
+            return True
+        else:
+            return False
+    else:
+        return False
+
 
 
 def main() -> None:
@@ -61,76 +57,75 @@ def main() -> None:
         filter_fifth_col,
     ) = filter_bar.columns(5)
 
-    if file is not None:
-        if file.name.endswith(".json"):
-            save_uploaded_file(file, "data")
+    if file_upload_checker(file):
+        save_uploaded_file(file, "data")
 
-            # Load the JSON file
-            f = open("data/" + file.name, "r")
-            structure = json.load(f)
-            # st.write(structure)
+        # Load the JSON file
+        f = open("data/" + file.name, "r")
+        structure = json.load(f)
+        f.close()
 
-            for cv in structure["curves"]:
-                engine.haystack.append(engine.curve(cv))
+        for cv in structure["curves"]:
+            engine.haystack.append(engine.curve(cv))
 
-            # File selection checkboxes
-            # graph_first_col.write("Files")
-            # create a checkbox for each file in the haystack
-            for i, curve in enumerate(engine.haystack):
-                curve_expander.checkbox(
-                    curve.filename, key=i, on_change=handle_click, args=(i,)
-                )
-
-            # Raw curve plot
-            graph_first_col_raw = graph_first_col.container()
-            graph_first_col_raw.write("Raw curves")
-            graph_first_col_raw_plot = graph_first_col_raw.line_chart()
-            raw_curves = generate_raw_curves(engine.haystack)
-
-            graph_first_col_raw_plot.altair_chart(
-                layer_charts(raw_curves, base_chart), use_container_width=True
+        # File selection checkboxes
+        # graph_first_col.write("Files")
+        # create a checkbox for each file in the haystack
+        for i, curve in enumerate(engine.haystack):
+            curve_expander.checkbox(
+                curve.filename, key=i, on_change=handle_click, args=(i,), value=True,
             )
 
-            # Current curve plot
-            graph_first_col_current = graph_first_col.container()
-            graph_first_col_current.write("Current curve")
-            options = [curve.filename for curve in engine.haystack if curve.active]
-            selected_index = options.index(
-                graph_first_col_current.selectbox("Select a curve", options, index=0)
+        # Raw curve plot
+        graph_first_col_raw = graph_first_col.container()
+        graph_first_col_raw.write("Raw curves")
+        graph_first_col_raw_plot = graph_first_col_raw.line_chart()
+        raw_curves = generate_raw_curves(engine.haystack)
+
+        graph_first_col_raw_plot.altair_chart(
+            layer_charts(raw_curves, base_chart), use_container_width=True
+        )
+
+        # Current curve plot
+        graph_first_col_current = graph_first_col.container()
+        graph_first_col_current.write("Current curve")
+        options = [curve.filename for curve in engine.haystack if curve.active]
+        selected_index = options.index(
+            graph_first_col_current.selectbox("Select a curve", options, index=0)
+        )
+        graph_first_current_plot = graph_first_col_current.line_chart()
+
+        graph_first_current_plot.altair_chart(
+            base_chart(raw_curves[selected_index]), use_container_width=True
+        )
+
+        # Hertz analysis
+        hertz_active = graph_third_col.checkbox("Hertz Analysis")
+        if hertz_active:
+            graph_third_col_indent = graph_third_col.container()
+            graph_third_col_indent.write("Indentation curves")
+            graph_third_col_indent_plot = graph_third_col_indent.line_chart()
+
+            graph_third_col_f_ind = graph_third_col.container()
+            graph_third_col_f_ind.write("Average F-ind")
+            graph_third_col_f_ind_plot = graph_third_col_f_ind.line_chart()
+
+            graph_third_col_elasticity = graph_third_col.container()
+            graph_third_col_elasticity.write("Elasticity values")
+            graph_third_col_elasticity_plot = (
+                graph_third_col_elasticity.line_chart()
             )
-            graph_first_current_plot = graph_first_col_current.line_chart()
 
-            graph_first_current_plot.altair_chart(
-                base_chart(raw_curves[selected_index]), use_container_width=True
-            )
+        # Elasticity Spectra analysis
+        el_spec_active = graph_fourth_col.checkbox("Elasticity Spectra Analysis")
+        if el_spec_active:
+            graph_fourth_col_el_spec = graph_fourth_col.container()
+            graph_fourth_col_el_spec.write("Elasticity Spectra")
+            graph_fourth_col_el_spec_plot = graph_fourth_col_el_spec.line_chart()
 
-            # Hertz analysis
-            hertz_active = graph_third_col.checkbox("Hertz Analysis")
-            if hertz_active:
-                graph_third_col_indent = graph_third_col.container()
-                graph_third_col_indent.write("Indentation curves")
-                graph_third_col_indent_plot = graph_third_col_indent.line_chart()
-
-                graph_third_col_f_ind = graph_third_col.container()
-                graph_third_col_f_ind.write("Average F-ind")
-                graph_third_col_f_ind_plot = graph_third_col_f_ind.line_chart()
-
-                graph_third_col_elasticity = graph_third_col.container()
-                graph_third_col_elasticity.write("Elasticity values")
-                graph_third_col_elasticity_plot = (
-                    graph_third_col_elasticity.line_chart()
-                )
-
-            # Elasticity Spectra analysis
-            el_spec_active = graph_fourth_col.checkbox("Elasticity Spectra Analysis")
-            if el_spec_active:
-                graph_fourth_col_el_spec = graph_fourth_col.container()
-                graph_fourth_col_el_spec.write("Elasticity Spectra")
-                graph_fourth_col_el_spec_plot = graph_fourth_col_el_spec.line_chart()
-
-                graph_fourth_col_bilayer = graph_fourth_col.container()
-                graph_fourth_col_bilayer.write("Bilayer model")
-                graph_fourth_col_bilayer_plot = graph_fourth_col_bilayer.line_chart()
+            graph_fourth_col_bilayer = graph_fourth_col.container()
+            graph_fourth_col_bilayer.write("Bilayer model")
+            graph_fourth_col_bilayer_plot = graph_fourth_col_bilayer.line_chart()
 
         else:
             st.warning("Only files with the .json extension are supported.")

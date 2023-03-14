@@ -54,6 +54,7 @@ def save_uploaded_file(uploaded_file: UploadedFile, path: str) -> None:
         with open(os.path.join(path, file_name), "wb") as f:
             f.write(uploaded_file.getbuffer())
         print(f"Saved File:{file_name} to {path}")
+        return path
     except Exception as e:
         print(e)
 
