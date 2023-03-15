@@ -76,23 +76,12 @@ def generate_raw_curve_plt(stack, segment: int):
 
 
 def generate_raw_curve(
-    data_man, segment: int, ratio_z_left: float = 1, ratio_z_right: float = 1
+        data_man, segment: int, ratio_z_left: float = 1, ratio_z_right: float = 1
 ):
     # takes a list of experiments and returns a list of experiment dataframes for the selected segment
     exp_data_frames = []
 
     for internal in data_man:
-        # check that z and force are not none
-        if np.any(internal.segments[segment].z == 0) or np.any(
-            internal.segments[segment].force == 0
-        ):
-            # if segment is dead, do not process it and break;
-            st.warning(
-                "Segment "
-                + str(segment)
-                + " has a curve out of threshold that has been ignored"
-            )
-            break
 
         df = pd.DataFrame(
             {
@@ -195,18 +184,24 @@ def file_handler(file_name: str, quale: str, file):
     return experiment_manager
 
 
-def threshold_filter(experiment_manager, threshold: float):
-    for internal in experiment_manager:
-        for segment in internal.segments:
-            if segment.force is not None:
-                # if max force is over threshold, set force and z to 0
-                if max(segment.force) < threshold:
-                    segment.set_force(0)
-                    segment.set_z(0)
+def get_filter(filter_name: str):
+    for supported_filter in nano.filters:
+        if supported_filter.name == filter_name:
+            return supported_filter
+        else:
+            return None
+
+
+def execute_filter(experiment_manager, filter_object, params) -> list:
+    active_datasets = []
+    for dataset in experiment_manager:
+        if filter_object.is_valid(params, dataset):
+            active_datasets.append(dataset)
+
+    return active_datasets
 
 
 def main() -> None:
-
     st.set_page_config(
         layout="wide", page_title="NanoWeb", page_icon="images/cellmech.png"
     )
@@ -260,6 +255,7 @@ def main() -> None:
     ratio_z_left = right_config_segment.slider("crop left", 0.0, 1.0, 0.5, 0.01)
     ratio_z_right = right_config_segment2.slider("crop right", 0.0, 1.0, 0.5, 0.01)
 
+
     # Filter GUI elements
     select_filter = st.selectbox(
         "Filter",
@@ -290,7 +286,8 @@ def main() -> None:
             layer_charts(raw_curve, base_chart), use_container_width=True
         )
 
-        # use the right graph to lense in on the left graph, where the cursor hovers on the left graph the right graph shows a zoomed in view
+        # use the right graph to lense in on the left graph, where the cursor hovers on the left graph the right
+        # graph shows a zoomed in view
         right_graph.altair_chart(
             layer_charts(
                 generate_raw_curve(
@@ -303,25 +300,36 @@ def main() -> None:
 
         # Execute filters
         if select_filter == "Threshold":
-            threshold = st.text_input("Force Threshold (nN)", -1)
-            threshold_filter(experiment_manager, float(threshold))
-            # for threshold filter, remove non-active segments from the dataset
-            # then re-generate the raw curve
-            raw_curve = generate_raw_curve(experiment_manager, segment)
-            # then re-generate the left graph
-            left_graph.altair_chart(
-                layer_charts(raw_curve, base_chart), use_container_width=True
-            )
-            # then re-generate the right graph
-            right_graph.altair_chart(
-                layer_charts(
-                    generate_raw_curve(
-                        experiment_manager, segment, ratio_z_left, ratio_z_right
+            threshold = st.text_input("Force Threshold (nN)", -1.0)
+            force_filter = get_filter("Force Filter")
+
+            # run filter
+            if force_filter:
+                filtered_data = execute_filter(experiment_manager,
+                                               force_filter,
+                                               {"force": float(threshold),
+                                                "comparison": ">"})
+
+                print(f"Filter applied for threshold {threshold}")
+
+                # re-generate the raw curve
+                raw_curve = generate_raw_curve(filtered_data, segment)
+                # re-generate the left graph
+                left_graph.altair_chart(
+                    layer_charts(raw_curve, base_chart), use_container_width=True
+                )
+                # re-generate the right graph
+                right_graph.altair_chart(
+                    layer_charts(
+                        generate_raw_curve(
+                            filtered_data, segment, ratio_z_left, ratio_z_right
+                        ),
+                        base_chart,
                     ),
-                    base_chart,
-                ),
-                use_container_width=True,
-            )
+                    use_container_width=True,
+                )
+            else:
+                st.warning("Threshold filter is not currently initialised.")
 
 
 if __name__ == "__main__":
