@@ -19,7 +19,10 @@ import nanoanalysisdata.engine as engine
 
 
 def handle_click(i: int) -> None:
-    # activate and deactivate curve in haystack on checkbox click
+    """Activates and deactivates a curve in the haystack on clicking the checkbox
+        Args:
+            i (int): index of the curve in the haystack
+    """
     if engine.haystack[i].active:
         engine.haystack[i].active = False
     else:
