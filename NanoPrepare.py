@@ -63,8 +63,11 @@ def extract_zip(file_name: str, dir_name: str) -> None:
     try:
         with zipfile.ZipFile(file_name, "r") as zip_ref:
             zip_ref.extractall(dir_name)
+        print("Extracting zip file", file_name, "to", dir_name)
+        return True
     except Exception as e:
         print(e)
+        return False
 
 
 def generate_raw_curve_plt(stack, segment: int):
@@ -178,7 +181,7 @@ def layer_charts(data_frames, chart_func):
     return alt.layer(*layers)
 
 
-def file_handler(file_name: str, quale: str, file):
+def file_handler(file_name: str, file):
     if file_name.endswith(".zip"):
         # unzip the file
         dir_name = tempfile.mkdtemp()  # create a temp folder to pass to experiment
