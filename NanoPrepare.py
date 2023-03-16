@@ -201,6 +201,10 @@ def execute_filter(experiment_manager, filter_object, params) -> list:
     return active_datasets
 
 
+def update_active_datasets(active_datasets):
+    st.session_state.update_active_datasets = active_datasets
+
+
 def main() -> None:
     st.set_page_config(
         layout="wide", page_title="NanoWeb", page_icon="images/cellmech.png"
@@ -255,7 +259,6 @@ def main() -> None:
     ratio_z_left = right_config_segment.slider("crop left", 0.0, 1.0, 0.5, 0.01)
     ratio_z_right = right_config_segment2.slider("crop right", 0.0, 1.0, 0.5, 0.01)
 
-
     # Filter GUI elements
     select_filter = st.selectbox(
         "Filter",
@@ -278,7 +281,11 @@ def main() -> None:
                     "Download JSON", data=f, file_name="test.json"
                 )
 
-        raw_curve = generate_raw_curve(experiment_manager, segment)
+        # Session state initialisation
+        if 'update_active_datasets' not in st.session_state:
+            st.session_state.update_active_datasets = experiment_manager.data_sets
+
+        raw_curve = generate_raw_curve(st.session_state.update_active_datasets, segment)
 
         # make a layered altair chart with each curve from raw_curve as a layer
 
@@ -291,7 +298,7 @@ def main() -> None:
         right_graph.altair_chart(
             layer_charts(
                 generate_raw_curve(
-                    experiment_manager, segment, ratio_z_left, ratio_z_right
+                    st.session_state.update_active_datasets, segment, ratio_z_left, ratio_z_right
                 ),
                 base_chart,
             ),
@@ -300,20 +307,20 @@ def main() -> None:
 
         # Execute filters
         if select_filter == "Threshold":
-            threshold = st.text_input("Force Threshold (nN)", -1.0)
             force_filter = get_filter("Force Filter")
 
-            # run filter
             if force_filter:
-                filtered_data = execute_filter(experiment_manager,
-                                               force_filter,
-                                               {"force": float(threshold),
-                                                "comparison": ">"})
+                threshold = st.text_input("Force Threshold (nN)", -1.0)
+                active_datasets = execute_filter(experiment_manager,
+                                                 force_filter,
+                                                 {"force": float(threshold),
+                                                  "comparison": ">"})
 
-                print(f"Filter applied for threshold {threshold}")
+                st.session_state.update_active_datasets = active_datasets
 
                 # re-generate the raw curve
-                raw_curve = generate_raw_curve(filtered_data, segment)
+                raw_curve = generate_raw_curve(st.session_state.update_active_datasets, segment)
+
                 # re-generate the left graph
                 left_graph.altair_chart(
                     layer_charts(raw_curve, base_chart), use_container_width=True
@@ -322,12 +329,12 @@ def main() -> None:
                 right_graph.altair_chart(
                     layer_charts(
                         generate_raw_curve(
-                            filtered_data, segment, ratio_z_left, ratio_z_right
+                            st.session_state.update_active_datasets, segment, ratio_z_left, ratio_z_right
                         ),
                         base_chart,
                     ),
-                    use_container_width=True,
-                )
+                    use_container_width=True)
+
             else:
                 st.warning("Threshold filter is not currently initialised.")
 
