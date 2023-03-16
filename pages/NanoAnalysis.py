@@ -30,6 +30,13 @@ def handle_click(i: int) -> None:
 
 
 def generate_raw_curves(haystack: list) -> list:
+    """Creates DataFrame objects for experiment data and returns them in a list
+        Args:
+            haystack (list): list storing the data for curves
+
+        Returns:
+            all_curves (list): list of DataFrame objects
+    """
     all_curves = []
     for curve in haystack:
         if curve.active:
