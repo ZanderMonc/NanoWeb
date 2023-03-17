@@ -300,13 +300,14 @@ def main() -> None:
         save_uploaded_file(file, "data")
         fname = "data/" + file.name
         experiment_manager = file_handler(fname, quale, file)
+        if 'active_datasets' not in st.session_state:
+            st.session_state['active_datasets'] = experiment_manager.data_sets
+
+        st.session_state['active_datasets'] = experiment_manager.data_sets
 
         segment = left_config_segment.selectbox(
             "Segment", (i for i in range(len(list(experiment_manager.data_sets)[0])))
         )
-
-        if 'active_datasets' not in st.session_state:
-            st.session_state['active_datasets'] = experiment_manager.data_sets
 
         if save_json_button:
             save_to_json(st.session_state['active_datasets'])
@@ -349,6 +350,8 @@ def main() -> None:
                 st.session_state['active_datasets'] = filtered_data
 
                 print(f"Filter applied for threshold {threshold}")
+                print(len(experiment_manager.data_sets))
+                print(len(st.session_state['active_datasets']))
 
                 # re-generate the raw curve
                 raw_curve = generate_raw_curve(filtered_data, segment)
