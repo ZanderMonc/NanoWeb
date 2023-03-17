@@ -46,6 +46,7 @@ class DataManager(
 
     def load_file(self, file_path: str) -> None:
         file_name, _ = os.path.splitext(file_path)
+        file_name = file_name.split(os.sep)[-1]
         for file_type in self._file_types:
             if file_type.is_valid(file_path):
                 if file_name in self._data_sets.keys():
