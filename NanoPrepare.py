@@ -199,7 +199,7 @@ def layer_charts(data_frames: list, chart_func):
     return layered_charts
 
 
-def file_handler(file_name: str, file: UploadedFile):
+def file_handler(file_name: str, quale: str, file: UploadedFile):
     """Decides how to handle the uploaded file and creates an experiment manager storing its data
 
             Args:
