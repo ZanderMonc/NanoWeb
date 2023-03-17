@@ -84,11 +84,16 @@ class DataManager(
     def data_sets(self) -> Iterable[interfaces.TDataSet]:
         return self._data_sets.values()
 
-    def __getitem__(self, name: str) -> interfaces.TDataSet:
-        if name in self._data_sets:
-            return self._data_sets[name]
+    def __getitem__(self, name: str | int) -> interfaces.TDataSet:
+        if isinstance(name, int):
+            return list(self._data_sets.values())[name]
         else:
-            raise errors.DataSetNotFoundError(f"Data set with name '{name}' not found.")
+            if name in self._data_sets:
+                return self._data_sets[name]
+            else:
+                raise errors.DataSetNotFoundError(
+                    f"Data set with name '{name}' not found."
+                )
 
     def __len__(self) -> int:
         return len(self._data_sets)
