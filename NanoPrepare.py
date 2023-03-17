@@ -26,6 +26,7 @@ def get_selection(title: str, options: tuple | list) -> str:
         options,
     )
 
+
 @st.cache
 def save_uploaded_file(uploaded_file: UploadedFile, path: str) -> None:
     """Saves the contents of an uploaded file to a given path.
@@ -60,7 +61,6 @@ def extract_zip(file_name: str, dir_name: str) -> None:
         print(e)
 
 
-
 def generate_raw_curve(experiment_manager: iter, segment: int, ratio_z_left: float = 1, ratio_z_right: float = 1):
     """Creates DataFrame objects for experiment data in a given segment and returns them in a list
 
@@ -73,6 +73,7 @@ def generate_raw_curve(experiment_manager: iter, segment: int, ratio_z_left: flo
         Returns:
             exp_data_frames (list): list of DataFrame objects
     """
+
 
 def generate_raw_curve(
         data_man, segment: int, ratio_z_left: float = 1, ratio_z_right: float = 1
@@ -120,37 +121,36 @@ def generate_json_template():
     return curve
 
 
-def save_to_json(experiment_manager):
-    """Saves the data stored in experiment manager to a JSON file.
+def save_to_json(active_datasets):
+    """Saves the data of active datasets to a JSON file.
 
             Args:
-                experiment_manager (iter): iterable DataManager object
+                active_datasets (iter): list of datasets
     """
-    # TODO fix functionality
-    ref = experiment_manager[0].haystack[0]
-    curves = []
+
     fname = "data/test.json"
 
-    geometry = ref.tip_shape
-    radius = ref.tip_radius
-    spring = ref.cantilever_k
+    curves = []
 
-    for segment in ref:
-        if segment.active:
+    for dataset in active_datasets:
+        for i, segment in enumerate(dataset):
             cv = generate_json_template()
-            # cv["filename"] = segment.basename
-            cv["tip"]["radius"] = radius * 1e-9
-            cv["tip"]["geometry"] = geometry
-            cv["spring_constant"] = spring
-            # cv["position"] = (segment.xpos, segment.ypos)
-            cv["data"]["Z"] = list(segment.z * 1e-9)
-            cv["data"]["F"] = list(segment.f * 1e-9)
+            cv["filename"] = dataset.name[dataset.name.rindex('/')+1:] + f"_{i+1}"
+            cv["tip"]["radius"] = dataset.tip_radius * 1e-9
+            cv["spring_constant"] = dataset.cantilever_k
+            cv["speed"] = segment.speed
+            cv["data"]["F"] = segment.data['force'].tolist()
+            cv["data"]["Z"] = segment.data['z'].tolist()
+
             curves.append(cv)
 
     exp = {"Description": "Optics11 data"}
     pro = {}
 
-    json.dump({"experiment": exp, "protocol": pro, "curves": curves}, open(fname, "w"))
+    json_contents = json.dumps({"experiment": exp, "protocol": pro, "curves": curves}, indent="")
+
+    with open(fname, "w") as f:
+        f.write(json_contents)
 
 
 def base_chart(data_frame):
@@ -290,7 +290,6 @@ def main() -> None:
     ratio_z_left = right_config_segment.slider("crop left", 0.0, 1.0, 0.5, 0.01)
     ratio_z_right = right_config_segment2.slider("crop right", 0.0, 1.0, 0.5, 0.01)
 
-
     # Filter GUI elements
     select_filter = st.selectbox(
         "Filter",
@@ -306,8 +305,11 @@ def main() -> None:
             "Segment", (i for i in range(len(list(experiment_manager.data_sets)[0])))
         )
 
+        if 'active_datasets' not in st.session_state:
+            st.session_state['active_datasets'] = experiment_manager.data_sets
+
         if save_json_button:
-            save_to_json(experiment_manager)
+            save_to_json(st.session_state['active_datasets'])
             with open("data/test.json") as f:
                 file_select_col.download_button(
                     "Download JSON", data=f, file_name="test.json"
@@ -344,15 +346,18 @@ def main() -> None:
                                                force_filter,
                                                {"force": float(threshold),
                                                 "comparison": ">"})
+                st.session_state['active_datasets'] = filtered_data
 
                 print(f"Filter applied for threshold {threshold}")
 
                 # re-generate the raw curve
                 raw_curve = generate_raw_curve(filtered_data, segment)
+
                 # re-generate the left graph
                 left_graph.altair_chart(
                     layer_charts(raw_curve, base_chart), use_container_width=True
                 )
+
                 # re-generate the right graph
                 right_graph.altair_chart(
                     layer_charts(
@@ -365,6 +370,8 @@ def main() -> None:
                 )
             else:
                 st.warning("Threshold filter is not currently initialised.")
+        else:
+            st.session_state['active_datasets'] = experiment_manager.data_sets
 
 
 if __name__ == "__main__":
