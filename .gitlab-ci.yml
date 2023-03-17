@@ -1,5 +1,8 @@
 image: python:3.10
 
+job:
+  tags:
+    - docker
 stages:
   - test
 
@@ -13,4 +16,4 @@ test:linting:
 
 test:app_run:
   script:
-    - python3 NanoPrepare.py
+    - streamlit run NanoPrepare.py
