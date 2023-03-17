@@ -25,6 +25,17 @@ def handle_click(i: int) -> None:
     else:
         engine.haystack[i].active = True
 
+def file_not_none(file):
+    if file is not None:
+        return True
+    else:
+        return False
+
+def file_is_json(file):
+    if file.name.endswith(".json"):
+        return True
+    else:
+        return False
 
 def generate_raw_curves(haystack: list) -> list:
     all_curves = []
@@ -61,8 +72,8 @@ def main() -> None:
         filter_fifth_col,
     ) = filter_bar.columns(5)
 
-    if file is not None:
-        if file.name.endswith(".json"):
+    if file_not_none(file):
+        if file_is_json(file):
             save_uploaded_file(file, "data")
 
             # Load the JSON file
