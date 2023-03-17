@@ -3,6 +3,7 @@ from misc import *
 import tempfile
 import nanodata as nd
 import abc
+import pandas as pd
 
 
 class UI(st.delta_generator.DeltaGenerator, metaclass=UISingleton):
@@ -207,4 +208,54 @@ class DataSetsContainer(ContainerUtils):
                 y_field: data_set[segment_index][y_field],
                 "experiment": data_set.name,
             }
+        )
+
+
+class GraphsContainer(ContainerUtils):
+    def __init__(self, parent: "UISideBar"):
+        super().__init__(parent, "Graphs")
+
+    def draw(self):
+        super().draw()
+        if not self.window.graphs:
+            self.expander.write("No graphs added")
+        else:
+            x_title, y_title, remove_title = self.expander.columns(3)
+            with x_title:
+                st.write("X Field")
+            with y_title:
+                st.write("Y Field")
+
+            for graph_name, graph in self.window.graphs.items():
+                x_field, y_field = graph_name.split("-")
+                x, y, remove = self.expander.columns(3)
+
+                with x:
+                    st.write(x_field)
+                with y:
+                    st.write(y_field)
+                with remove:
+                    st.button(
+                        "X",
+                        key=graph_name,
+                        on_click=self.window.remove_graph,
+                        args=(x_field, y_field),
+                    )
+
+        col1, col2 = self.columns(2)
+        x_field = col1.selectbox(
+            "X Field",
+            options=[var for var in DataSetVars],
+            index=3,
+        )
+        y_field = col2.selectbox(
+            "Y Field",
+            options=[var for var in DataSetVars],
+            index=1,
+        )
+
+        self.button(
+            "Add Graph",
+            on_click=self.window.add_graph,
+            args=(x_field, y_field),
         )
