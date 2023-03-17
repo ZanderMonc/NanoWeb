@@ -259,3 +259,93 @@ class GraphsContainer(ContainerUtils):
             on_click=self.window.add_graph,
             args=(x_field, y_field),
         )
+
+
+class FiltersContainer(ContainerUtils):
+    def __init__(self, parent: "UISideBar"):
+        super().__init__(parent, "Filters")
+        self._filters: dict[nd.Filter, list[UserFilterParameter]] = {}
+
+    def draw(self):
+        super().draw()
+
+        with self.expander:
+            if not self.filters:
+                st.write("No filters added")
+            else:
+                for filter, filter_params in self.filters.items():
+                    st.write(filter.name)
+                    for parameter in filter_params:
+                        if parameter.data_type is list:
+                            parameter.value = parameter.default_value.index(
+                                st.selectbox(
+                                    parameter.name,
+                                    options=parameter.default_value,
+                                    index=parameter.value,
+                                )
+                            )
+                        elif parameter.data_type is int or parameter.data_type is float:
+                            parameter.value = st.number_input(
+                                parameter.name,
+                                value=parameter.value,
+                                step=1,
+                            )
+
+        selected_filter_name = self.selectbox(
+            "Filter", options=[filter.name for filter in nd.filters]
+        )
+
+        col1, col2 = self.columns(2)
+
+        col1.button(
+            "Add Filter", on_click=self.__add_filter, args=(selected_filter_name,)
+        )
+
+        col2.button("Run Filters", on_click=self.__run_filters)
+
+    def __add_filter(self, filter_name_to_add: str):
+        # add filter with matching name
+        parameters: list[UserFilterParameter] = []
+        for filter in nd.filters:
+            if filter.name == filter_name_to_add:
+                for parameter in filter.parameters:
+                    if parameter.data_type is list:
+                        parameters.append(
+                            UserFilterParameter(
+                                parameter.name,
+                                parameter.data_type,
+                                parameter.default_value,
+                                0,
+                            )
+                        )
+                    else:
+                        parameters.append(
+                            UserFilterParameter(
+                                parameter.name,
+                                parameter.data_type,
+                                parameter.default_value,
+                                parameter.default_value,
+                            )
+                        )
+
+                self.filters[filter] = parameters
+                break
+
+    def __run_filters(self):
+        if not self.filters:
+            return
+        for data_set in self.window.data_sets.values():
+            for filter, filter_parameters in self.filters.items():
+                parameters = {
+                    filter_parameter.name: filter_parameter.selected_value
+                    for filter_parameter in filter_parameters
+                }
+                data_set.active = filter.is_valid(
+                    parameters, self.manager[data_set.name]
+                )
+                if not data_set.active:
+                    break
+
+    @property
+    def filters(self):
+        return self._filters
