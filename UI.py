@@ -73,10 +73,8 @@ class UI(st.delta_generator.DeltaGenerator, metaclass=UISingleton):
         self.sidebar.draw()
         self.draw_graphs()
 
-    def add_graph(self, x_field: DataSetVars, y_field: DataSetVars):
-        self._graphs[f"{x_field.value}-{y_field.value}"] = UIGraph(
-            self, x_field, y_field
-        )
+    def add_graph(self, x_field: str, y_field: str):
+        self._graphs[f"{x_field}-{y_field}"] = UIGraph(self, x_field, y_field)
 
     def remove_graph(self, x_field: DataSetVars, y_field: DataSetVars):
         del self._graphs[f"{x_field}-{y_field}"]
@@ -473,10 +471,10 @@ class UISideBar(UIElement):
 
 
 class UIGraph(UIElement):
-    def __init__(self, window: UI, x_field: DataSetVars, y_field: DataSetVars):
+    def __init__(self, window: UI, x_field: str, y_field: str):
         super().__init__(window)
-        self._x_field = x_field.value
-        self._y_field = y_field.value
+        self._x_field = x_field
+        self._y_field = y_field
         self._data_frames: dict[str, pd.DataFrame] = {}
 
     def write(self, *args, **kwargs) -> None:

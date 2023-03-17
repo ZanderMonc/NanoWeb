@@ -166,6 +166,9 @@ class DataSet(interfaces.IDataSet):
         """list[Segment]: Returns the segments of the data set."""
         return self._segments
 
+    def __getitem__(self, index: int) -> "Segment":
+        return self._segments[index]
+
     def __repr__(self) -> str:
         return f"DataSet(name={self.name!r}, path={self.path!r})"
 
