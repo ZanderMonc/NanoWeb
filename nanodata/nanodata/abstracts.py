@@ -46,6 +46,7 @@ class DataManager(
 
     def load_file(self, file_path: str) -> None:
         file_name, _ = os.path.splitext(file_path)
+        file_name = file_name.split(os.sep)[-1]
         for file_type in self._file_types:
             if file_type.is_valid(file_path):
                 if file_name in self._data_sets.keys():
@@ -84,11 +85,16 @@ class DataManager(
     def data_sets(self) -> Iterable[interfaces.TDataSet]:
         return self._data_sets.values()
 
-    def __getitem__(self, name: str) -> interfaces.TDataSet:
-        if name in self._data_sets:
-            return self._data_sets[name]
+    def __getitem__(self, name: str | int) -> interfaces.TDataSet:
+        if isinstance(name, int):
+            return list(self._data_sets.values())[name]
         else:
-            raise errors.DataSetNotFoundError(f"Data set with name '{name}' not found.")
+            if name in self._data_sets:
+                return self._data_sets[name]
+            else:
+                raise errors.DataSetNotFoundError(
+                    f"Data set with name '{name}' not found."
+                )
 
     def __len__(self) -> int:
         return len(self._data_sets)
@@ -159,6 +165,9 @@ class DataSet(interfaces.IDataSet):
     def segments(self) -> list["Segment"]:
         """list[Segment]: Returns the segments of the data set."""
         return self._segments
+
+    def __getitem__(self, index: int) -> "Segment":
+        return self._segments[index]
 
     def __repr__(self) -> str:
         return f"DataSet(name={self.name!r}, path={self.path!r})"

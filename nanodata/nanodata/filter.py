@@ -49,6 +49,7 @@ class Filter(abc.ABC, metaclass=FilterMeta):
     Args:
         description (str): human-readable description of the filter
     """
+
     def __init__(self, description: str):
         self.name = self.__create_name()
         self.description = description
@@ -90,7 +91,9 @@ class Filter(abc.ABC, metaclass=FilterMeta):
         return FilterMeta.filters()
 
     def __repr__(self):
-        return f"{type(self).__name__}({self.name}, {self.description}, {self.parameters})"
+        return (
+            f"{type(self).__name__}({self.name}, {self.description}, {self.parameters})"
+        )
 
 
 class ForceFilter(Filter):
@@ -102,7 +105,7 @@ class ForceFilter(Filter):
         )
 
     def is_valid(self, parameters: dict[str, Any], data_set: abstracts.DataSet) -> bool:
-        force_threshold = parameters["force"] * 1e-9
+        force_threshold = parameters["force"]
         comparison = parameters["comparison"]
         if comparison == "<":
             return np.max(data_set.force) < force_threshold
