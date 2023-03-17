@@ -6,11 +6,27 @@ import pandas as pd
 import altair as alt
 from typing import Any
 from enum import Enum
-from NanoPrepare import generate_json_template
 import dataclasses
 import zipfile
 import json
 
+def generate_json_template():
+    """Generates a JSON formatting template corresponding to the data of a sample curve
+
+        Returns:
+            curve (dict): A dictionary formatted for JSON filetype for a sample curve
+    """
+    curve = {
+        "filename": "noname",
+        "date": "2021-12-02",
+        "device_manufacturer": "Optics11",
+        "tip": {"geometry": "sphere", "radius": 0.0},
+        "spring_constant": 0.0,
+        "segment": "approach",
+        "speed": 0.0,
+        "data": {"F": [], "Z": []},
+    }
+    return curve
 
 class UISingleton(type):
     _instances = {}
