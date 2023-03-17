@@ -32,3 +32,14 @@ class UserFilterParameter:
         if self.data_type is list:
             return self.default_value[self.value]
         return self.value
+
+
+@dataclasses.dataclass
+class DataSetState:
+    _name: str
+    active: bool = True
+    display: bool = False
+
+    @property
+    def name(self):
+        return self._name
