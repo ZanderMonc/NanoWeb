@@ -17,12 +17,12 @@ import nanodata.nanodata
 def test_extract_zip():
     dir_name = tempfile.mkdtemp()
     file_name = "tests/smallest.zip"
-    assert NanoPrepare.extract_zip(file_name, dir_name) is True
+    assert NanoPrepare.extract_zip(file_name, dir_name) is not None
 
 def test_extract_zip_with_not_zip_file():
     dir_name = tempfile.mkdtemp()
     file_name = "tests/prepare_export.json"
-    assert NanoPrepare.extract_zip(file_name, dir_name) is False
+    assert NanoPrepare.extract_zip(file_name, dir_name) is None
 
 def test_file_handler():
     f = open("tests/smallest.zip", "rb")
