@@ -1,16 +1,4 @@
-"""
-1 - data upload
-2 - checking correct error handling for data upload
-3 - handle clicks on the curves
-4 - handling current curve displayed
-5 - testing caching
 
-Qns: ask about creating a file to make testing a bit easier
-: how can i test a file
-: is there any reason why checkboxes are not checked?
-
-"""
-import json
 import os.path
 import pages.NanoAnalysis as NanoAnalysis
 import NanoPrepare as NanoPrepare
