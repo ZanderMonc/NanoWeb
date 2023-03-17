@@ -349,3 +349,49 @@ class FiltersContainer(ContainerUtils):
     @property
     def filters(self):
         return self._filters
+
+
+class UISideBar(UIElement):
+    def __init__(self, window: UI):
+        super().__init__(window)
+        self._sidebar = st.sidebar
+        self.data_sets_container = DataSetsContainer(self)
+        self.graphs_container = GraphsContainer(self)
+        self.filters_container = FiltersContainer(self)
+
+    def write(self, *args, **kwargs) -> None:
+        self.sidebar.write(*args, **kwargs)
+
+    def header(self, *args, **kwargs) -> None:
+        self.sidebar.header(*args, **kwargs)
+
+    def button(self, *args, **kwargs) -> bool:
+        return self.sidebar.button(*args, **kwargs)
+
+    def number_input(self, *args, **kwargs) -> int | float:
+        return self.sidebar.number_input(*args, **kwargs)
+
+    def slider(self, *args, **kwargs) -> Any:
+        return self.sidebar.slider(*args, **kwargs)
+
+    def selectbox(self, *args, **kwargs) -> Any:
+        return self.sidebar.selectbox(*args, **kwargs)
+
+    def columns(self, *args, **kwargs) -> Any:
+        return self.sidebar.columns(*args, **kwargs)
+
+    def expander(self, title: str) -> st.delta_generator.DeltaGenerator:
+        return self.sidebar.expander(title)
+
+    def draw(self):
+        self.header("Data Manager")
+        self.write(f"Loaded Data Sets: {len(self.window.manager)}")
+        self.button("Load Data Sets", on_click=self.window.load_data_sets)
+
+        self.data_sets_container.draw()
+        self.graphs_container.draw()
+        self.filters_container.draw()
+
+    @property
+    def sidebar(self):
+        return self._sidebar
