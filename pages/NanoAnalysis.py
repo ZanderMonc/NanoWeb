@@ -19,14 +19,35 @@ import nanoanalysisdata.engine as engine
 
 
 def handle_click(i: int) -> None:
-    # activate and deactivate curve in haystack on checkbox click
+    """Activates and deactivates a curve in the haystack on clicking the checkbox
+        Args:
+            i (int): index of the curve in the haystack
+    """
     if engine.haystack[i].active:
         engine.haystack[i].active = False
     else:
         engine.haystack[i].active = True
 
+def file_not_none(file):
+    if file is not None:
+        return True
+    else:
+        return False
+
+def file_is_json(file):
+    if file.name.endswith(".json"):
+        return True
+    else:
+        return False
 
 def generate_raw_curves(haystack: list) -> list:
+    """Creates DataFrame objects for experiment data and returns them in a list
+        Args:
+            haystack (list): list storing the data for curves
+
+        Returns:
+            all_curves (list): list of DataFrame objects
+    """
     all_curves = []
     for curve in haystack:
         if curve.active:
@@ -61,8 +82,8 @@ def main() -> None:
         filter_fifth_col,
     ) = filter_bar.columns(5)
 
-    if file is not None:
-        if file.name.endswith(".json"):
+    if file_not_none(file):
+        if file_is_json(file):
             save_uploaded_file(file, "data")
 
             # Load the JSON file
