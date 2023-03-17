@@ -21,8 +21,6 @@ def test_file_upload_checker_when_a_json_file():
     f.close()
 
 
-# test save_uploaded_file
-# I don't understand why this is giving me none
 def test_save_uploaded_file():
     print("Here : ", NanoPrepare.save_uploaded_file("tests/prepare_export.json", "data"))
     pass
