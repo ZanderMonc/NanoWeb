@@ -8,11 +8,11 @@
     3. NanoWeb should open in your default browser.
 ### Uninstallation
     Delete the SH32 main directory in your filesystem.
-### File input
+### File input in NanoWeb Prepare
     accepted files are currently zip directories of any number of .txt experiments
     for instance an optics11 d mode zipped ddirectory containing one file, 
     a ".txt" file, with relevant header to the filetype followed by data.
-### JSON output (not working)
+### JSON output from NanoWeb Prepare (not working)
     not working - first click save to json, then download JSON file, JSON as test.json will be downloaded to your downloads folder.
 ### Features of NanoWeb Prepare 
 
@@ -30,6 +30,10 @@
     Zooming in and out is not smooth.
     
     Exporting to JSON is not working.
+
+### File input in NanoWeb Analysis
+    accepted files are currently JSON files from NanoWeb Prepare or NanoPrepare standalone.
+
 ### Features of NanoWeb Analysis
 
     Users can upload a JSON file from NanoWeb Prepare or similar.
@@ -37,6 +41,9 @@
     Users can select a file from the JSON file to view.
 
     Users can select a range of files from the JSON file to view.
+
+    Users can apply filters from a menu 
+    
 ### Known issues in NanoWeb Analysis
 
     GUI scale and usability is poor.
@@ -45,4 +52,5 @@
 
     Analysis tools are not implemented.
 
-    Exporting a process log is not implemented.
+    Exporting a process log is not implemented. One implementation pathway for future development 
+    is to use streamlit session state to store a log of all actions taken by the user, to be exported as a .txt file.
