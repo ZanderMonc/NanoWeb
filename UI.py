@@ -5,7 +5,7 @@ import abc
 import pandas as pd
 import altair as alt
 from typing import Any
-from enum import StrEnum, Enum
+from enum import Enum
 import dataclasses
 import zipfile
 
