@@ -5,7 +5,7 @@ import abc
 import pandas as pd
 import altair as alt
 from typing import Any
-from enum import StrEnum
+from enum import StrEnum, Enum
 import dataclasses
 import zipfile
 
@@ -19,7 +19,7 @@ class UISingleton(type):
         return cls._instances[cls]
 
 
-class DataSetVars(StrEnum):
+class DataSetVars(Enum):
     TIME = "time"
     FORCE = "force"
     DEFLECTION = "deflection"
@@ -51,6 +51,7 @@ class DataSetState:
     def name(self):
         return self._name
 
+
 class UI(st.delta_generator.DeltaGenerator, metaclass=UISingleton):
     def __init__(self):
         super().__init__()
@@ -58,8 +59,7 @@ class UI(st.delta_generator.DeltaGenerator, metaclass=UISingleton):
         self._graphs: dict[str, UIGraph] = {}
         self._manager = nd.ChiaroDataManager(tempfile.mkdtemp())
         self._data_sets: dict[str, DataSetState] = {
-            data_set.name: DataSetState(data_set.name)
-            for data_set in self._manager
+            data_set.name: DataSetState(data_set.name) for data_set in self._manager
         }
 
     def draw(self):
@@ -74,7 +74,9 @@ class UI(st.delta_generator.DeltaGenerator, metaclass=UISingleton):
         self.draw_graphs()
 
     def add_graph(self, x_field: DataSetVars, y_field: DataSetVars):
-        self._graphs[f"{x_field}-{y_field}"] = UIGraph(self, x_field, y_field)
+        self._graphs[f"{x_field.value}-{y_field.value}"] = UIGraph(
+            self, x_field, y_field
+        )
 
     def remove_graph(self, x_field: DataSetVars, y_field: DataSetVars):
         del self._graphs[f"{x_field}-{y_field}"]
@@ -318,12 +320,12 @@ class GraphsContainer(ContainerUtils):
         col1, col2 = self.columns(2)
         x_field = col1.selectbox(
             "X Field",
-            options=[var for var in DataSetVars],
+            options=[var.value for var in DataSetVars],
             index=3,
         )
         y_field = col2.selectbox(
             "Y Field",
-            options=[var for var in DataSetVars],
+            options=[var.value for var in DataSetVars],
             index=1,
         )
 
@@ -471,10 +473,10 @@ class UISideBar(UIElement):
 
 
 class UIGraph(UIElement):
-    def __init__(self, window: UI, x_field: str, y_field: str):
+    def __init__(self, window: UI, x_field: DataSetVars, y_field: DataSetVars):
         super().__init__(window)
-        self._x_field = x_field
-        self._y_field = y_field
+        self._x_field = x_field.value
+        self._y_field = y_field.value
         self._data_frames: dict[str, pd.DataFrame] = {}
 
     def write(self, *args, **kwargs) -> None:
