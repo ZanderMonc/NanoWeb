@@ -90,3 +90,58 @@ class UIElement(abc.ABC):
     @property
     def window(self):
         return self._window
+
+
+class ContainerUtils(abc.ABC):
+    def __init__(self, parent: UIElement, expander_title: str):
+        self._parent = parent
+        self._expander = None
+        self._expander_title = expander_title
+
+    def write(self, *args, **kwargs) -> None:
+        self.parent.write(*args, **kwargs)
+
+    def header(self, *args, **kwargs) -> None:
+        self.parent.header(*args, **kwargs)
+
+    def button(self, *args, **kwargs) -> bool:
+        return self.parent.button(*args, **kwargs)
+
+    def number_input(self, *args, **kwargs) -> int | float:
+        return self.parent.number_input(*args, **kwargs)
+
+    def slider(self, *args, **kwargs) -> Any:
+        return self.parent.slider(*args, **kwargs)
+
+    def selectbox(self, *args, **kwargs) -> Any:
+        return self.parent.selectbox(*args, **kwargs)
+
+    def columns(self, *args, **kwargs) -> Any:
+        return self.parent.columns(*args, **kwargs)
+
+    def draw(self):
+        self._expander = self.parent.expander(self._expander_title)
+
+    @property
+    def parent(self):
+        return self._parent
+
+    @property
+    def window(self):
+        return self.parent.window
+
+    @property
+    def manager(self):
+        return self.window.manager
+
+    @property
+    def data_sets(self):
+        return self.window.data_sets
+
+    @property
+    def expander(self):
+        return self._expander
+
+    @property
+    def expander_title(self):
+        return self._expander_title
