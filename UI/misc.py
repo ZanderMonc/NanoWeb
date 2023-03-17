@@ -1,4 +1,6 @@
 from enum import StrEnum
+import dataclasses
+from typing import Any
 
 
 class UISingleton(type):
@@ -16,3 +18,17 @@ class DataSetVars(StrEnum):
     DEFLECTION = "deflection"
     Z = "z"
     INDENTATION = "indentation"
+
+
+@dataclasses.dataclass
+class UserFilterParameter:
+    name: str
+    data_type: type
+    default_value: Any
+    value: Any
+
+    @property
+    def selected_value(self):
+        if self.data_type is list:
+            return self.default_value[self.value]
+        return self.value
