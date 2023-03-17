@@ -145,3 +145,66 @@ class ContainerUtils(abc.ABC):
     @property
     def expander_title(self):
         return self._expander_title
+
+
+class DataSetsContainer(ContainerUtils):
+    def __init__(self, parent: "UISideBar"):
+        super().__init__(parent, "Data Sets")
+
+    def draw(self):
+        super().draw()
+        if len(self.manager) == 0:
+            self.expander.write("No data sets loaded")
+            return
+
+        segment_index = self.number_input(
+            "Segment",
+            min_value=0,
+            max_value=len(self.manager[0]) - 1,
+            value=0,
+            step=1,
+        )
+        name_title, checkbox_title = self.expander.columns(2)
+        with name_title:
+            st.write("Data Set")
+        with checkbox_title:
+            st.write("In View")
+
+        for (
+            data_set_name,
+            data_set_properties,
+        ) in self.data_sets.items():
+            name, checkbox = self.expander.columns(2)
+            with name:
+                st.write(data_set_name)
+            with checkbox:
+                if st.checkbox(
+                    " ", value=data_set_properties.display, key=data_set_name
+                ):
+                    self._add_data_set_to_graph(data_set_name, segment_index)
+                else:
+                    self._remove_data_set_from_graph(data_set_name)
+
+    def _add_data_set_to_graph(self, data_set_name: str, segment_index: int):
+        data_set = self.manager[data_set_name]
+        for graph_name, graph in self.window.graphs.items():
+            x_field, y_field = graph_name.split("-")
+
+            graph.add_data_frame(
+                data_set_name,
+                self._create_data_frame(data_set, segment_index, x_field, y_field),
+            )
+
+    def _remove_data_set_from_graph(self, data_set_name: str):
+        for graph in self.window.graphs.values():
+            graph.remove_data_frame(data_set_name)
+
+    @staticmethod
+    def _create_data_frame(data_set: nd.TDataSet, segment_index: int, x_field, y_field):
+        return pd.DataFrame(
+            {
+                x_field: data_set[segment_index][x_field],
+                y_field: data_set[segment_index][y_field],
+                "experiment": data_set.name,
+            }
+        )
