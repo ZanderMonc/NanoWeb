@@ -6,8 +6,10 @@ import pandas as pd
 import altair as alt
 from typing import Any
 from enum import Enum
+from NanoPrepare import generate_json_template
 import dataclasses
 import zipfile
+import json
 
 
 class UISingleton(type):
@@ -66,12 +68,23 @@ class UI(st.delta_generator.DeltaGenerator, metaclass=UISingleton):
         self.__run_config()
         # upload zip file and set manager path to tempfile path
         file = self.file_uploader("Upload zipped data files", type="zip")
+        save_json_button = self.button("Save to JSON")
+
         if file is not None:
             with zipfile.ZipFile(file, "r") as zip_file:
                 zip_file.extractall(self.manager.path)
 
+        if save_json_button:
+            self.export_json()
+            with open("data/test.json") as f:
+                self.download_button(
+                    "Download JSON", data=f, file_name="test.json"
+                )
+
         self.sidebar.draw()
         self.draw_graphs()
+
+
 
     def add_graph(self, x_field: str, y_field: str):
         self._graphs[f"{x_field}-{y_field}"] = UIGraph(self, x_field, y_field)
@@ -88,6 +101,35 @@ class UI(st.delta_generator.DeltaGenerator, metaclass=UISingleton):
         self._data_sets: dict[str, DataSetState] = {
             data_set.name: DataSetState(data_set.name) for data_set in self._manager
         }
+
+    def export_json(self):
+        """Saves the data of active datasets to a JSON file."""
+
+        fname = "data/test.json"
+
+        curves = []
+
+        for dataset_name in self.data_sets:
+            dataset_obj = self.manager[dataset_name]
+            if self.data_sets[dataset_name].active:
+                for i, segment in enumerate(dataset_obj):
+                    cv = generate_json_template()
+                    cv["filename"] = dataset_obj.name + f"-{i + 1}"
+                    cv["tip"]["radius"] = dataset_obj.tip_radius * 1e-9
+                    cv["spring_constant"] = dataset_obj.cantilever_k
+                    cv["speed"] = segment.speed
+                    cv["data"]["F"] = segment.data['force'].tolist()
+                    cv["data"]["Z"] = segment.data['z'].tolist()
+
+                    curves.append(cv)
+
+        exp = {"Description": "Optics11 data"}
+        pro = {}
+
+        json_contents = json.dumps({"experiment": exp, "protocol": pro, "curves": curves}, indent="")
+
+        with open(fname, "w") as f:
+            f.write(json_contents)
 
     @property
     def sidebar(self):
@@ -115,8 +157,8 @@ class UI(st.delta_generator.DeltaGenerator, metaclass=UISingleton):
                 "Get Help": None,
                 "Report a Bug": None,
                 "About": "Web version of CellMechLabs NanoPrepare and NanoAnalysis tools\n"
-                "Ported by: GU 3rd Year CompSci students @SH32\n"
-                "\nGithub: https://github.com/CellMechLab/",
+                         "Ported by: GU 3rd Year CompSci students @SH32\n"
+                         "\nGithub: https://github.com/CellMechLab/",
             },
         )
 
@@ -245,15 +287,15 @@ class DataSetsContainer(ContainerUtils):
             st.write("In View")
 
         for (
-            data_set_name,
-            data_set_properties,
+                data_set_name,
+                data_set_properties,
         ) in self.data_sets.items():
             name, checkbox = self.expander.columns(2)
             with name:
                 st.write(data_set_name)
             with checkbox:
                 if st.checkbox(
-                    " ", value=data_set_properties.display, key=data_set_name
+                        " ", value=data_set_properties.display, key=data_set_name
                 ):
                     self._add_data_set_to_graph(data_set_name, segment_index)
                 else:
