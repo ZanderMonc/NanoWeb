@@ -1,8 +1,8 @@
 image: python:3.10
-
-job:
-  tags:
-    - docker
+default:
+  job:
+    tags:
+      - docker
 stages:
   - test
 
