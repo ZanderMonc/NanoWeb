@@ -98,7 +98,7 @@ def main() -> None:
             # create a checkbox for each file in the haystack
             for i, curve in enumerate(engine.haystack):
                 curve_expander.checkbox(
-                    curve.filename, key=i, on_change=handle_click, args=(i,)
+                    curve.filename, value=True, key=i, on_change=handle_click, args=(i,)
                 )
 
             # Raw curve plot
