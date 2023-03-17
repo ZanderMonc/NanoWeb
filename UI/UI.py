@@ -4,6 +4,7 @@ import tempfile
 import nanodata as nd
 import abc
 import pandas as pd
+import altair as alt
 
 
 class UI(st.delta_generator.DeltaGenerator, metaclass=UISingleton):
@@ -395,3 +396,80 @@ class UISideBar(UIElement):
     @property
     def sidebar(self):
         return self._sidebar
+
+
+class UIGraph(UIElement):
+    def __init__(self, window: UI, x_field: str, y_field: str):
+        super().__init__(window)
+        self._x_field = x_field
+        self._y_field = y_field
+        self._data_frames: dict[str, pd.DataFrame] = {}
+
+    def write(self, *args, **kwargs) -> None:
+        pass
+
+    def header(self, *args, **kwargs) -> None:
+        pass
+
+    def button(self, *args, **kwargs) -> bool:
+        pass
+
+    def number_input(self, *args, **kwargs) -> int | float:
+        pass
+
+    def slider(self, *args, **kwargs) -> Any:
+        pass
+
+    def selectbox(self, *args, **kwargs) -> Any:
+        pass
+
+    def columns(self, *args, **kwargs) -> Any:
+        pass
+
+    def expander(self, title: str) -> st.delta_generator.DeltaGenerator:
+        pass
+
+    def draw(self):
+        total_data_points = sum(len(data_frame) for data_frame in self.data_frames)
+
+        self.window.write(f"Total Data Points: {total_data_points}")
+        self.window.altair_chart(
+            self.__layer_charts(self.data_frames), use_container_width=True
+        )
+
+    def __base_chart(self, data_frame):
+        color = (
+            "cyan"
+            if self.window.data_sets[data_frame["experiment"][0]].active
+            else "red"
+        )
+        base = (
+            alt.Chart(
+                data_frame,
+            )
+            .mark_line(point=False, thickness=1, color=color)
+            .encode(
+                x=f"{self._x_field}:Q",
+                y=f"{self._y_field}:Q",
+                tooltip=[f"{self._x_field}:Q", f"{self._y_field}:Q", "experiment:N"],
+            )
+            .interactive()
+        )
+
+        return base
+
+    def __layer_charts(self, data_frames):
+        layers = [self.__base_chart(data_frame) for data_frame in data_frames]
+
+        return alt.layer(*layers)
+
+    def add_data_frame(self, data_name: str, data_frame: pd.DataFrame):
+        self._data_frames[data_name] = data_frame
+
+    def remove_data_frame(self, data_name: str):
+        if data_name in self._data_frames:
+            del self._data_frames[data_name]
+
+    @property
+    def data_frames(self) -> list[pd.DataFrame]:
+        return list(self._data_frames.values())
