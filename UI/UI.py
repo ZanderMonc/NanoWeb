@@ -1,5 +1,6 @@
 import streamlit as st
 from misc import *
+import tempfile
 import nanodata as nd
 
 
@@ -12,3 +13,34 @@ class UI(st.delta_generator.DeltaGenerator, metaclass=UISingleton):
         self._data_sets: dict[str, DataSetState] = {
             data_set.name: DataSetState(data_set.name) for data_set in self._manager
         }
+
+    @property
+    def sidebar(self):
+        return self._sidebar
+
+    @property
+    def graphs(self):
+        return self._graphs
+
+    @property
+    def manager(self):
+        return self._manager
+
+    @property
+    def data_sets(self) -> dict[str, DataSetState]:
+        return self._data_sets
+
+    @staticmethod
+    def __run_config():
+        st.set_page_config(
+            layout="wide",
+            page_title="NanoWeb",
+            page_icon="images/cellmech.png",
+            menu_items={
+                "Get Help": None,
+                "Report a Bug": None,
+                "About": "Web version of CellMechLabs NanoPrepare and NanoAnalysis tools\n"
+                "Ported by: GU 3rd Year CompSci students @SH32\n"
+                "\nGithub: https://github.com/CellMechLab/",
+            },
+        )
