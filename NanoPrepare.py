@@ -233,6 +233,8 @@ def execute_filter(experiment_manager, filter_object, params) -> list:
         if filter_object.is_valid(params, dataset):
             active_datasets.append(dataset)
 
+    print("***************************")
+    print("Active datasets: ", len(active_datasets))
     return active_datasets
 
 

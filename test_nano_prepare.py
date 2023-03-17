@@ -45,8 +45,15 @@ def test_get_filter_with_none_existing_filter():
     assert NanoPrepare.get_filter('None existing filter') is None
 
 def test_execute_filter():
-    #TODO : add a test for the execute filter when it is finished
-    pass
+    f = open("tests/smallest.zip", "rb")
+    quale = 'quale'
+    file_name = "tests/smallest.zip"
+    data = NanoPrepare.file_handler(file_name, quale, f)
+    filter_object = NanoPrepare.get_filter('Force Filter')
+    threshold = 0.0
+    params =  {"force": float(threshold),"comparison": ">"}
+
+    assert len(NanoPrepare.execute_filter(data, filter_object, params)) == 3
 
 def test_save_uploaded_file():
     pass
