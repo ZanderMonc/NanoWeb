@@ -1,4 +1,4 @@
-from UI.UI import UI
+from UI import UI
 
 
 if __name__ == "__main__":
