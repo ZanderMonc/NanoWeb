@@ -55,8 +55,10 @@ def extract_zip(file_name: str, dir_name: str) -> None:
     try:
         with zipfile.ZipFile(file_name, "r") as zip_ref:
             zip_ref.extractall(dir_name)
+        return True
     except Exception as e:
         print(e)
+
 
 
 def generate_raw_curve(experiment_manager: iter, segment: int, ratio_z_left: float = 1, ratio_z_right: float = 1):
