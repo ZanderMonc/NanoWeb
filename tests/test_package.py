@@ -21,7 +21,7 @@ def before_test(page: Page):
 @contextmanager
 def run_streamlit():
     import subprocess
-    p = subprocess.Popen(["streamlit", "run", "NanoPrepareOld.py", "--server.port", "8509", "--server.headless", "true", ])
+    p = subprocess.Popen(["streamlit", "run", "NanoPrepare.py", "--server.port", "8509", "--server.headless", "true", ])
     time.sleep(5)
     try:
         yield p
