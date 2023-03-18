@@ -7,6 +7,7 @@ from scipy.signal import savgol_filter, find_peaks, medfilt
 
 from . import abstracts
 
+
 # TODO move these
 def Gauss(x, x0, a0, s0) -> float:
     return a0 * np.exp(-(((x - x0) / s0) ** 2))
@@ -58,7 +59,6 @@ class ChiaroDataSet(abstracts.DataSet):
     def __init__(self, name: str, path: str):
         super().__init__(name, path)
         self._header: dict[str, float | str] = {"version": "old"}
-        self._segments: list[abstracts.Segment] = []
 
     def _load_header(self, lines: list[str]) -> int:
         """Loads the header of the chiaro data set.
@@ -119,14 +119,14 @@ class ChiaroDataSet(abstracts.DataSet):
             if line.startswith("E[v="):
                 closed_square = line.find("]")
                 self._header[line[: closed_square + 1]] = float(
-                    line[closed_square + 7 :]
+                    line[closed_square + 7:]
                 )
                 continue
 
             for target, name in float_targets.items():
                 if line.startswith(target):
                     try:
-                        self._header[name] = float(line[len(target) :].strip())
+                        self._header[name] = float(line[len(target):].strip())
                     except ValueError:
                         # Value is not a float, e.g: "Not available in this mode". So don't add
                         # TODO create log message
@@ -135,11 +135,11 @@ class ChiaroDataSet(abstracts.DataSet):
 
             for target, name in string_targets.items():
                 if line.startswith(target):
-                    self._header[name] = line[len(target) :].strip()
+                    self._header[name] = line[len(target):].strip()
                     continue
 
             if line.startswith("Profile:") or line.startswith(
-                "Piezo Indentation Sweep Settings"
+                    "Piezo Indentation Sweep Settings"
             ):
                 protocol_points: list[tuple[float, float]] = []
                 line = lines[current_line]
@@ -147,9 +147,9 @@ class ChiaroDataSet(abstracts.DataSet):
                 while line.startswith("D[Z"):
                     t_index = line.find("t")
                     # d_name = line[:5].strip()
-                    d_value = float(line[11 : t_index - 1].strip())
+                    d_value = float(line[11: t_index - 1].strip())
                     # t_name = line[t_index : t_index + 4].strip()
-                    t_value = float(line[t_index + 8 :].strip())
+                    t_value = float(line[t_index + 8:].strip())
                     # self._header[d_name] = d_value
                     # self._header[t_name] = t_value
                     protocol_points.append((d_value, t_value))
@@ -219,11 +219,11 @@ class ChiaroDataSet(abstracts.DataSet):
             for i in range(len(nodi) - 1):
                 if (nodi[i + 1] - nodi[i]) < 2:
                     continue
-                segment_z = z[nodi[i] : nodi[i + 1]]
-                segment_force = force[nodi[i] : nodi[i + 1]]
-                segment_time = time[nodi[i] : nodi[i + 1]]
-                segment_indentation = indentation[nodi[i] : nodi[i + 1]]
-                segment_deflection = deflection[nodi[i] : nodi[i + 1]]
+                segment_z = z[nodi[i]: nodi[i + 1]]
+                segment_force = force[nodi[i]: nodi[i + 1]]
+                segment_time = time[nodi[i]: nodi[i + 1]]
+                segment_indentation = indentation[nodi[i]: nodi[i + 1]]
+                segment_deflection = deflection[nodi[i]: nodi[i + 1]]
 
                 self.add_segment(
                     Segment(
@@ -248,10 +248,10 @@ class ChiaroDataSet(abstracts.DataSet):
                 for j in range(actual_pos, len(z)):
                     if time[j] > wait + next_time:
                         if can_be_crossed(
-                            z[j],
-                            z[j - 1],
-                            next_threshold,
-                            bias,
+                                z[j],
+                                z[j - 1],
+                                next_threshold,
+                                bias,
                         ):
                             nodi.append(j)
                             wait = time[j]
@@ -259,11 +259,11 @@ class ChiaroDataSet(abstracts.DataSet):
                 actual_pos = j
             nodi.append(len(z) - 1)
             for i in range(len(nodi) - 1):
-                segment_z = z[nodi[i] : nodi[i + 1]]
-                segment_force = force[nodi[i] : nodi[i + 1]]
-                segment_time = time[nodi[i] : nodi[i + 1]]
-                segment_indentation = indentation[nodi[i] : nodi[i + 1]]
-                segment_deflection = deflection[nodi[i] : nodi[i + 1]]
+                segment_z = z[nodi[i]: nodi[i + 1]]
+                segment_force = force[nodi[i]: nodi[i + 1]]
+                segment_time = time[nodi[i]: nodi[i + 1]]
+                segment_indentation = indentation[nodi[i]: nodi[i + 1]]
+                segment_deflection = deflection[nodi[i]: nodi[i + 1]]
 
                 self.add_segment(
                     Segment(
@@ -304,18 +304,6 @@ class ChiaroDataSet(abstracts.DataSet):
         self._load_body(lines, line_num)
         # self._create_segments()
 
-    def _get_fraction(self, data: np.ndarray, percent: float) -> np.ndarray:
-        """Returns a fraction of the data.
-
-        Args:
-            data (np.ndarray): The ndarray data to get the fraction from.
-            percent (float): The percentage of the data to return.
-
-        Returns:
-            np.ndarray: The reduced data.
-        """
-        return data[:: int(100 / percent)]
-
     def get_time_fraction(self, percent: float) -> np.ndarray:
         """Returns a fraction of the time data."""
         return self._get_fraction(self.time, percent)
@@ -353,39 +341,9 @@ class ChiaroDataSet(abstracts.DataSet):
         return self._header
 
     @property
-    def segments(self) -> list["Segment"]:
-        """list[Segment]: Returns the segments of the data set."""
-        return self._segments
-
-    @property
     def protocol(self) -> np.ndarray:
         """np.ndarray: Returns the tip commands."""
         return self.header.get("protocol", np.empty((0, 2)))
-
-    @property
-    def time(self) -> np.ndarray:
-        """np.ndarray: Returns the combined time data of all the segments."""
-        return np.concatenate([segment.time for segment in self._segments])
-
-    @property
-    def force(self) -> np.ndarray:
-        """np.ndarray: Returns the combined force data of all the segments"""
-        return np.concatenate([segment.force for segment in self._segments])
-
-    @property
-    def deflection(self) -> np.ndarray:
-        """np.ndarray: Returns the combined deflection data of all the segments"""
-        return np.concatenate([segment.deflection for segment in self._segments])
-
-    @property
-    def z(self) -> np.ndarray:
-        """np.ndarray: Returns the combined z data of all the segments"""
-        return np.concatenate([segment.z for segment in self._segments])
-
-    @property
-    def indentation(self) -> np.ndarray:
-        """np.ndarray: Returns the combined indentation data of all the segments"""
-        return np.concatenate([segment.indentation for segment in self._segments])
 
     @property
     def tip_radius(self) -> float:
@@ -396,11 +354,6 @@ class ChiaroDataSet(abstracts.DataSet):
     def cantilever_k(self) -> float:
         """float: Returns the cantilever spring constant of the data set."""
         return self._header.get("cantilever_k", 0.0)
-
-    @property
-    def active(self) -> bool:
-        """bool: Returns whether the data set is active."""
-        return self._active
 
     def __len__(self) -> int:
         return len(self.segments)
@@ -532,19 +485,19 @@ class Segment(abstracts.Segment):
         N = self.get_n_odd(self._filterLength)
         if method == "sg":
             try:
-                y = savgol_filter(self.f, N, 6, 0)
-                self.f = y
+                y = savgol_filter(self.force, N, 6, 0)
+                self.force = y
             except:
                 method = "basic"
         if method == "basic":
-            self.f = medfilt(self.f, N)
+            self.force = medfilt(self.f, N)
 
     # Spots the segments where sample arm is not touching the sample
     # We were told this works as it is (partially) and that it is rather complicated (we don't have to fix this)
     # Dependencies : numpy, scipy (curve_fit)
     def find_out_of_contact_region(self, weight=20.0, refine=False):
         # TODO
-        yy, xx = np.histogram(self.f, bins="auto")
+        yy, xx = np.histogram(self.force, bins="auto")
         xx = (xx[1:] + xx[:-1]) / 2.0
         try:
             func = Gauss
@@ -581,7 +534,7 @@ class Segment(abstracts.Segment):
         # TODO
         if self.outContact == 0:
             return
-        pcoe = np.polyfit(self.z[: self.outContact], self.f[: self.outContact], 1)
+        pcoe = np.polyfit(self.z[: self.outContact], self.force[: self.outContact], 1)
         ypoly = np.polyval(pcoe, self.z)
         if self.f[self.outContact] < ypoly[self.outContact]:
             self.iContact = self.outContact
@@ -598,10 +551,10 @@ class Segment(abstracts.Segment):
         # TODO
         if self.iContact == 0:
             return
-        offsetY = np.average(self.f[: self.iContact])
+        offsetY = np.average(self.force[: self.iContact])
         offsetX = self.z[self.iContact]
-        Yf = self.f[self.iContact :] - offsetY
-        Xf = self.z[self.iContact :] - offsetX
+        Yf = self.f[self.iContact:] - offsetY
+        Xf = self.z[self.iContact:] - offsetX
         self.indentation = Xf - Yf / self.parent.cantilever_k
         self.touch = Yf
 
@@ -615,9 +568,9 @@ class Segment(abstracts.Segment):
         x = np.abs(x)
         # Eeff = E*1.0e9 #to convert E in GPa to keep consistency with the units nm and nN
         y = (
-            (4.0 / 3.0)
-            * (E / (1 - self.poisson**2))
-            * np.sqrt(self.parent.tip_radius * x**3)
+                (4.0 / 3.0)
+                * (E / (1 - self.poisson ** 2))
+                * np.sqrt(self.parent.tip_radius * x ** 3)
         )
         return y  # y will be in nN
 
@@ -625,7 +578,7 @@ class Segment(abstracts.Segment):
     # Port as it is
     # Dependencies = numpy, scipy (curve_fit)
     def fit_hertz(
-        self, seed=1000.0 / 1e9, threshold=None, threshold_type="indentation"
+            self, seed=1000.0 / 1e9, threshold=None, threshold_type="indentation"
     ):
         # TODO
         self.young = None
@@ -663,6 +616,9 @@ class Segment(abstracts.Segment):
         except RuntimeError:
             return False
 
+    @property
+    def speed(self) -> int | float:
+        return self._speed
 
 #         _      _      _       _       _       _
 #      __(.)< __(.)> __(.)=   >(.)__  >(.)__  >(.)__
