@@ -1,4 +1,5 @@
 image: python:3.10
+
 stages:
   - test
 
@@ -12,4 +13,4 @@ test:linting:
 
 test:app_run:
   script:
-    - streamlit run NanoPrepare.py
+    - python3 NanoPrepare.py
