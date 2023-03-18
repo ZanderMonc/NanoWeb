@@ -10,6 +10,7 @@ import dataclasses
 import zipfile
 import json
 
+
 def generate_json_template():
     """Generates a JSON formatting template corresponding to the data of a sample curve
 
@@ -27,6 +28,7 @@ def generate_json_template():
         "data": {"F": [], "Z": []},
     }
     return curve
+
 
 class UISingleton(type):
     _instances = {}
@@ -99,8 +101,6 @@ class UI(st.delta_generator.DeltaGenerator, metaclass=UISingleton):
 
         self.sidebar.draw()
         self.draw_graphs()
-
-
 
     def add_graph(self, x_field: str, y_field: str):
         self._graphs[f"{x_field}-{y_field}"] = UIGraph(self, x_field, y_field)

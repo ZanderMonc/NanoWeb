@@ -7,6 +7,7 @@ from scipy.signal import savgol_filter, find_peaks, medfilt
 
 from . import abstracts
 
+
 # TODO move these
 def Gauss(x, x0, a0, s0) -> float:
     return a0 * np.exp(-(((x - x0) / s0) ** 2))
@@ -118,14 +119,14 @@ class ChiaroDataSet(abstracts.DataSet):
             if line.startswith("E[v="):
                 closed_square = line.find("]")
                 self._header[line[: closed_square + 1]] = float(
-                    line[closed_square + 7 :]
+                    line[closed_square + 7:]
                 )
                 continue
 
             for target, name in float_targets.items():
                 if line.startswith(target):
                     try:
-                        self._header[name] = float(line[len(target) :].strip())
+                        self._header[name] = float(line[len(target):].strip())
                     except ValueError:
                         # Value is not a float, e.g: "Not available in this mode". So don't add
                         # TODO create log message
@@ -134,11 +135,11 @@ class ChiaroDataSet(abstracts.DataSet):
 
             for target, name in string_targets.items():
                 if line.startswith(target):
-                    self._header[name] = line[len(target) :].strip()
+                    self._header[name] = line[len(target):].strip()
                     continue
 
             if line.startswith("Profile:") or line.startswith(
-                "Piezo Indentation Sweep Settings"
+                    "Piezo Indentation Sweep Settings"
             ):
                 protocol_points: list[tuple[float, float]] = []
                 line = lines[current_line]
@@ -146,9 +147,9 @@ class ChiaroDataSet(abstracts.DataSet):
                 while line.startswith("D[Z"):
                     t_index = line.find("t")
                     # d_name = line[:5].strip()
-                    d_value = float(line[11 : t_index - 1].strip())
+                    d_value = float(line[11: t_index - 1].strip())
                     # t_name = line[t_index : t_index + 4].strip()
-                    t_value = float(line[t_index + 8 :].strip())
+                    t_value = float(line[t_index + 8:].strip())
                     # self._header[d_name] = d_value
                     # self._header[t_name] = t_value
                     protocol_points.append((d_value, t_value))
@@ -218,11 +219,11 @@ class ChiaroDataSet(abstracts.DataSet):
             for i in range(len(nodi) - 1):
                 if (nodi[i + 1] - nodi[i]) < 2:
                     continue
-                segment_z = z[nodi[i] : nodi[i + 1]]
-                segment_force = force[nodi[i] : nodi[i + 1]]
-                segment_time = time[nodi[i] : nodi[i + 1]]
-                segment_indentation = indentation[nodi[i] : nodi[i + 1]]
-                segment_deflection = deflection[nodi[i] : nodi[i + 1]]
+                segment_z = z[nodi[i]: nodi[i + 1]]
+                segment_force = force[nodi[i]: nodi[i + 1]]
+                segment_time = time[nodi[i]: nodi[i + 1]]
+                segment_indentation = indentation[nodi[i]: nodi[i + 1]]
+                segment_deflection = deflection[nodi[i]: nodi[i + 1]]
 
                 self.add_segment(
                     Segment(
@@ -247,10 +248,10 @@ class ChiaroDataSet(abstracts.DataSet):
                 for j in range(actual_pos, len(z)):
                     if time[j] > wait + next_time:
                         if can_be_crossed(
-                            z[j],
-                            z[j - 1],
-                            next_threshold,
-                            bias,
+                                z[j],
+                                z[j - 1],
+                                next_threshold,
+                                bias,
                         ):
                             nodi.append(j)
                             wait = time[j]
@@ -258,11 +259,11 @@ class ChiaroDataSet(abstracts.DataSet):
                 actual_pos = j
             nodi.append(len(z) - 1)
             for i in range(len(nodi) - 1):
-                segment_z = z[nodi[i] : nodi[i + 1]]
-                segment_force = force[nodi[i] : nodi[i + 1]]
-                segment_time = time[nodi[i] : nodi[i + 1]]
-                segment_indentation = indentation[nodi[i] : nodi[i + 1]]
-                segment_deflection = deflection[nodi[i] : nodi[i + 1]]
+                segment_z = z[nodi[i]: nodi[i + 1]]
+                segment_force = force[nodi[i]: nodi[i + 1]]
+                segment_time = time[nodi[i]: nodi[i + 1]]
+                segment_indentation = indentation[nodi[i]: nodi[i + 1]]
+                segment_deflection = deflection[nodi[i]: nodi[i + 1]]
 
                 self.add_segment(
                     Segment(
@@ -338,7 +339,6 @@ class ChiaroDataSet(abstracts.DataSet):
     def header(self) -> dict[str, float | str]:
         """dict[str, float | str]: Returns the header of the data set."""
         return self._header
-
 
     @property
     def protocol(self) -> np.ndarray:
@@ -553,8 +553,8 @@ class Segment(abstracts.Segment):
             return
         offsetY = np.average(self.force[: self.iContact])
         offsetX = self.z[self.iContact]
-        Yf = self.f[self.iContact :] - offsetY
-        Xf = self.z[self.iContact :] - offsetX
+        Yf = self.f[self.iContact:] - offsetY
+        Xf = self.z[self.iContact:] - offsetX
         self.indentation = Xf - Yf / self.parent.cantilever_k
         self.touch = Yf
 
@@ -568,9 +568,9 @@ class Segment(abstracts.Segment):
         x = np.abs(x)
         # Eeff = E*1.0e9 #to convert E in GPa to keep consistency with the units nm and nN
         y = (
-            (4.0 / 3.0)
-            * (E / (1 - self.poisson**2))
-            * np.sqrt(self.parent.tip_radius * x**3)
+                (4.0 / 3.0)
+                * (E / (1 - self.poisson ** 2))
+                * np.sqrt(self.parent.tip_radius * x ** 3)
         )
         return y  # y will be in nN
 
@@ -578,7 +578,7 @@ class Segment(abstracts.Segment):
     # Port as it is
     # Dependencies = numpy, scipy (curve_fit)
     def fit_hertz(
-        self, seed=1000.0 / 1e9, threshold=None, threshold_type="indentation"
+            self, seed=1000.0 / 1e9, threshold=None, threshold_type="indentation"
     ):
         # TODO
         self.young = None
