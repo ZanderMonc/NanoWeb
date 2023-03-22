@@ -27,17 +27,20 @@ def handle_click(i: int) -> None:
     else:
         engine.haystack[i].active = True
 
+
 def file_not_none(file):
     if file is not None:
         return True
     else:
         return False
 
+
 def file_is_json(file):
     if file.name.endswith(".json"):
         return True
     else:
         return False
+
 
 def generate_raw_curves(haystack: list) -> list:
     """Creates DataFrame objects for experiment data and returns them in a list
@@ -89,9 +92,10 @@ def main() -> None:
             f = open("data/" + file.name, "r")
             structure = json.load(f)
             # st.write(structure)
-
-            for cv in structure["curves"]:
-                engine.haystack.append(engine.curve(cv))
+            
+            if len(engine.haystack) == 0:
+                for cv in structure["curves"]:
+                    engine.haystack.append(engine.curve(cv))
 
             # File selection checkboxes
             # graph_first_col.write("Files")
